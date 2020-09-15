@@ -26,10 +26,8 @@ typedef struct photonevent_t {
 	phase_t baseline;
 } photonevent_t;
 
-typedef ap_uint<64+9+16> eventuint_t;
-typedef struct {
-	eventuint_t data;
-} eventstream_t;
+
+typedef ap_uint<64+16*3> eventuint_t;
 
 typedef struct {
 	phase_t data[N_LANES];

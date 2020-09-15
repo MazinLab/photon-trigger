@@ -204,15 +204,16 @@ unsigned long long tsince = timestamp.to_uint64()-lastpulse[i].start.to_uint64()
 
 
 
-void photon_trigger(phasestream_t streamin[N_GROUPS], hls::stream<photonevent_t> &events_out,
+void photon_trigger(phasestream_t streamin[N_GROUPS], hls::stream<eventuint_t> &events_out,
 				    triggercfg_t triggercfg[N_GROUPS][N_LANES], timedelta_t holdoff, baseinoutctr_t baseline_shrink,
 					baseinoutctr_t baseline_grow,
 				    timestamp_t timestamp[N_GROUPS], const ap_uint<2> lane, unsigned long &dropped) {
 #pragma HLS INTERFACE axis register port=streamin
+#pragma HLS INTERFACE axis register port=events_out
 #pragma HLS INTERFACE ap_hs port=timestamp
 #pragma HLS DATA_PACK variable=events_out.V
 #pragma HLS ARRAY_PARTITION variable=triggercfg dim=2 complete
-#pragma HLS INTERFACE s_axilite port=triggercfg bundle=control
+#pragma HLS INTERFACE s_axilite port=triggercfg bundle=control clock=ctrl_clk
 #pragma HLS INTERFACE s_axilite port=holdoff bundle=control
 #pragma HLS INTERFACE s_axilite port=dropped bundle=control
 #pragma HLS INTERFACE s_axilite port=baseline_grow bundle=control
@@ -259,7 +260,10 @@ void photon_trigger(phasestream_t streamin[N_GROUPS], hls::stream<photonevent_t>
 			event.time=pulseout.start+pulseout.peak_time;
 			event.baseline=pulseout.baseline;
 			event.phase=pulseout.peak;
-			dropped+=!events_out.write_nb(event);
+			eventuint_t outtmp;
+			outtmp=eventuint_t(event.time)|eventuint_t(event.phase)<<64|eventuint_t(event.res_id)<<(64+16)|eventuint_t(event.baseline)<<(64+16*2);
+			events_out<<outtmp;
+//			dropped+=!events_out.write_nb(outtmp);
 		}
 		next_out++;
 	}
