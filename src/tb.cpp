@@ -72,9 +72,9 @@ bool drive_phase2photon() {
 
 	//Phases & photons
 	for (int i=0;i<NSAMP;i++) {
-		timestamps.write(i);
-		for (int group=0; group<512; group++) {
 
+		for (int group=0; group<512; group++) {
+			timestamps.write(i);
 			reschan_t idbase;
 			phasestream_t inphase;
 			phaseset_t tmp;
@@ -87,7 +87,7 @@ bool drive_phase2photon() {
 
 			//Into the input stream
 			inphase.data=phaseset2phases(tmp);
-			inphase.user=group;  // i%N_PHASEGROUPS;
+			inphase.user=group;
 			inphase.last=inphase.user==N_PHASEGROUPS-1;
 			phases.write(inphase);
 
@@ -109,8 +109,8 @@ bool drive_phase2photon() {
 
 				threshs=phases2phaseset(thresholds[group]);
 
-				if (j==0 && group==0){
-					cout<<"Cycle "<<i<<" phase is "<<tmp.phase[j]<<" was "<<last[group][j].phase;
+				if (j==0 && (group==0||group==1)){
+					cout<<"Cycle "<<i<<" rid="<<idbase+j<<" phase is "<<tmp.phase[j]<<" was "<<last[group][j].phase;
 					cout<<". Thresh is "<<threshs.phase[j]<<". Photon expected: "<<photonevent[i];
 					cout<<" Trigger event: "<<trig_event<<" Holdoff counter: "<<last[group][j].since<<endl;
 					if (trig_event!=photonevent[i]){
@@ -121,12 +121,15 @@ bool drive_phase2photon() {
 
 				if (trig_event) {
 					last[group][j].since=holdoff;
-//					holdoff_ctr[group]=holdoff;
 					photon_t phot;
 					phot.time=i;
 					phot.id=idbase+j;
 					phot.phase=tmp.phase[j];
 					expected.write(phot);
+					if ((group==0||group==1)) {
+					cout<<"EXPECTING PHOTON: rid="<<phot.id<<" "<<phot.phase<<" at "<<phot.time<<endl;
+					}
+
 				} else {
 //					holdoff_ctr[group] = holdoff_ctr[group]>0 ? holdoff_ctr[group]-1:0;
 					last[group][j].since = last[group][j].since>0 ? last[group][j].since-1:0;
