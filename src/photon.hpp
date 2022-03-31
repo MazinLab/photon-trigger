@@ -8,12 +8,16 @@ using namespace std;
 #include "hls_stream.h"
 
 
-#define N_MONITOR 10
+#define N_MONITOR 8
 #define N_CAPDATA 150
-#define N_CAPPRE 150
+#define N_CAPPRE 30
 
 // Include the Class
 #include "ap_shift_reg.h"
+
+
+
+#define N_MAXALIGN 64
 
 #define N_IQ 8
 #define N_PHASE 4
@@ -23,9 +27,10 @@ using namespace std;
 #define N_PHASEGROUPS_LOG2 9
 #define PHASE_BITS 16
 #define IQ_BITS 32
+#define N_MONITOR_LOG2 3
 
 typedef ap_uint<40> timestamp_t;
-//typedef ap_uint<8> group256_t;
+typedef ap_uint<8> group256_t;
 typedef ap_uint<9> group512_t;
 //typedef ap_uint<7> group128_t;
 typedef ap_uint<12> reschan_t;
@@ -107,18 +112,24 @@ typedef struct previousgroup_t {
 	previous_t data[N_PHASE];
 } previousgroup_t;
 
-typedef ap_axiu<N_PHASE*PHASE_BITS,9,0,0> phasestream_t;
-typedef ap_axiu<N_PHASE*IQ_BITS,9,0,0> iqstream_t;
 
-typedef ap_axiu<N_PHASE*PHASE_BITS,9+N_PHASE,0,0> trigstream_t;
+typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2,0,0> phasestream_t;
+typedef ap_axiu<N_PHASE*IQ_BITS,0,0,0> iqstreamnarrow_t;
+typedef ap_axiu<N_IQ*IQ_BITS,8,0,0> iqstream_t;
+typedef ap_axiu<IQ_BITS,N_MONITOR_LOG2,0,0> singleiqstream_t;
+typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
 
-typedef ap_axiu<N_PHASE*(PHASE_BITS+IQ_BITS),9+N_PHASE,0,0> trigstreamiq_t;
 
+void trigger(hls::stream<phasestream_t> &instream,
+		thresholds_t thresholds[N_PHASEGROUPS],
+		interval_t holdoff,
+		hls::stream<trigstream_t> &outstream);
 
-void phase_to_photon(hls::stream<phasestream_t> &instream, thresholds_t thresholds[N_PHASEGROUPS],
-		volatile timestamp_t &timestamp, interval_t holdoff, hls::stream<photon_t> photon_fifo[N_PHASE]);
+void postage(hls::stream<trigstream_t> &instream,
+		hls::stream<iqstreamnarrow_t> &iniq,
+		reschan_t monitor[N_MONITOR], int alignment,
+		hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
 
-void photons_to_axis(hls::stream<photon_t> photon_fifo[N_PHASE], hls::stream<photon_t> &photons);
-void photon_trigger(hls::stream<phasestream_t> &instream, thresholds_t thresholds[N_PHASEGROUPS],
-					hls::stream<timestamp_t> &timestamp, interval_t holdoff, hls::stream<photon_t> &photons);
-
+void photon(hls::stream<trigstream_t> &instream,
+		hls::stream<timestamp_t> &timestamps,
+		hls::stream<photon_t> &photons);
