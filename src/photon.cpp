@@ -26,7 +26,7 @@
 void photon_factory(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t> &timestamp,
 		hls::stream<photon_t> photon_fifo[N_PHASE], hls::stream<bool> &done) {
 #pragma HLS ARRAY_PARTITION dim=1 type=complete variable=photon_fifo
-#pragma HLS INTERFACE ap_ctrl_none port=return
+//#pragma HLS INTERFACE ap_ctrl_none port=return
 //#pragma HLS PIPELINE II=1
 
 	bool finished=false;
@@ -64,7 +64,7 @@ void photon_factory(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t
 
 
 void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<bool> &done, hls::stream<photon_t> &out) {
-#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+//#pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS ARRAY_PARTITION variable = istrms complete
 
 	ap_uint<N_PHASE_LOG2> n=0; // current arbitration grant
@@ -99,18 +99,18 @@ void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<bool> &d
 
 void photon(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t> &timestamps, hls::stream<photon_t> &photons){
 #pragma HLS DATAFLOW
-#pragma HLS INTERFACE ap_ctrl_none port=return
+//#pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=photons depth=6400
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
 #pragma HLS INTERFACE mode=axis port=timestamps depth=13500
 
 	hls::stream<photon_t> photon_fifos[N_PHASE];
 #pragma HLS AGGREGATE compact=bit variable=photon_fifos
-#pragma HLS stream variable = photon_fifos depth = 128
+#pragma HLS stream variable = photon_fifos depth = 8
 #pragma HLS ARRAY_PARTITION dim=1 type=complete variable=photon_fifos
 
 	hls::stream<bool> done;
-#pragma HLS stream variable = done depth = 32
+#pragma HLS stream variable = done depth = 2
 
 
 	photon_factory(instream, timestamps, photon_fifos, done);

@@ -10,9 +10,8 @@ using namespace std;
 
 
 #define N_MONITOR 8
-#define N_CAPDATA 150
+#define N_CAPDATA 90
 #define N_CAPPRE 30
-#define N_MAXALIGN 64
 
 #define N_IQ 8
 #define N_PHASE 4
@@ -122,7 +121,7 @@ void trigger(hls::stream<phasestream_t> &instream,
 
 void postage(hls::stream<trigstream_t> &instream,
 		hls::stream<iqstreamnarrow_t> &iniq,
-		reschan_t monitor[N_MONITOR], int alignment,
+		reschan_t monitor[N_MONITOR],
 		hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
 
 void photon(hls::stream<trigstream_t> &instream,

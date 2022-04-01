@@ -55,123 +55,123 @@ void resonator_watcher(iqpgroup_t datain, group_t group, bool trigger, reschan_t
 	}
 }
 
-
-void resonator_monitor_nested(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
-		reschan_t monitor[N_MONITOR], int alignment, hls::stream<bool> &done, hls::stream<iq_t> iq_out[N_MONITOR]) {
-#pragma HLS PIPELINE II=1
-#pragma HLS INTERFACE ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=axis port=iniq register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=axis port=iq_out register_mode=off depth=13500 //register
-#pragma HLS ARRAY_PARTITION variable=iq_out type=complete
-#pragma HLS INTERFACE mode=s_axilite port=monitor
-#pragma HLS INTERFACE mode=s_axilite port=alignment
-#pragma HLS ARRAY_PARTITION variable=monitor type=complete
-
-	ap_shift_reg<iqpgroup_t, N_MAXALIGN> sreg;
-
-	bool finished=false;
-	group: while (!finished){
-#pragma HLS PIPELINE II=1 REWIND
-		trigstream_t in;
-		iqstreamnarrow_t iq;
-		iqpgroup_t iqaligned;
-		group_t group;
-		ap_uint<N_PHASE> trigger;
-		group512_t align;
-
-		in=instream.read();
-		finished=instream.empty();
-		iq=iniq.read();
-
-		//The iq stream should be several ahead of the phase AND may be be a cycle or so in-front
-		group=in.user.range(8,0);
-
-//		align=iq.user-group>>1;
-
-		iqaligned = sreg.shift(iq.data, alignment, true);
-		trigger=in.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2);
-
-		for (int i=0;i<N_MONITOR;i++) {
-		#pragma HLS UNROLL
-			ap_uint<N_PHASE_LOG2> lane;
-			group_t gid;
-			lane=monitor[i].range(N_PHASE_LOG2-1,0);
-			gid=monitor[i]>>N_PHASE_LOG2;
-			resonator_watcher(iqaligned, group, trigger[i], lane, gid, iq_out[i]);
-		}
-
-	}
-	done.write(true);
-}
-
-
+//
+//void resonator_monitor_nested(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
+//		reschan_t monitor[N_MONITOR], int alignment, hls::stream<bool> &done, hls::stream<iq_t> iq_out[N_MONITOR]) {
+//#pragma HLS PIPELINE II=1
+//#pragma HLS INTERFACE ap_ctrl_none port=return
+//#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
+//#pragma HLS INTERFACE mode=axis port=iniq register_mode=off depth=13500 //register
+//#pragma HLS INTERFACE mode=axis port=iq_out register_mode=off depth=13500 //register
+//#pragma HLS ARRAY_PARTITION variable=iq_out type=complete
+//#pragma HLS INTERFACE mode=s_axilite port=monitor
+//#pragma HLS INTERFACE mode=s_axilite port=alignment
+//#pragma HLS ARRAY_PARTITION variable=monitor type=complete
+//
+//	ap_shift_reg<iqpgroup_t, N_MAXALIGN> sreg;
+//
+//	bool finished=false;
+//	group: while (!finished){
+//#pragma HLS PIPELINE II=1 REWIND
+//		trigstream_t in;
+//		iqstreamnarrow_t iq;
+//		iqpgroup_t iqaligned;
+//		group_t group;
+//		ap_uint<N_PHASE> trigger;
+//		group512_t align;
+//
+//		in=instream.read();
+//		finished=instream.empty();
+//		iq=iniq.read();
+//
+//		//The iq stream should be several ahead of the phase AND may be be a cycle or so in-front
+//		group=in.user.range(8,0);
+//
+////		align=iq.user-group>>1;
+//
+//		iqaligned = sreg.shift(iq.data, alignment, true);
+//		trigger=in.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2);
+//
+//		for (int i=0;i<N_MONITOR;i++) {
+//		#pragma HLS UNROLL
+//			ap_uint<N_PHASE_LOG2> lane;
+//			group_t gid;
+//			lane=monitor[i].range(N_PHASE_LOG2-1,0);
+//			gid=monitor[i]>>N_PHASE_LOG2;
+//			resonator_watcher(iqaligned, group, trigger[i], lane, gid, iq_out[i]);
+//		}
+//
+//	}
+//	done.write(true);
+//}
 
 
-void resonator_monitor(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
-		reschan_t monitor[N_MONITOR], int alignment, hls::stream<bool> &done, hls::stream<iq_t> iq_out[N_MONITOR]) {
-#pragma HLS INTERFACE ap_ctrl_none port=return
-#pragma HLS ARRAY_PARTITION variable=iq_out type=complete
-#pragma HLS ARRAY_PARTITION variable=monitor type=complete
 
-	ap_shift_reg<iqpgroup_t, N_MAXALIGN> sreg;
-
-	ap_shift_reg<unsigned int, N_CAPPRE> iqprereg[N_MONITOR];
-	unsigned char tocapture[N_MONITOR];
-#pragma HLS ARRAY_PARTITION variable=tocapture type=complete
-#pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
-
-	bool finished=false;
-	group: while (!finished){
-#pragma HLS PIPELINE II=1 REWIND
-		trigstream_t in;
-		iqstreamnarrow_t iq;
-		iqpgroup_t iqaligned;
-		group_t group;
-		ap_uint<N_PHASE> trigger;
-		group512_t align;
-
-		in=instream.read();
-		iq=iniq.read();
-
-		//The iq stream should be several ahead of the phase AND may be be a cycle or so in-front
-		group=in.user.range(8,0);
-
-//		align=iq.user-group>>1;
-
-		iqaligned = sreg.shift(iq.data, alignment, true);
-		trigger=in.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2);
-
-		iq_t x[N_PHASE];
-	#pragma HLS ARRAY_PARTITION variable=x type=complete
-		for (int i=0;i<N_PHASE;i++)
-			x[i]=iqaligned.range(IQ_BITS*(i+1)-1, i*IQ_BITS);
-
-		for (int i=0;i<N_MONITOR;i++) {
-		#pragma HLS UNROLL
-			ap_uint<N_PHASE_LOG2> lane;
-			group_t gid;
-			reschan_t m;
-			m=monitor[i];
-			lane=m.range(N_PHASE_LOG2-1,0);
-			gid=m>>N_PHASE_LOG2;
-			iq_t laneiq;
-
-			laneiq = iqprereg[i].shift(x[lane], N_CAPPRE-1, gid==group);
-
-			if (gid==group) { //
-				if (tocapture[i]>0)
-					iq_out[i].write(laneiq);
-				if (tocapture[i]==0 && trigger[lane])
-					tocapture[i]=N_CAPDATA;
-				else if (tocapture[i]!=0)
-					tocapture[i]--;
-			}
-		}
-		finished=instream.empty();
-	}
-	done.write(true);
-}
+//
+//void resonator_monitor(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
+//		reschan_t monitor[N_MONITOR], int alignment, hls::stream<bool> &done, hls::stream<iq_t> iq_out[N_MONITOR]) {
+//#pragma HLS INTERFACE ap_ctrl_none port=return
+//#pragma HLS ARRAY_PARTITION variable=iq_out type=complete
+//#pragma HLS ARRAY_PARTITION variable=monitor type=complete
+//
+//	ap_shift_reg<iqpgroup_t, N_MAXALIGN> sreg;
+//
+//	ap_shift_reg<unsigned int, N_CAPPRE> iqprereg[N_MONITOR];
+//	unsigned char tocapture[N_MONITOR];
+//#pragma HLS ARRAY_PARTITION variable=tocapture type=complete
+//#pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
+//
+//	bool finished=false;
+//	group: while (!finished){
+//#pragma HLS PIPELINE II=1 REWIND
+//		trigstream_t in;
+//		iqstreamnarrow_t iq;
+//		iqpgroup_t iqaligned;
+//		group_t group;
+//		ap_uint<N_PHASE> trigger;
+//		group512_t align;
+//
+//		in=instream.read();
+//		iq=iniq.read();
+//
+//		//The iq stream should be several ahead of the phase AND may be be a cycle or so in-front
+//		group=in.user.range(8,0);
+//
+////		align=iq.user-group>>1;
+//
+//		iqaligned = sreg.shift(iq.data, alignment, true);
+//		trigger=in.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2);
+//
+//		iq_t x[N_PHASE];
+//	#pragma HLS ARRAY_PARTITION variable=x type=complete
+//		for (int i=0;i<N_PHASE;i++)
+//			x[i]=iqaligned.range(IQ_BITS*(i+1)-1, i*IQ_BITS);
+//
+//		for (int i=0;i<N_MONITOR;i++) {
+//		#pragma HLS UNROLL
+//			ap_uint<N_PHASE_LOG2> lane;
+//			group_t gid;
+//			reschan_t m;
+//			m=monitor[i];
+//			lane=m.range(N_PHASE_LOG2-1,0);
+//			gid=m>>N_PHASE_LOG2;
+//			iq_t laneiq;
+//
+//			laneiq = iqprereg[i].shift(x[lane], N_CAPPRE-1, gid==group);
+//
+//			if (gid==group) { //
+//				if (tocapture[i]>0)
+//					iq_out[i].write(laneiq);
+//				if (tocapture[i]==0 && trigger[lane])
+//					tocapture[i]=N_CAPDATA;
+//				else if (tocapture[i]!=0)
+//					tocapture[i]--;
+//			}
+//		}
+//		finished=instream.empty();
+//	}
+//	done.write(true);
+//}
 
 
 //while(!instream.empty()) {
@@ -274,57 +274,57 @@ void write_stream(hls::stream<iq_t> istrms[N_MONITOR], hls::stream<bool> &done, 
 }
 
 //stream
-void postage_df_stream(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq, int alignment, reschan_t monitor[N_MONITOR],
-		hls::stream<singleiqstream_t> &iq_out) {
-#pragma HLS INTERFACE ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=axis depth=13500 port=iq_out
-#pragma HLS INTERFACE mode=axis depth=13500 port=iniq
-#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=s_axilite port=monitor
-#pragma HLS INTERFACE mode=s_axilite port=alignment
-
-#pragma HLS DATAFLOW
-
-	hls::stream<bool> done;
-#pragma HLS stream variable = done depth = 32
-
-	hls::stream<iq_t> iq_fifos[N_MONITOR];
-#pragma HLS ARRAY_PARTITION variable=iq_fifos type=complete
-
-	resonator_monitor(instream, iniq, monitor, alignment, done, iq_fifos);
-	write_stream(iq_fifos, done, iq_out);
-}
+//void postage_df_stream(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq, int alignment, reschan_t monitor[N_MONITOR],
+//		hls::stream<singleiqstream_t> &iq_out) {
+//#pragma HLS INTERFACE ap_ctrl_none port=return
+//#pragma HLS INTERFACE mode=axis depth=13500 port=iq_out
+//#pragma HLS INTERFACE mode=axis depth=13500 port=iniq
+//#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
+//#pragma HLS INTERFACE mode=s_axilite port=monitor
+//#pragma HLS INTERFACE mode=s_axilite port=alignment
+//
+//#pragma HLS DATAFLOW
+//
+//	hls::stream<bool> done;
+//#pragma HLS stream variable = done depth = 32
+//
+//	hls::stream<iq_t> iq_fifos[N_MONITOR];
+//#pragma HLS ARRAY_PARTITION variable=iq_fifos type=complete
+//
+//	resonator_monitor(instream, iniq, monitor, alignment, done, iq_fifos);
+//	write_stream(iq_fifos, done, iq_out);
+//}
 
 
 //maxi
-void postage_maxi(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq, int alignment, reschan_t monitor[N_MONITOR], iq_t *iq_out[N_MONITOR]) {
-
-#pragma HLS INTERFACE ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=m_axi depth=13500 max_widen_bitwidth=128 port=iq_out offset=slave
-#pragma HLS INTERFACE mode=axis depth=13500 port=iniq
-#pragma HLS ARRAY_PARTITION dim=1 type=complete variable=iq_out
-#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=s_axilite port=monitor
-#pragma HLS INTERFACE mode=s_axilite port=alignment
-
-#pragma HLS DATAFLOW
-
-	hls::stream<bool> done;
-#pragma HLS stream variable = done depth = 32
-
-	hls::stream<iq_t> iq_fifos[N_MONITOR];
-#pragma HLS ARRAY_PARTITION variable=iq_fifos type=complete
-
-	resonator_monitor(instream, iniq, monitor, alignment, done, iq_fifos);
-	write_maxi(iq_fifos, done, iq_out);
-}
-
-
+//void postage_maxi(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq, int alignment, reschan_t monitor[N_MONITOR], iq_t *iq_out[N_MONITOR]) {
+//
+//#pragma HLS INTERFACE ap_ctrl_none port=return
+//#pragma HLS INTERFACE mode=m_axi depth=13500 max_widen_bitwidth=128 port=iq_out offset=slave
+//#pragma HLS INTERFACE mode=axis depth=13500 port=iniq
+//#pragma HLS ARRAY_PARTITION dim=1 type=complete variable=iq_out
+//#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
+//#pragma HLS INTERFACE mode=s_axilite port=monitor
+//#pragma HLS INTERFACE mode=s_axilite port=alignment
+//
+//#pragma HLS DATAFLOW
+//
+//	hls::stream<bool> done;
+//#pragma HLS stream variable = done depth = 32
+//
+//	hls::stream<iq_t> iq_fifos[N_MONITOR];
+//#pragma HLS ARRAY_PARTITION variable=iq_fifos type=complete
+//
+//	resonator_monitor(instream, iniq, monitor, alignment, done, iq_fifos);
+//	write_maxi(iq_fifos, done, iq_out);
+//}
+//
+//
 
 
 
 void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
-		reschan_t monitor[N_MONITOR], int alignment, hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
+		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
 
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
@@ -333,9 +333,6 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 #pragma HLS ARRAY_PARTITION variable=iq_out type=complete
 #pragma HLS INTERFACE mode=s_axilite port=monitor
 #pragma HLS ARRAY_PARTITION variable=monitor type=complete
-#pragma HLS INTERFACE mode=s_axilite port=alignment
-
-	static ap_shift_reg<iqpgroup_t, N_MAXALIGN> sreg;
 
 	static ap_shift_reg<unsigned int, N_CAPPRE> iqprereg[N_MONITOR];
 	static unsigned char tocapture[N_MONITOR];
@@ -343,9 +340,6 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 #pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
 
 
-#ifndef __SYNTHESIS__
-	cout<<"Alignment "<<alignment<<endl;
-#endif
 	unsigned int cycle=0;
 	while(!instream.empty()) {
 	#pragma HLS PIPELINE II=1
@@ -359,19 +353,14 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 		in=instream.read();
 		iq=iniq.read();
 
-		//The iq stream should be several ahead of the phase AND may be be a cycle or so in-front
 		group=in.user.range(8,0);
 		trigger=in.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2);
-		iqaligned = sreg.shift(iq.data, alignment, true);
-
-
+		iqaligned = iq.data;
 
 		iq_t x[N_PHASE];
 	#pragma HLS ARRAY_PARTITION variable=x type=complete
 		for (int i=0;i<N_PHASE;i++)
 			x[i]=iqaligned.range(IQ_BITS*(i+1)-1, i*IQ_BITS);
-
-
 
 		for (int i=0;i<N_MONITOR;i++) {
 		#pragma HLS UNROLL
@@ -395,11 +384,11 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 					iq_out[i].write(tmp);
 		#ifndef __SYNTHESIS__
 		if (group==0 && lane==0 && i==0) {
-		cout<<"Cycle "<<cycle<<" ("<<group<<") Lane 0 IQ: ";
+		if (tocapture[i]==N_CAPDATA){cout<<"Cycle "<<cycle<<" ("<<group<<") Lane 0 IQ: ";
 		cout<<" in "<<iq.data.range(IQ_BITS-1, 0);
-		cout<<" aligned "<<iqaligned.range(IQ_BITS-1, 0);
 		cout<<" Phase "<<in.data.range(PHASE_BITS,0)<<" trigger "<<trigger[0]<<endl;
-		cout<<"  Capturing "<<N_CAPDATA-tocapture[i]<<" of "<<N_CAPDATA<<" iq "<<laneiq<<endl;
+		}
+		cout<<"  Capturing "<<N_CAPDATA-tocapture[i]<<" of "<<N_CAPDATA<<" iq "<<laneiq/2048.0<<endl;
 		}
 //		if (group==0 && lane==0) cout<<"  Capturing, "<<N_CAPDATA-tocapture[i]<<" of "<<N_CAPDATA<<endl;
 //						if (group==0 && tmp.last &&lane==0) cout<<"  Finishing capture."<<endl;

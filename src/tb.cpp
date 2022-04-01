@@ -185,7 +185,6 @@ bool drive_phase2photon() {
 
 	thresholds_t thresholds[N_PHASEGROUPS];
 	reschan_t monitor[N_MONITOR]={0,1,2,3,4,6,1025,2047};
-	int alignment;
 	interval_t holdoff;
 	threshold_t thres;
 
@@ -196,7 +195,6 @@ bool drive_phase2photon() {
 	holdoff=3;
 	previous_t last[N_PHASEGROUPS][N_PHASE];
 	thres=10;
-	alignment=4;  //one less than desired
 
 	//Load Thresholds
 	for (int i=0;i<N_PHASEGROUPS;i++) {
@@ -209,12 +207,10 @@ bool drive_phase2photon() {
 	//Load IQs
 	iqstreamnarrow_t iqtmp;
 	iqtmp.data=-1;
-	for (int i=0;i<alignment;i++)
-		iqs.write(iqtmp);
-	for (int i=0;i<(N_SAMP-1+N_CAPDATA)*N_PHASEGROUPS*N_PHASE;i++) { //-1 because the trigger stream has 1 cycle of windup and we won't bother testing that
+	for (int i=0;i<(N_SAMP+N_CAPDATA+N_CAPPRE)*N_PHASEGROUPS*N_PHASE;i++) { //-1 because the trigger stream has 1 cycle of windup and we won't bother testing that
 
 		int group, lane;
-		group=(i/N_PHASE+alignment)%N_PHASEGROUPS;
+		group=(i/N_PHASE)%N_PHASEGROUPS;
 		lane=i%N_PHASE;
 		iqtmp.data.range(IQ_BITS*(lane+1)-1,IQ_BITS*lane)=i;
 		iqtmp.last=group==N_PHASEGROUPS-1;
@@ -326,8 +322,8 @@ bool drive_phase2photon() {
 					for (int i_cap=0;i_cap<N_CAPDATA;i_cap++) {
 						singleiqstream_t tmp;
 						int x;
-						x=i+(i_cap-N_CAPPRE)*2048+(alignment-13)*N_PHASE;
-						tmp.data=x<0? 0: x;
+						x=i+i_cap*2048;
+						tmp.data=x;//<0? 0: x;
 						tmp.last=i_cap==(N_CAPDATA-1);
 						tmp.user=mon;
 						if (rid==0 && i_cap==-N_CAPPRE) cout<<tmp.data<<" to ";
@@ -358,22 +354,14 @@ bool drive_phase2photon() {
 //	cout<<"Calling trigger, "<<phases.size()<<" samples"<<endl;
 //	trigger(phases, thresholds, holdoff, trigger_out);
 //	fail|=verify_trigger(trigger_out, trigger_gold);
-//
-//	cout<<"Calling photon, "<<trigger_gold2.size()<<" samples"<<endl;
-//	photon(trigger_gold2, timestamps, photons_out);
-//	fail|=verify_photons(photons_out, photons_gold);
-	cout<<"Calling postage, "<<postage_trigger.size()<<", "<<iqs.size()<<" samples"<<endl;
-//	for (int i=0;i<10;i++){
-//		for (int j=0;j<512;j++) {
-//			iqstreamnarrow_t x;
-//			x=iqs.read();
-//			if (j==0){
-//				cout<<x.data.range(31,0)<<endl;
-//			}
-//		}
-//	}
-	postage(postage_trigger, iqs, monitor, alignment, postage_out);
-	fail|=verify_postage(postage_out, postage_gold);
+
+	cout<<"Calling photon, "<<trigger_gold2.size()<<" samples"<<endl;
+	photon(trigger_gold2, timestamps, photons_out);
+	fail|=verify_photons(photons_out, photons_gold);
+
+//	cout<<"Calling postage, "<<postage_trigger.size()<<", "<<iqs.size()<<" samples"<<endl;
+//	postage(postage_trigger, iqs, monitor, postage_out);
+//	fail|=verify_postage(postage_out, postage_gold);
 
 	return fail;
 }
