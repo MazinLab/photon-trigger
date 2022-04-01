@@ -214,12 +214,20 @@ bool drive_phase2photon() {
 	for (int i=0;i<(N_SAMP-1+N_CAPDATA)*N_PHASEGROUPS*N_PHASE;i++) { //-1 because the trigger stream has 1 cycle of windup and we won't bother testing that
 
 		int group, lane;
-		group=(i/N_PHASE)%N_PHASEGROUPS;
+		group=(i/N_PHASE+alignment)%N_PHASEGROUPS;
 		lane=i%N_PHASE;
 		iqtmp.data.range(IQ_BITS*(lane+1)-1,IQ_BITS*lane)=i;
 		iqtmp.last=group==N_PHASEGROUPS-1;
 		if (lane==N_PHASE-1)
 			iqs.write(iqtmp);
+	}
+	//Load some filler trigstream so we can vet the pre-samples
+	for (int i=0;i<N_CAPPRE*N_PHASEGROUPS;i++) {
+		trigstream_t trigtmp;
+		trigtmp.data=-1;
+		trigtmp.user=(i%N_PHASEGROUPS);
+		trigtmp.last=(i%N_PHASEGROUPS)==N_PHASEGROUPS-1;
+		postage_trigger.write(trigtmp);
 	}
 
 	//Load Timestampss
@@ -249,6 +257,7 @@ bool drive_phase2photon() {
 		}
 		inphase_previous[i]=0;
 	}
+
 	group_t next_group=0;
 	for (int i=0;i<N_SAMP*N_PHASEGROUPS*N_PHASE;i++) {
 		iqstreamnarrow_t in;

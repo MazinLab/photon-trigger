@@ -6,17 +6,12 @@ using namespace std;
 #include "ap_int.h"
 #include "ap_axi_sdata.h"
 #include "hls_stream.h"
+#include "ap_shift_reg.h"
 
 
 #define N_MONITOR 8
 #define N_CAPDATA 150
 #define N_CAPPRE 30
-
-// Include the Class
-#include "ap_shift_reg.h"
-
-
-
 #define N_MAXALIGN 64
 
 #define N_IQ 8
