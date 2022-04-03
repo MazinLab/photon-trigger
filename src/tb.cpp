@@ -366,14 +366,14 @@ bool drive_phase2photon() {
 //	cout<<"Calling trigger, "<<phases.size()<<" samples"<<endl;
 //	trigger(phases, thresholds, holdoff, trigger_out);
 //	fail|=verify_trigger(trigger_out, trigger_gold);
+//
+//	cout<<"Calling photon, "<<trigger_gold2.size()<<" samples"<<endl;
+//	photon(trigger_gold2, timestamps, photons_out);
+//	fail|=verify_photons(photons_out, photons_gold);
 
-	cout<<"Calling photon, "<<trigger_gold2.size()<<" samples"<<endl;
-	photon(trigger_gold2, timestamps, photons_out);
-	fail|=verify_photons(photons_out, photons_gold);
-
-//	cout<<"Calling postage, "<<postage_trigger.size()<<", "<<iqs.size()<<" samples"<<endl;
-//	postage(postage_trigger, iqs, monitor, postage_out);
-//	fail|=verify_postage(postage_out, postage_gold);
+	cout<<"Calling postage, "<<postage_trigger.size()<<", "<<iqs.size()<<" samples"<<endl;
+	postage(postage_trigger, iqs, monitor, postage_out);
+	fail|=verify_postage(postage_out, postage_gold);
 
 	return fail;
 }

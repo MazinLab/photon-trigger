@@ -326,10 +326,10 @@ void write_stream(hls::stream<iq_t> istrms[N_MONITOR], hls::stream<bool> &done, 
 void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
 
-#pragma HLS INTERFACE ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=axis port=iniq register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=axis port=iq_out register_mode=off depth=13500 //register
+//#pragma HLS INTERFACE ap_ctrl_none port=return
+#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=74752 //register
+#pragma HLS INTERFACE mode=axis port=iniq register_mode=off depth=74752 //register
+#pragma HLS INTERFACE mode=axis port=iq_out register_mode=off depth=200 //register
 #pragma HLS ARRAY_PARTITION variable=iq_out type=complete
 #pragma HLS INTERFACE mode=s_axilite port=monitor
 #pragma HLS ARRAY_PARTITION variable=monitor type=complete
