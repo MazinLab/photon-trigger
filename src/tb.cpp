@@ -78,30 +78,41 @@ bool verify_photons(hls::stream<photon_t> &out, hls::stream<photon_t> &expected)
 	cout<<"Stream has "<<out.size()<<", expected "<<expected.size()<<endl;
 
 	fail|=out.size()!=expected.size();
+	hls::stream<photon_t> outlane[N_PHASE], expectlane[N_PHASE];
 
-	int i=0;
+
 	while (!out.empty() && !expected.empty()) {
-
 		got=out.read();
 		expect=expected.read();
-		if (expect.id!=got.id || expect.phase!=got.phase || expect.time!=got.time)
-			cout<<"Photon "<<i<<": rid="<<expect.id<<endl;
+		outlane[got.id%N_PHASE].write(got);
+		expectlane[expect.id%N_PHASE].write(expect);
+	}
+	int i=0;
 
-		if (expect.id!=got.id ) {
-			cout<<" id mismatch "<<got.id<<" is not "<<expect.id<<endl;
-			fail=true;
-		}
+	for (int i=0;i<N_PHASE;i++) {
+		while (!outlane[i].empty() && !expectlane[i].empty()) {
 
-		if (expect.phase!=got.phase ) {
-			cout<<" phase mismatch:"<<got.phase<<" is not "<<expect.phase<<endl;
-			fail=true;
-		}
+			got=outlane[i].read();
+			expect=expectlane[i].read();
+			if (expect.id!=got.id || expect.phase!=got.phase || expect.time!=got.time)
+				cout<<"Photon "<<i<<": rid="<<expect.id<<endl;
 
-		if (expect.time!=got.time) {
-			cout<<" time mismatch "<<got.time<<" is not "<<expect.time<<endl;
-			fail=true;
+			if (expect.id!=got.id ) {
+				cout<<" id mismatch "<<got.id<<" is not "<<expect.id<<endl;
+				fail=true;
+			}
+
+			if (expect.phase!=got.phase ) {
+				cout<<" phase mismatch:"<<got.phase<<" is not "<<expect.phase<<endl;
+				fail=true;
+			}
+
+			if (expect.time!=got.time) {
+				cout<<" time mismatch "<<got.time<<" is not "<<expect.time<<endl;
+				fail=true;
+			}
+			i++;
 		}
-		i++;
 	}
 	return fail;
 }
@@ -269,7 +280,7 @@ bool drive_phase2photon() {
 
 
 		thresh=phases2phaseset(thresholds[group]).phase[lane];
-		phase=phasedat[samp];
+		phase=group<2 ? phasedat[samp]: 0;
 
 		tmp.phase[lane]=phase;
 
@@ -310,9 +321,10 @@ bool drive_phase2photon() {
 			cout<<". Thresh is "<<thresh;
 			cout<<" Trigger event: "<<trigv[lane]<<" Holdoff counter: "<<holdoffctr[group][lane]<<endl;
 
-		    cout<<"  EXPECT Photon: rid="<<phot.id<<" "<<phot.phase<<" at "<<phot.time<<endl;
+		    //cout<<"  EXPECT Photon: rid="<<phot.id<<" "<<phot.phase<<" at "<<phot.time<<endl;
 			}
 		}
+		if (trigv[lane]) {cout<<"  EXPECT Photon: rid="<<phot.id<<" "<<phot.phase<<" at "<<phot.time<<endl;}
 
 		if (trigv[lane]) {
 			photons_gold.write(phot);

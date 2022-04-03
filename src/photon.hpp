@@ -23,7 +23,7 @@ using namespace std;
 #define IQ_BITS 32
 #define N_MONITOR_LOG2 3
 
-typedef ap_uint<40> timestamp_t;
+typedef ap_uint<16> timestamp_t;
 typedef ap_uint<8> group256_t;
 typedef ap_uint<9> group512_t;
 //typedef ap_uint<7> group128_t;
