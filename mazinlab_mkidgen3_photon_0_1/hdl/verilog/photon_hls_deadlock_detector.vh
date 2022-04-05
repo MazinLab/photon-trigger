@@ -86,7 +86,7 @@ end
         .token_out_vec(token_out_vec_0),
         .dl_detect_out(dl_in_vec[0]));
 
-    assign proc_0_data_FIFO_blk[0] = 1'b0 | (~photon_factory_U0.photon_fifo_blk_n) | (~photon_factory_U0.photon_fifo1_blk_n) | (~photon_factory_U0.photon_fifo2_blk_n) | (~photon_factory_U0.photon_fifo3_blk_n) | (~photon_factory_U0.done3_blk_n);
+    assign proc_0_data_FIFO_blk[0] = 1'b0 | (~photon_factory_U0.photon_fifo_blk_n) | (~photon_factory_U0.photon_fifo1_blk_n) | (~photon_factory_U0.photon_fifo2_blk_n) | (~photon_factory_U0.photon_fifo3_blk_n);
     assign proc_0_data_PIPO_blk[0] = 1'b0;
     assign proc_0_start_FIFO_blk[0] = 1'b0 | (~start_for_read_distribute_U0_U.if_full_n & photon_factory_U0.ap_start & ~photon_factory_U0.real_start & (trans_in_cnt_0 == trans_out_cnt_0) & ~start_for_read_distribute_U0_U.if_read);
     assign proc_0_TLF_FIFO_blk[0] = 1'b0;

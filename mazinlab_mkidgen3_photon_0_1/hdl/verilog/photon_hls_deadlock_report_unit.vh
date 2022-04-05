@@ -276,18 +276,6 @@
                                 $fdisplay(fp, "Dependence_Channel_status FULL");
                             end
                         end
-                        if (~photon_factory_U0.done3_blk_n) begin
-                            if (~done_U.if_empty_n) begin
-                                $display("//      Blocked by empty input FIFO 'photon_photon.done_U' written by process 'photon_photon.read_distribute_U0'");
-                                $fdisplay(fp, "Dependence_Channel_path photon_photon.done_U");
-                                $fdisplay(fp, "Dependence_Channel_status EMPTY");
-                            end
-                            else if (~done_U.if_full_n) begin
-                                $display("//      Blocked by full output FIFO 'photon_photon.done_U' read by process 'photon_photon.read_distribute_U0'");
-                                $fdisplay(fp, "Dependence_Channel_path photon_photon.done_U");
-                                $fdisplay(fp, "Dependence_Channel_status FULL");
-                            end
-                        end
                         if (~start_for_read_distribute_U0_U.if_full_n & photon_factory_U0.ap_start & ~photon_factory_U0.real_start & (trans_in_cnt_0 == trans_out_cnt_0) & ~start_for_read_distribute_U0_U.if_read) begin
                             $display("//      Blocked by full output start propagation FIFO 'photon_photon.start_for_read_distribute_U0_U' read by process 'photon_photon.read_distribute_U0',");
                         end

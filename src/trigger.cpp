@@ -21,7 +21,7 @@ void phase_trigger(phase_t phase, threshold_t thresh, interval_t holdoff, previo
 void trigger(hls::stream<phasestream_t> &instream, thresholds_t thresholds[N_PHASEGROUPS],
 			 interval_t holdoff, hls::stream<trigstream_t> &outstream){
 
-#pragma HLS INTERFACE mode=s_axilite port=return
+#pragma HLS INTERFACE mode=s_axilite port=return bundle=control
 #pragma HLS INTERFACE mode=axis port=outstream depth=13500
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
 #pragma HLS INTERFACE mode=s_axilite port=holdoff bundle=control

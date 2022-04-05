@@ -16,18 +16,6 @@ module photon_photon_factory (
         ap_continue,
         ap_idle,
         ap_ready,
-        photon_fifo_din,
-        photon_fifo_full_n,
-        photon_fifo_write,
-        photon_fifo1_din,
-        photon_fifo1_full_n,
-        photon_fifo1_write,
-        photon_fifo2_din,
-        photon_fifo2_full_n,
-        photon_fifo2_write,
-        photon_fifo3_din,
-        photon_fifo3_full_n,
-        photon_fifo3_write,
         start_out,
         start_write,
         instream_TDATA,
@@ -40,14 +28,22 @@ module photon_photon_factory (
         timestamps_V_TDATA,
         timestamps_V_TVALID,
         timestamps_V_TREADY,
-        done3_din,
-        done3_full_n,
-        done3_write
+        photon_fifo_din,
+        photon_fifo_full_n,
+        photon_fifo_write,
+        photon_fifo1_din,
+        photon_fifo1_full_n,
+        photon_fifo1_write,
+        photon_fifo2_din,
+        photon_fifo2_full_n,
+        photon_fifo2_write,
+        photon_fifo3_din,
+        photon_fifo3_full_n,
+        photon_fifo3_write
 );
 
-parameter    ap_ST_fsm_state1 = 3'd1;
-parameter    ap_ST_fsm_pp0_stage0 = 3'd2;
-parameter    ap_ST_fsm_pp0_stage1 = 3'd4;
+parameter    ap_ST_fsm_state1 = 2'd1;
+parameter    ap_ST_fsm_pp0_stage0 = 2'd2;
 
 input   ap_clk;
 input   ap_rst;
@@ -57,18 +53,6 @@ output   ap_done;
 input   ap_continue;
 output   ap_idle;
 output   ap_ready;
-output  [43:0] photon_fifo_din;
-input   photon_fifo_full_n;
-output   photon_fifo_write;
-output  [43:0] photon_fifo1_din;
-input   photon_fifo1_full_n;
-output   photon_fifo1_write;
-output  [43:0] photon_fifo2_din;
-input   photon_fifo2_full_n;
-output   photon_fifo2_write;
-output  [43:0] photon_fifo3_din;
-input   photon_fifo3_full_n;
-output   photon_fifo3_write;
 output   start_out;
 output   start_write;
 input  [63:0] instream_TDATA;
@@ -81,76 +65,70 @@ input  [0:0] instream_TLAST;
 input  [15:0] timestamps_V_TDATA;
 input   timestamps_V_TVALID;
 output   timestamps_V_TREADY;
-output  [0:0] done3_din;
-input   done3_full_n;
-output   done3_write;
+output  [43:0] photon_fifo_din;
+input   photon_fifo_full_n;
+output   photon_fifo_write;
+output  [43:0] photon_fifo1_din;
+input   photon_fifo1_full_n;
+output   photon_fifo1_write;
+output  [43:0] photon_fifo2_din;
+input   photon_fifo2_full_n;
+output   photon_fifo2_write;
+output  [43:0] photon_fifo3_din;
+input   photon_fifo3_full_n;
+output   photon_fifo3_write;
 
-reg ap_done;
 reg ap_idle;
+reg start_write;
+reg instream_TREADY;
 reg photon_fifo_write;
 reg photon_fifo1_write;
 reg photon_fifo2_write;
 reg photon_fifo3_write;
-reg start_write;
-reg instream_TREADY;
-reg done3_write;
 
 reg    real_start;
 reg    start_once_reg;
 reg    ap_done_reg;
-(* fsm_encoding = "none" *) reg   [2:0] ap_CS_fsm;
+(* fsm_encoding = "none" *) reg   [1:0] ap_CS_fsm;
 wire    ap_CS_fsm_state1;
-reg    internal_ap_ready;
-wire   [0:0] tmp_nbreadreq_fu_148_p7;
-wire    ap_CS_fsm_pp0_stage1;
-reg    ap_enable_reg_pp0_iter0;
-reg   [0:0] tmp_12_reg_352;
-reg   [0:0] tmp_13_reg_356;
-reg   [0:0] tmp_14_reg_360;
-reg   [0:0] tmp_15_reg_364;
-reg    ap_block_state3_pp0_stage1_iter0;
-reg    ap_block_pp0_stage1_11001;
 reg    instream_TDATA_blk_n;
 wire    ap_CS_fsm_pp0_stage0;
+reg    ap_enable_reg_pp0_iter0;
 wire    ap_block_pp0_stage0;
 reg    timestamps_V_TDATA_blk_n;
 reg    photon_fifo_blk_n;
-wire    ap_block_pp0_stage1;
-reg    photon_fifo1_blk_n;
-reg    photon_fifo2_blk_n;
-reg    photon_fifo3_blk_n;
-reg    done3_blk_n;
 reg    ap_enable_reg_pp0_iter1;
-reg   [0:0] tmp_reg_368;
-reg   [63:0] tmp_16_reg_330;
+reg   [0:0] tmp_11_reg_338;
+reg    photon_fifo1_blk_n;
+reg   [0:0] tmp_12_reg_342;
+reg    photon_fifo2_blk_n;
+reg   [0:0] tmp_13_reg_346;
+reg    photon_fifo3_blk_n;
+reg   [0:0] tmp_14_reg_350;
+reg   [63:0] tmp_15_reg_316;
 reg    ap_block_state2_pp0_stage0_iter0;
-reg    ap_block_state4_pp0_stage0_iter1;
+reg    ap_block_state3_pp0_stage0_iter1;
 reg    ap_block_pp0_stage0_11001;
-reg   [15:0] tmp_18_reg_338;
-wire   [8:0] trunc_ln223_fu_180_p1;
-reg   [8:0] trunc_ln223_reg_346;
-reg    ap_enable_reg_pp0_iter0_reg;
+reg   [15:0] tmp_17_reg_324;
+wire   [8:0] trunc_ln223_fu_168_p1;
+reg   [8:0] trunc_ln223_reg_332;
 reg    ap_block_state1;
-reg    ap_block_pp0_stage1_subdone;
 reg    ap_block_pp0_stage0_subdone;
-reg    ap_block_pp0_stage1_01001;
 reg    ap_block_pp0_stage0_01001;
-wire   [15:0] trunc_ln174_fu_223_p1;
-wire   [42:0] tmp_s_fu_226_p5;
-wire   [10:0] idbase_V_fu_216_p3;
-wire   [10:0] or_ln223_fu_241_p2;
-wire   [15:0] tmp_4_fu_247_p4;
-wire   [42:0] tmp_1_fu_256_p4;
-wire   [10:0] or_ln223_1_fu_270_p2;
-wire   [15:0] tmp_5_fu_276_p4;
-wire   [42:0] tmp_2_fu_285_p4;
-wire   [10:0] or_ln223_2_fu_299_p2;
-wire   [15:0] tmp_6_fu_305_p4;
-wire   [42:0] tmp_3_fu_314_p4;
-reg   [2:0] ap_NS_fsm;
+wire   [15:0] trunc_ln174_fu_211_p1;
+wire   [42:0] tmp_fu_214_p5;
+wire   [10:0] idbase_V_fu_204_p3;
+wire   [10:0] or_ln223_fu_229_p2;
+wire   [15:0] tmp_3_fu_235_p4;
+wire   [42:0] tmp_s_fu_244_p4;
+wire   [10:0] or_ln223_1_fu_258_p2;
+wire   [15:0] tmp_4_fu_264_p4;
+wire   [42:0] tmp_1_fu_273_p4;
+wire   [10:0] or_ln223_2_fu_287_p2;
+wire   [15:0] tmp_5_fu_293_p4;
+wire   [42:0] tmp_2_fu_302_p4;
+reg   [1:0] ap_NS_fsm;
 reg    ap_ST_fsm_state1_blk;
-reg    ap_idle_pp0_0to0;
-reg    ap_reset_idle_pp0;
 reg    ap_idle_pp0;
 wire    ap_enable_pp0;
 wire    regslice_both_timestamps_V_U_apdone_blk;
@@ -164,9 +142,9 @@ wire    ap_ce_reg;
 initial begin
 #0 start_once_reg = 1'b0;
 #0 ap_done_reg = 1'b0;
-#0 ap_CS_fsm = 3'd1;
+#0 ap_CS_fsm = 2'd1;
+#0 ap_enable_reg_pp0_iter0 = 1'b0;
 #0 ap_enable_reg_pp0_iter1 = 1'b0;
-#0 ap_enable_reg_pp0_iter0_reg = 1'b0;
 end
 
 photon_regslice_both #(
@@ -193,22 +171,10 @@ end
 
 always @ (posedge ap_clk) begin
     if (ap_rst == 1'b1) begin
-        ap_done_reg <= 1'b0;
+        ap_enable_reg_pp0_iter0 <= 1'b0;
     end else begin
-        if ((ap_continue == 1'b1)) begin
-            ap_done_reg <= 1'b0;
-        end else if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0) & (tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1))) begin
-            ap_done_reg <= 1'b1;
-        end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (ap_rst == 1'b1) begin
-        ap_enable_reg_pp0_iter0_reg <= 1'b0;
-    end else begin
-        if ((1'b1 == ap_CS_fsm_pp0_stage0)) begin
-            ap_enable_reg_pp0_iter0_reg <= real_start;
+        if ((~((real_start == 1'b0) | (ap_done_reg == 1'b1)) & (1'b1 == ap_CS_fsm_state1))) begin
+            ap_enable_reg_pp0_iter0 <= 1'b1;
         end
     end
 end
@@ -217,7 +183,7 @@ always @ (posedge ap_clk) begin
     if (ap_rst == 1'b1) begin
         ap_enable_reg_pp0_iter1 <= 1'b0;
     end else begin
-        if ((((1'b0 == ap_block_pp0_stage0_subdone) & (ap_enable_reg_pp0_iter0 == 1'b0) & (1'b1 == ap_CS_fsm_pp0_stage0)) | ((1'b0 == ap_block_pp0_stage1_subdone) & (1'b1 == ap_CS_fsm_pp0_stage1)))) begin
+        if ((1'b0 == ap_block_pp0_stage0_subdone)) begin
             ap_enable_reg_pp0_iter1 <= ap_enable_reg_pp0_iter0;
         end else if ((~((real_start == 1'b0) | (ap_done_reg == 1'b1)) & (1'b1 == ap_CS_fsm_state1))) begin
             ap_enable_reg_pp0_iter1 <= 1'b0;
@@ -229,9 +195,9 @@ always @ (posedge ap_clk) begin
     if (ap_rst == 1'b1) begin
         start_once_reg <= 1'b0;
     end else begin
-        if (((real_start == 1'b1) & (internal_ap_ready == 1'b0))) begin
+        if (((real_start == 1'b1) & (1'b0 == 1'b0))) begin
             start_once_reg <= 1'b1;
-        end else if ((internal_ap_ready == 1'b1)) begin
+        end else if ((1'b1 == 1'b0)) begin
             start_once_reg <= 1'b0;
         end
     end
@@ -239,19 +205,13 @@ end
 
 always @ (posedge ap_clk) begin
     if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-        tmp_12_reg_352 <= instream_TUSER[32'd9];
-        tmp_13_reg_356 <= instream_TUSER[32'd10];
-        tmp_14_reg_360 <= instream_TUSER[32'd11];
-        tmp_15_reg_364 <= instream_TUSER[32'd12];
-        tmp_16_reg_330 <= instream_TDATA;
-        tmp_18_reg_338 <= timestamps_V_TDATA_int_regslice;
-        trunc_ln223_reg_346 <= trunc_ln223_fu_180_p1;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
-        tmp_reg_368 <= tmp_nbreadreq_fu_148_p7;
+        tmp_11_reg_338 <= instream_TUSER[32'd9];
+        tmp_12_reg_342 <= instream_TUSER[32'd10];
+        tmp_13_reg_346 <= instream_TUSER[32'd11];
+        tmp_14_reg_350 <= instream_TUSER[32'd12];
+        tmp_15_reg_316 <= instream_TDATA;
+        tmp_17_reg_324 <= timestamps_V_TDATA_int_regslice;
+        trunc_ln223_reg_332 <= trunc_ln223_fu_168_p1;
     end
 end
 
@@ -264,22 +224,6 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0) & (tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1))) begin
-        ap_done = 1'b1;
-    end else begin
-        ap_done = ap_done_reg;
-    end
-end
-
-always @ (*) begin
-    if ((1'b1 == ap_CS_fsm_pp0_stage0)) begin
-        ap_enable_reg_pp0_iter0 = real_start;
-    end else begin
-        ap_enable_reg_pp0_iter0 = ap_enable_reg_pp0_iter0_reg;
-    end
-end
-
-always @ (*) begin
     if (((real_start == 1'b0) & (1'b1 == ap_CS_fsm_state1))) begin
         ap_idle = 1'b1;
     end else begin
@@ -288,42 +232,10 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((ap_enable_reg_pp0_iter0 == 1'b0) & (ap_enable_reg_pp0_iter1 == 1'b0))) begin
+    if (((ap_enable_reg_pp0_iter1 == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b0))) begin
         ap_idle_pp0 = 1'b1;
     end else begin
         ap_idle_pp0 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if ((ap_enable_reg_pp0_iter0 == 1'b0)) begin
-        ap_idle_pp0_0to0 = 1'b1;
-    end else begin
-        ap_idle_pp0_0to0 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((real_start == 1'b0) & (ap_idle_pp0_0to0 == 1'b1))) begin
-        ap_reset_idle_pp0 = 1'b1;
-    end else begin
-        ap_reset_idle_pp0 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0) & (tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1))) begin
-        done3_blk_n = done3_full_n;
-    end else begin
-        done3_blk_n = 1'b1;
-    end
-end
-
-always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0) & (tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1))) begin
-        done3_write = 1'b1;
-    end else begin
-        done3_write = 1'b0;
     end
 end
 
@@ -344,15 +256,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (tmp_nbreadreq_fu_148_p7 == 1'd0) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
-        internal_ap_ready = 1'b1;
-    end else begin
-        internal_ap_ready = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1) & (tmp_13_reg_356 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_12_reg_342 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo1_blk_n = photon_fifo1_full_n;
     end else begin
         photon_fifo1_blk_n = 1'b1;
@@ -360,7 +264,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (tmp_13_reg_356 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_12_reg_342 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo1_write = 1'b1;
     end else begin
         photon_fifo1_write = 1'b0;
@@ -368,7 +272,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1) & (tmp_14_reg_360 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_13_reg_346 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo2_blk_n = photon_fifo2_full_n;
     end else begin
         photon_fifo2_blk_n = 1'b1;
@@ -376,7 +280,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (tmp_14_reg_360 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_13_reg_346 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo2_write = 1'b1;
     end else begin
         photon_fifo2_write = 1'b0;
@@ -384,7 +288,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1) & (tmp_15_reg_364 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_14_reg_350 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo3_blk_n = photon_fifo3_full_n;
     end else begin
         photon_fifo3_blk_n = 1'b1;
@@ -392,7 +296,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (tmp_15_reg_364 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_14_reg_350 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo3_write = 1'b1;
     end else begin
         photon_fifo3_write = 1'b0;
@@ -400,7 +304,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1) & (tmp_12_reg_352 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_11_reg_338 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo_blk_n = photon_fifo_full_n;
     end else begin
         photon_fifo_blk_n = 1'b1;
@@ -408,7 +312,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (tmp_12_reg_352 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((tmp_11_reg_338 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         photon_fifo_write = 1'b1;
     end else begin
         photon_fifo_write = 1'b0;
@@ -416,7 +320,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((start_once_reg == 1'b0) & (start_full_n == 1'b0))) begin
+    if (((start_full_n == 1'b0) & (start_once_reg == 1'b0))) begin
         real_start = 1'b0;
     end else begin
         real_start = ap_start;
@@ -457,20 +361,7 @@ always @ (*) begin
             end
         end
         ap_ST_fsm_pp0_stage0 : begin
-            if (((1'b0 == ap_block_pp0_stage0_subdone) & (ap_reset_idle_pp0 == 1'b0))) begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage1;
-            end else if (((1'b0 == ap_block_pp0_stage0_subdone) & (ap_reset_idle_pp0 == 1'b1))) begin
-                ap_NS_fsm = ap_ST_fsm_state1;
-            end else begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            end
-        end
-        ap_ST_fsm_pp0_stage1 : begin
-            if ((1'b0 == ap_block_pp0_stage1_subdone)) begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            end else begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage1;
-            end
+            ap_NS_fsm = ap_ST_fsm_pp0_stage0;
         end
         default : begin
             ap_NS_fsm = 'bx;
@@ -480,36 +371,20 @@ end
 
 assign ap_CS_fsm_pp0_stage0 = ap_CS_fsm[32'd1];
 
-assign ap_CS_fsm_pp0_stage1 = ap_CS_fsm[32'd2];
-
 assign ap_CS_fsm_state1 = ap_CS_fsm[32'd0];
 
 assign ap_block_pp0_stage0 = ~(1'b1 == 1'b1);
 
 always @ (*) begin
-    ap_block_pp0_stage0_01001 = (((ap_enable_reg_pp0_iter0 == 1'b1) & ((instream_TVALID == 1'b0) | (timestamps_V_TVALID_int_regslice == 1'b0))) | ((tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (done3_full_n == 1'b0)));
+    ap_block_pp0_stage0_01001 = (((ap_enable_reg_pp0_iter1 == 1'b1) & (((tmp_14_reg_350 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_13_reg_346 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_12_reg_342 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_11_reg_338 == 1'd1) & (photon_fifo_full_n == 1'b0)))) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((instream_TVALID == 1'b0) | (timestamps_V_TVALID_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage0_11001 = (((ap_enable_reg_pp0_iter0 == 1'b1) & ((instream_TVALID == 1'b0) | (timestamps_V_TVALID_int_regslice == 1'b0))) | ((tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (done3_full_n == 1'b0)));
+    ap_block_pp0_stage0_11001 = (((ap_enable_reg_pp0_iter1 == 1'b1) & (((tmp_14_reg_350 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_13_reg_346 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_12_reg_342 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_11_reg_338 == 1'd1) & (photon_fifo_full_n == 1'b0)))) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((instream_TVALID == 1'b0) | (timestamps_V_TVALID_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage0_subdone = (((ap_enable_reg_pp0_iter0 == 1'b1) & ((instream_TVALID == 1'b0) | (timestamps_V_TVALID_int_regslice == 1'b0))) | ((tmp_reg_368 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (done3_full_n == 1'b0)));
-end
-
-assign ap_block_pp0_stage1 = ~(1'b1 == 1'b1);
-
-always @ (*) begin
-    ap_block_pp0_stage1_01001 = ((ap_done_reg == 1'b1) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (((tmp_15_reg_364 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_14_reg_360 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_13_reg_356 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_12_reg_352 == 1'd1) & (photon_fifo_full_n == 1'b0)))));
-end
-
-always @ (*) begin
-    ap_block_pp0_stage1_11001 = ((ap_done_reg == 1'b1) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (((tmp_15_reg_364 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_14_reg_360 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_13_reg_356 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_12_reg_352 == 1'd1) & (photon_fifo_full_n == 1'b0)))));
-end
-
-always @ (*) begin
-    ap_block_pp0_stage1_subdone = ((ap_done_reg == 1'b1) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (((tmp_15_reg_364 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_14_reg_360 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_13_reg_356 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_12_reg_352 == 1'd1) & (photon_fifo_full_n == 1'b0)))));
+    ap_block_pp0_stage0_subdone = (((ap_enable_reg_pp0_iter1 == 1'b1) & (((tmp_14_reg_350 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_13_reg_346 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_12_reg_342 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_11_reg_338 == 1'd1) & (photon_fifo_full_n == 1'b0)))) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((instream_TVALID == 1'b0) | (timestamps_V_TVALID_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
@@ -521,57 +396,55 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    ap_block_state3_pp0_stage1_iter0 = (((tmp_15_reg_364 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_14_reg_360 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_13_reg_356 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_12_reg_352 == 1'd1) & (photon_fifo_full_n == 1'b0)));
+    ap_block_state3_pp0_stage0_iter1 = (((tmp_14_reg_350 == 1'd1) & (photon_fifo3_full_n == 1'b0)) | ((tmp_13_reg_346 == 1'd1) & (photon_fifo2_full_n == 1'b0)) | ((tmp_12_reg_342 == 1'd1) & (photon_fifo1_full_n == 1'b0)) | ((tmp_11_reg_338 == 1'd1) & (photon_fifo_full_n == 1'b0)));
 end
 
-always @ (*) begin
-    ap_block_state4_pp0_stage0_iter1 = ((tmp_reg_368 == 1'd0) & (done3_full_n == 1'b0));
-end
+assign ap_done = ap_done_reg;
 
 assign ap_enable_pp0 = (ap_idle_pp0 ^ 1'b1);
 
-assign ap_ready = internal_ap_ready;
+assign ap_ready = 1'b0;
 
-assign done3_din = 1'd1;
+assign idbase_V_fu_204_p3 = {{trunc_ln223_reg_332}, {2'd0}};
 
-assign idbase_V_fu_216_p3 = {{trunc_ln223_reg_346}, {2'd0}};
+assign or_ln223_1_fu_258_p2 = (idbase_V_fu_204_p3 | 11'd2);
 
-assign or_ln223_1_fu_270_p2 = (idbase_V_fu_216_p3 | 11'd2);
+assign or_ln223_2_fu_287_p2 = (idbase_V_fu_204_p3 | 11'd3);
 
-assign or_ln223_2_fu_299_p2 = (idbase_V_fu_216_p3 | 11'd3);
+assign or_ln223_fu_229_p2 = (idbase_V_fu_204_p3 | 11'd1);
 
-assign or_ln223_fu_241_p2 = (idbase_V_fu_216_p3 | 11'd1);
+assign photon_fifo1_din = tmp_s_fu_244_p4;
 
-assign photon_fifo1_din = tmp_1_fu_256_p4;
+assign photon_fifo2_din = tmp_1_fu_273_p4;
 
-assign photon_fifo2_din = tmp_2_fu_285_p4;
+assign photon_fifo3_din = tmp_2_fu_302_p4;
 
-assign photon_fifo3_din = tmp_3_fu_314_p4;
-
-assign photon_fifo_din = tmp_s_fu_226_p5;
+assign photon_fifo_din = tmp_fu_214_p5;
 
 assign start_out = real_start;
 
 assign timestamps_V_TREADY = regslice_both_timestamps_V_U_ack_in;
 
-assign tmp_1_fu_256_p4 = {{{or_ln223_fu_241_p2}, {tmp_4_fu_247_p4}}, {tmp_18_reg_338}};
+assign tmp_1_fu_273_p4 = {{{or_ln223_1_fu_258_p2}, {tmp_4_fu_264_p4}}, {tmp_17_reg_324}};
 
-assign tmp_2_fu_285_p4 = {{{or_ln223_1_fu_270_p2}, {tmp_5_fu_276_p4}}, {tmp_18_reg_338}};
+assign tmp_2_fu_302_p4 = {{{or_ln223_2_fu_287_p2}, {tmp_5_fu_293_p4}}, {tmp_17_reg_324}};
 
-assign tmp_3_fu_314_p4 = {{{or_ln223_2_fu_299_p2}, {tmp_6_fu_305_p4}}, {tmp_18_reg_338}};
+assign tmp_3_fu_235_p4 = {{tmp_15_reg_316[31:16]}};
 
-assign tmp_4_fu_247_p4 = {{tmp_16_reg_330[31:16]}};
+assign tmp_4_fu_264_p4 = {{tmp_15_reg_316[47:32]}};
 
-assign tmp_5_fu_276_p4 = {{tmp_16_reg_330[47:32]}};
+assign tmp_5_fu_293_p4 = {{tmp_15_reg_316[63:48]}};
 
-assign tmp_6_fu_305_p4 = {{tmp_16_reg_330[63:48]}};
+assign tmp_fu_214_p5 = {{{{trunc_ln223_reg_332}, {2'd0}}, {trunc_ln174_fu_211_p1}}, {tmp_17_reg_324}};
 
-assign tmp_nbreadreq_fu_148_p7 = instream_TVALID;
+assign tmp_s_fu_244_p4 = {{{or_ln223_fu_229_p2}, {tmp_3_fu_235_p4}}, {tmp_17_reg_324}};
 
-assign tmp_s_fu_226_p5 = {{{{trunc_ln223_reg_346}, {2'd0}}, {trunc_ln174_fu_223_p1}}, {tmp_18_reg_338}};
+assign trunc_ln174_fu_211_p1 = tmp_15_reg_316[15:0];
 
-assign trunc_ln174_fu_223_p1 = tmp_16_reg_330[15:0];
+assign trunc_ln223_fu_168_p1 = instream_TUSER[8:0];
 
-assign trunc_ln223_fu_180_p1 = instream_TUSER[8:0];
+always @ (posedge ap_clk) begin
+    ap_done_reg <= 1'b0;
+end
 
 endmodule //photon_photon_factory

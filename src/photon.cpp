@@ -24,13 +24,13 @@
 
 
 void photon_factory(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t> &timestamp,
-		hls::stream<photon_t> photon_fifo[N_PHASE], hls::stream<bool> &done) {
+		hls::stream<photon_t> photon_fifo[N_PHASE]){//, hls::stream<bool> &done) {
 #pragma HLS ARRAY_PARTITION dim=1 type=complete variable=photon_fifo
-//#pragma HLS INTERFACE ap_ctrl_none port=return
-//#pragma HLS PIPELINE II=1
+#pragma HLS INTERFACE ap_ctrl_none port=return
+
 
 	bool finished=false;
-	group: while (!finished){
+	group: while (true){//!finished){
 #pragma HLS PIPELINE II=1 REWIND
 		trigstream_t dataset;
 		reschan_t idbase;
@@ -59,19 +59,19 @@ void photon_factory(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t
 		}
 		finished=instream.empty();
 	}
-	done.write(true);
+//	done.write(true);
 }
 
 
-void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<bool> &done, hls::stream<photon_t> &out) {
-//#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<photon_t> &out) { //, hls::stream<bool> &done
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS ARRAY_PARTITION variable = istrms complete
 
 //	ap_uint<N_PHASE_LOG2> n=0; // current arbitration grant
 	ap_uint<N_PHASE> readable=-1;
 	bool finished=false, skipdone=false;
 //	while(istrms[0].empty());
-	distin: while (!finished) {
+	distin: while (true){//!finished) {
 	#pragma HLS pipeline II = 4 //rewind
 		//determine which streams have data
 //		canread2: for (int i = 0; i < N_PHASE; i++) { //I had this as ++i wont that skip [0] forever???
@@ -90,8 +90,8 @@ void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<bool> &d
 				out.write(photon);
 			}
 		}
-		if (!skipdone)
-			done.read_nb(finished);
+//		if (!skipdone)
+//			done.read_nb(finished);
 //		if (readable>0){
 			//Just go round robin 512 resonators per lane at 5000 cps gives a maximum photon rate of 2.56 Mphot
 			//round robin each lane will be cleared at 128Mphot
@@ -110,41 +110,9 @@ void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<bool> &d
 }
 
 
-void read_distribute(hls::stream<photon_t> istrms[N_PHASE], hls::stream<bool> &done, photon_t *out[N_PHASE]) {
-//#pragma HLS INTERFACE mode=ap_ctrl_none port=return
-#pragma HLS ARRAY_PARTITION variable = istrms complete
-
-	ap_uint<N_PHASE_LOG2> n=0; // current arbitration grant
-	ap_uint<N_PHASE> readable;
-	bool finished=false;
-	unsigned short ndx[N_PHASE]={0,0,0,0};
-
-	distin: while (!finished) {
-	#pragma HLS pipeline II = 1 //rewind
-		//determine which streams have data
-		canread2: for (int i = 0; i < N_PHASE; i++) { //I had this as ++i wont that skip [0] forever???
-		#pragma HLS unroll
-			readable[i] = !istrms[i].empty();
-		}
-		if (readable>0){
-			//read from the next stream. next stream is last+1
-			shift: while (!readable[n++]);
-
-			photon_t photon;
-			ap_uint<N_PHASE_LOG2> x;
-			x=n-1;
-			photon=istrms[x].read();
-			out[x][ndx[x]++]=photon;
-		} else {
-			done.read_nb(finished);
-		}
-	}
-}
-
-
 void photon(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t> &timestamps, hls::stream<photon_t> &photons){
 #pragma HLS DATAFLOW
-//#pragma HLS INTERFACE ap_ctrl_none port=return
+#pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=photons depth=6400
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
 #pragma HLS INTERFACE mode=axis port=timestamps depth=13500
@@ -154,45 +122,17 @@ void photon(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t> &times
 #pragma HLS stream variable = photon_fifos depth = 4
 #pragma HLS ARRAY_PARTITION dim=1 type=complete variable=photon_fifos
 
-	hls::stream<bool> done;
-#pragma HLS stream variable = done depth = 2
+//	hls::stream<bool> done;
+//#pragma HLS stream variable = done depth = 2
 
 
-	photon_factory(instream, timestamps, photon_fifos, done);
-
-	#ifndef __SYNTHESIS__
-		cout<<photon_fifos[0].size()<<" "<<photon_fifos[1].size()<<" "<<photon_fifos[2].size()<<" "<<photon_fifos[3].size()<<endl;
-	#endif
-
-	read_distribute(photon_fifos, done, photons);
-}
-
-
-
-void photon_maxi(hls::stream<trigstream_t> &instream, hls::stream<timestamp_t> &timestamps, photon_t *photons[N_PHASE]){
-#pragma HLS DATAFLOW
-//#pragma HLS INTERFACE ap_ctrl_none port=return
-#pragma HLS ARRAY_PARTITION type=complete variable=photons
-#pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=64 port=photons offset=slave
-#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=axis port=timestamps depth=13500
-
-	hls::stream<photon_t> photon_fifos[N_PHASE];
-#pragma HLS AGGREGATE compact=bit variable=photon_fifos
-#pragma HLS stream variable = photon_fifos depth = 8 //at 5k counts per second uniformly distributed the odds of getting photons in 8 consecutive resonators is ~2e-7%
-#pragma HLS ARRAY_PARTITION dim=1 type=complete variable=photon_fifos
-
-	hls::stream<bool> done;
-#pragma HLS stream variable = done depth = 2
-
-
-	photon_factory(instream, timestamps, photon_fifos, done);
+	photon_factory(instream, timestamps, photon_fifos);//, done);
 
 	#ifndef __SYNTHESIS__
 		cout<<photon_fifos[0].size()<<" "<<photon_fifos[1].size()<<" "<<photon_fifos[2].size()<<" "<<photon_fifos[3].size()<<endl;
 	#endif
 
-	read_distribute(photon_fifos, done, photons);
+	read_distribute(photon_fifos, photons); //done
 }
 
 

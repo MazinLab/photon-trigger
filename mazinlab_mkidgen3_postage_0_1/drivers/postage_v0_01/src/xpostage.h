@@ -80,6 +80,12 @@ int XPostage_Initialize(XPostage *InstancePtr, const char* InstanceName);
 int XPostage_Release(XPostage *InstancePtr);
 #endif
 
+void XPostage_Start(XPostage *InstancePtr);
+u32 XPostage_IsDone(XPostage *InstancePtr);
+u32 XPostage_IsIdle(XPostage *InstancePtr);
+u32 XPostage_IsReady(XPostage *InstancePtr);
+void XPostage_EnableAutoRestart(XPostage *InstancePtr);
+void XPostage_DisableAutoRestart(XPostage *InstancePtr);
 
 void XPostage_Set_monitor_0(XPostage *InstancePtr, u32 Data);
 u32 XPostage_Get_monitor_0(XPostage *InstancePtr);
@@ -97,6 +103,14 @@ void XPostage_Set_monitor_6(XPostage *InstancePtr, u32 Data);
 u32 XPostage_Get_monitor_6(XPostage *InstancePtr);
 void XPostage_Set_monitor_7(XPostage *InstancePtr, u32 Data);
 u32 XPostage_Get_monitor_7(XPostage *InstancePtr);
+
+void XPostage_InterruptGlobalEnable(XPostage *InstancePtr);
+void XPostage_InterruptGlobalDisable(XPostage *InstancePtr);
+void XPostage_InterruptEnable(XPostage *InstancePtr, u32 Mask);
+void XPostage_InterruptDisable(XPostage *InstancePtr, u32 Mask);
+void XPostage_InterruptClear(XPostage *InstancePtr, u32 Mask);
+u32 XPostage_InterruptGetEnabled(XPostage *InstancePtr);
+u32 XPostage_InterruptGetStatus(XPostage *InstancePtr);
 
 #ifdef __cplusplus
 }

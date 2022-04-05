@@ -28,7 +28,7 @@ end entity;
 
 architecture rtl of postage_iqprereg_Array_0_core is
 type SRL_ARRAY is array (0 to DEPTH - 1) of std_logic_vector(DATA_WIDTH-1 downto 0);
-signal ShiftRegMem : SRL_ARRAY := (others=>(others=>'0'));
+signal ShiftRegMem : SRL_ARRAY;
 
 begin
 p_shift: process (clk)

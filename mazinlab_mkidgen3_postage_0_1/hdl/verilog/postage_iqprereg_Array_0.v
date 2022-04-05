@@ -25,11 +25,6 @@ output [DATA_WIDTH-1:0] dout;
 reg[DATA_WIDTH-1:0] ShiftRegMem[0:DEPTH-1];
 integer i;
 
-initial
-begin
-    for(i=0;i<DEPTH;i=i+1)
-        ShiftRegMem[i] <= {DATA_WIDTH{1'b0}};
-end
 
 always @ (posedge clk)
 begin

@@ -15,7 +15,6 @@ module photon_read_distribute (
         ap_continue,
         ap_idle,
         ap_ready,
-        photons_V_TREADY,
         istrms_dout,
         istrms_empty_n,
         istrms_read,
@@ -28,17 +27,16 @@ module photon_read_distribute (
         istrms3_dout,
         istrms3_empty_n,
         istrms3_read,
-        done3_dout,
-        done3_empty_n,
-        done3_read,
         photons_V_TDATA,
-        photons_V_TVALID
+        photons_V_TVALID,
+        photons_V_TREADY
 );
 
-parameter    ap_ST_fsm_pp0_stage0 = 4'd1;
-parameter    ap_ST_fsm_pp0_stage1 = 4'd2;
-parameter    ap_ST_fsm_pp0_stage2 = 4'd4;
-parameter    ap_ST_fsm_pp0_stage3 = 4'd8;
+parameter    ap_ST_fsm_state1 = 5'd1;
+parameter    ap_ST_fsm_pp0_stage0 = 5'd2;
+parameter    ap_ST_fsm_pp0_stage1 = 5'd4;
+parameter    ap_ST_fsm_pp0_stage2 = 5'd8;
+parameter    ap_ST_fsm_pp0_stage3 = 5'd16;
 
 input   ap_clk;
 input   ap_rst;
@@ -47,7 +45,6 @@ output   ap_done;
 input   ap_continue;
 output   ap_idle;
 output   ap_ready;
-input   photons_V_TREADY;
 input  [43:0] istrms_dout;
 input   istrms_empty_n;
 output   istrms_read;
@@ -60,137 +57,93 @@ output   istrms2_read;
 input  [43:0] istrms3_dout;
 input   istrms3_empty_n;
 output   istrms3_read;
-input  [0:0] done3_dout;
-input   done3_empty_n;
-output   done3_read;
 output  [47:0] photons_V_TDATA;
 output   photons_V_TVALID;
+input   photons_V_TREADY;
 
 reg ap_idle;
 reg istrms_read;
 reg istrms1_read;
 reg istrms2_read;
 reg istrms3_read;
-reg done3_read;
 
-(* fsm_encoding = "none" *) reg   [3:0] ap_CS_fsm;
-wire    ap_CS_fsm_pp0_stage0;
-reg    ap_enable_reg_pp0_iter0;
-reg    ap_enable_reg_pp0_iter1;
-reg    ap_idle_pp0;
-wire    ap_CS_fsm_pp0_stage3;
-reg   [0:0] read_1_reg_262;
-reg   [0:0] read_2_reg_272;
-reg    ap_block_state4_pp0_stage3_iter0;
-reg    ap_block_state4_io;
-wire    regslice_both_photons_V_U_apdone_blk;
-wire    ap_loop_exit_ready;
-reg    ap_loop_exit_ready_pp0_iter1_reg;
-reg    ap_block_pp0_stage3_subdone;
-wire   [0:0] ap_phi_mux_skipdone_2_phi_fu_126_p4;
-wire   [0:0] finished_fu_223_p2;
-reg    ap_condition_exit_pp0_iter0_stage3;
-reg    ap_ready_int;
+reg    ap_done_reg;
+(* fsm_encoding = "none" *) reg   [4:0] ap_CS_fsm;
+wire    ap_CS_fsm_state1;
 reg    photons_V_TDATA_blk_n;
 wire    ap_CS_fsm_pp0_stage1;
+reg    ap_enable_reg_pp0_iter0;
 wire    ap_block_pp0_stage1;
-reg   [0:0] read_reg_252;
+reg   [0:0] read_reg_172;
 wire    ap_CS_fsm_pp0_stage2;
 wire    ap_block_pp0_stage2;
+reg   [0:0] read_1_reg_187;
+wire    ap_CS_fsm_pp0_stage3;
 wire    ap_block_pp0_stage3;
+reg   [0:0] read_2_reg_197;
+wire    ap_CS_fsm_pp0_stage0;
+reg    ap_enable_reg_pp0_iter1;
 wire    ap_block_pp0_stage0;
-reg   [0:0] read_3_reg_282;
-reg   [0:0] skipdone_2_reg_122;
-wire   [0:0] read_fu_138_p1;
-reg    ap_done_reg;
-reg    ap_block_state1_pp0_stage0_iter0;
-reg    ap_block_state5_pp0_stage0_iter1;
-reg    ap_block_state5_io;
-reg    ap_block_pp0_stage0_11001;
-wire   [47:0] photon_1_fu_150_p3;
-reg   [47:0] photon_1_reg_256;
-wire   [0:0] read_1_fu_158_p1;
-reg    ap_block_state2_pp0_stage1_iter0;
-reg    ap_block_state2_io;
-reg    ap_block_state6_pp0_stage1_iter1;
+reg   [0:0] read_3_reg_207;
+wire    ap_block_state2_pp0_stage0_iter0;
+reg    ap_block_state6_pp0_stage0_iter1;
 reg    ap_block_state6_io;
-reg    ap_block_pp0_stage1_11001;
-wire   [47:0] photon_3_fu_170_p3;
-reg   [47:0] photon_3_reg_266;
-wire   [0:0] read_2_fu_177_p1;
-reg    ap_block_state3_pp0_stage2_iter0;
+reg    ap_block_pp0_stage0_11001;
+reg   [43:0] tmp_1_reg_177;
+wire   [47:0] tmp_fu_89_p1;
+reg    ap_block_state3_pp0_stage1_iter0;
 reg    ap_block_state3_io;
+reg    ap_block_state7_pp0_stage1_iter1;
+reg    ap_block_state7_io;
+reg    ap_block_pp0_stage1_11001;
+wire   [47:0] photon_2_fu_115_p3;
+reg   [47:0] photon_2_reg_191;
+reg    ap_block_state4_pp0_stage2_iter0;
+reg    ap_block_state4_io;
 reg    ap_block_pp0_stage2_11001;
-wire   [47:0] photon_5_fu_189_p3;
-reg   [47:0] photon_5_reg_276;
-wire   [0:0] read_3_fu_196_p1;
+wire   [47:0] photon_4_fu_135_p3;
+reg   [47:0] photon_4_reg_201;
+reg    ap_block_state5_pp0_stage3_iter0;
+reg    ap_block_state5_io;
 reg    ap_block_pp0_stage3_11001;
-wire   [47:0] photon_7_fu_208_p3;
-reg   [47:0] photon_7_reg_286;
-reg   [0:0] finished_reg_291;
-reg    ap_enable_reg_pp0_iter0_reg;
-reg    ap_block_pp0_stage0_subdone;
-reg    ap_condition_exit_pp0_iter1_stage0;
-reg    ap_idle_pp0_0to0;
-reg    ap_block_pp0_stage1_subdone;
-reg   [0:0] ap_phi_reg_pp0_iter0_skipdone_reg_95;
-reg   [0:0] ap_phi_reg_pp0_iter0_skipdone_1_reg_109;
-reg   [0:0] ap_phi_reg_pp0_iter0_skipdone_2_reg_122;
-reg   [47:0] photon_1_1_fu_54;
-wire   [0:0] istrms_read_nbread_fu_58_p2_0;
+wire   [47:0] photon_6_fu_154_p3;
+reg   [47:0] photon_6_reg_211;
+reg    ap_block_state1;
+reg    ap_block_pp0_stage3_subdone;
+reg   [47:0] photon_1_fu_46;
+wire   [0:0] istrms_read_nbread_fu_50_p2_0;
 reg    ap_block_pp0_stage1_01001;
 reg    ap_block_pp0_stage2_01001;
 reg    ap_block_pp0_stage3_01001;
 reg    ap_block_pp0_stage0_01001;
-wire   [0:0] istrms1_read_nbread_fu_71_p2_0;
-wire   [0:0] istrms2_read_nbread_fu_77_p2_0;
-wire   [0:0] istrms3_read_nbread_fu_83_p2_0;
-wire   [0:0] done3_read_nbread_fu_89_p2_0;
-wire   [47:0] tmp_fu_146_p1;
-wire   [47:0] tmp_9_fu_166_p1;
-wire   [47:0] tmp_10_fu_185_p1;
-wire   [47:0] tmp_11_fu_204_p1;
-wire    ap_continue_int;
-reg    ap_done_int;
-reg   [3:0] ap_NS_fsm;
-reg    ap_idle_pp0_1to1;
-reg    ap_done_pending_pp0;
+wire   [0:0] istrms1_read_nbread_fu_63_p2_0;
+wire   [0:0] istrms2_read_nbread_fu_69_p2_0;
+wire   [0:0] istrms3_read_nbread_fu_75_p2_0;
+wire   [47:0] tmp_8_fu_104_p1;
+wire   [47:0] select_ln164_fu_108_p3;
+wire   [47:0] tmp_9_fu_131_p1;
+wire   [47:0] tmp_10_fu_150_p1;
+reg   [4:0] ap_NS_fsm;
+reg    ap_ST_fsm_state1_blk;
+reg    ap_block_pp0_stage0_subdone;
+reg    ap_block_pp0_stage1_subdone;
 reg    ap_block_pp0_stage2_subdone;
+reg    ap_idle_pp0;
 wire    ap_enable_pp0;
-wire    ap_start_int;
-wire    ap_loop_init;
+wire    regslice_both_photons_V_U_apdone_blk;
 reg   [47:0] photons_V_TDATA_int_regslice;
 reg    photons_V_TVALID_int_regslice;
 wire    photons_V_TREADY_int_regslice;
 wire    regslice_both_photons_V_U_vld_out;
-reg    ap_condition_251;
-reg    ap_condition_258;
-reg    ap_condition_248;
 wire    ap_ce_reg;
 
 // power-on initialization
 initial begin
-#0 ap_CS_fsm = 4'd1;
-#0 ap_enable_reg_pp0_iter1 = 1'b0;
 #0 ap_done_reg = 1'b0;
-#0 ap_enable_reg_pp0_iter0_reg = 1'b0;
+#0 ap_CS_fsm = 5'd1;
+#0 ap_enable_reg_pp0_iter0 = 1'b0;
+#0 ap_enable_reg_pp0_iter1 = 1'b0;
 end
-
-photon_flow_control_loop_pipe flow_control_loop_pipe_U(
-    .ap_clk(ap_clk),
-    .ap_rst(ap_rst),
-    .ap_start(ap_start),
-    .ap_ready(ap_ready),
-    .ap_done(ap_done),
-    .ap_start_int(ap_start_int),
-    .ap_loop_init(ap_loop_init),
-    .ap_ready_int(ap_ready_int),
-    .ap_loop_exit_ready(ap_condition_exit_pp0_iter0_stage3),
-    .ap_loop_exit_done(ap_done_int),
-    .ap_continue_int(ap_continue_int),
-    .ap_done_int(ap_done_int),
-    .ap_continue(ap_continue)
-);
 
 photon_regslice_both #(
     .DataWidth( 48 ))
@@ -208,7 +161,7 @@ regslice_both_photons_V_U(
 
 always @ (posedge ap_clk) begin
     if (ap_rst == 1'b1) begin
-        ap_CS_fsm <= ap_ST_fsm_pp0_stage0;
+        ap_CS_fsm <= ap_ST_fsm_state1;
     end else begin
         ap_CS_fsm <= ap_NS_fsm;
     end
@@ -216,22 +169,10 @@ end
 
 always @ (posedge ap_clk) begin
     if (ap_rst == 1'b1) begin
-        ap_done_reg <= 1'b0;
+        ap_enable_reg_pp0_iter0 <= 1'b0;
     end else begin
-        if ((ap_continue_int == 1'b1)) begin
-            ap_done_reg <= 1'b0;
-        end else if (((1'b0 == ap_block_pp0_stage0_subdone) & (ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-            ap_done_reg <= 1'b1;
-        end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (ap_rst == 1'b1) begin
-        ap_enable_reg_pp0_iter0_reg <= 1'b0;
-    end else begin
-        if ((1'b1 == ap_CS_fsm_pp0_stage0)) begin
-            ap_enable_reg_pp0_iter0_reg <= ap_start_int;
+        if ((~((ap_done_reg == 1'b1) | (ap_start == 1'b0)) & (1'b1 == ap_CS_fsm_state1))) begin
+            ap_enable_reg_pp0_iter0 <= 1'b1;
         end
     end
 end
@@ -240,140 +181,58 @@ always @ (posedge ap_clk) begin
     if (ap_rst == 1'b1) begin
         ap_enable_reg_pp0_iter1 <= 1'b0;
     end else begin
-        if ((((1'b0 == ap_block_pp0_stage1_subdone) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1)) | ((ap_idle_pp0_0to0 == 1'b1) & (1'b1 == ap_condition_exit_pp0_iter1_stage0)))) begin
-            ap_enable_reg_pp0_iter1 <= 1'b0;
-        end else if (((1'b0 == ap_block_pp0_stage3_subdone) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
+        if (((1'b0 == ap_block_pp0_stage3_subdone) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
             ap_enable_reg_pp0_iter1 <= ap_enable_reg_pp0_iter0;
+        end else if ((~((ap_done_reg == 1'b1) | (ap_start == 1'b0)) & (1'b1 == ap_CS_fsm_state1))) begin
+            ap_enable_reg_pp0_iter1 <= 1'b0;
         end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((((1'b0 == ap_block_pp0_stage1_subdone) & (ap_loop_exit_ready == 1'b0) & (1'b1 == ap_CS_fsm_pp0_stage1)) | ((ap_idle_pp0_0to0 == 1'b1) & (1'b1 == ap_condition_exit_pp0_iter1_stage0)))) begin
-        ap_loop_exit_ready_pp0_iter1_reg <= 1'b0;
-    end else if (((1'b0 == ap_block_pp0_stage3_11001) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        ap_loop_exit_ready_pp0_iter1_reg <= ap_loop_exit_ready;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_condition_251)) begin
-        if ((read_1_fu_158_p1 == 1'd0)) begin
-            ap_phi_reg_pp0_iter0_skipdone_1_reg_109 <= ap_phi_reg_pp0_iter0_skipdone_reg_95;
-        end else if ((read_1_fu_158_p1 == 1'd1)) begin
-            ap_phi_reg_pp0_iter0_skipdone_1_reg_109 <= 1'd1;
-        end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_condition_258)) begin
-        if ((read_2_fu_177_p1 == 1'd0)) begin
-            ap_phi_reg_pp0_iter0_skipdone_2_reg_122 <= ap_phi_reg_pp0_iter0_skipdone_1_reg_109;
-        end else if ((read_2_fu_177_p1 == 1'd1)) begin
-            ap_phi_reg_pp0_iter0_skipdone_2_reg_122 <= 1'd1;
-        end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_condition_248)) begin
-        if ((read_fu_138_p1 == 1'd0)) begin
-            ap_phi_reg_pp0_iter0_skipdone_reg_95 <= 1'd0;
-        end else if ((read_fu_138_p1 == 1'd1)) begin
-            ap_phi_reg_pp0_iter0_skipdone_reg_95 <= 1'd1;
-        end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((ap_phi_mux_skipdone_2_phi_fu_126_p4 == 1'd0) & (1'b0 == ap_block_pp0_stage3_11001) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        finished_reg_291 <= finished_fu_223_p2;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((((ap_phi_mux_skipdone_2_phi_fu_126_p4 == 1'd0) & (1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((ap_phi_mux_skipdone_2_phi_fu_126_p4 == 1'd1) & (1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (read_3_fu_196_p1 == 1'd1) & (1'b1 == ap_CS_fsm_pp0_stage3)))) begin
-        photon_1_1_fu_54 <= photon_7_fu_208_p3;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-        photon_1_reg_256 <= photon_1_fu_150_p3;
-        read_reg_252 <= istrms_read_nbread_fu_58_p2_0;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage1_11001) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
-        photon_3_reg_266 <= photon_3_fu_170_p3;
-        read_1_reg_262 <= istrms1_read_nbread_fu_71_p2_0;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage2_11001) & (1'b1 == ap_CS_fsm_pp0_stage2))) begin
-        photon_5_reg_276 <= photon_5_fu_189_p3;
-        read_2_reg_272 <= istrms2_read_nbread_fu_77_p2_0;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage3_11001) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        photon_7_reg_286 <= photon_7_fu_208_p3;
-        read_3_reg_282 <= istrms3_read_nbread_fu_83_p2_0;
     end
 end
 
 always @ (posedge ap_clk) begin
     if (((1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        skipdone_2_reg_122 <= ap_phi_reg_pp0_iter0_skipdone_2_reg_122;
+        photon_1_fu_46 <= photon_6_fu_154_p3;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b0 == ap_block_pp0_stage1_11001) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+        photon_2_reg_191 <= photon_2_fu_115_p3;
+        read_1_reg_187 <= istrms1_read_nbread_fu_63_p2_0;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b0 == ap_block_pp0_stage2_11001) & (1'b1 == ap_CS_fsm_pp0_stage2))) begin
+        photon_4_reg_201 <= photon_4_fu_135_p3;
+        read_2_reg_197 <= istrms2_read_nbread_fu_69_p2_0;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b0 == ap_block_pp0_stage3_11001) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
+        photon_6_reg_211 <= photon_6_fu_154_p3;
+        read_3_reg_207 <= istrms3_read_nbread_fu_75_p2_0;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        read_reg_172 <= istrms_read_nbread_fu_50_p2_0;
+        tmp_1_reg_177 <= istrms_dout;
     end
 end
 
 always @ (*) begin
-    if (((finished_fu_223_p2 == 1'd1) & (ap_phi_mux_skipdone_2_phi_fu_126_p4 == 1'd0) & (1'b0 == ap_block_pp0_stage3_subdone) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        ap_condition_exit_pp0_iter0_stage3 = 1'b1;
+    if (((ap_done_reg == 1'b1) | (ap_start == 1'b0))) begin
+        ap_ST_fsm_state1_blk = 1'b1;
     end else begin
-        ap_condition_exit_pp0_iter0_stage3 = 1'b0;
+        ap_ST_fsm_state1_blk = 1'b0;
     end
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_subdone) & (ap_enable_reg_pp0_iter1 == 1'b1) & (finished_reg_291 == 1'd1) & (1'b1 == ap_CS_fsm_pp0_stage0) & (skipdone_2_reg_122 == 1'd0))) begin
-        ap_condition_exit_pp0_iter1_stage0 = 1'b1;
-    end else begin
-        ap_condition_exit_pp0_iter1_stage0 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_subdone) & (ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-        ap_done_int = 1'b1;
-    end else begin
-        ap_done_int = ap_done_reg;
-    end
-end
-
-always @ (*) begin
-    if (~((ap_loop_exit_ready_pp0_iter1_reg == 1'b0) & (ap_loop_exit_ready == 1'b0))) begin
-        ap_done_pending_pp0 = 1'b1;
-    end else begin
-        ap_done_pending_pp0 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if ((1'b1 == ap_CS_fsm_pp0_stage0)) begin
-        ap_enable_reg_pp0_iter0 = ap_start_int;
-    end else begin
-        ap_enable_reg_pp0_iter0 = ap_enable_reg_pp0_iter0_reg;
-    end
-end
-
-always @ (*) begin
-    if (((ap_start_int == 1'b0) & (ap_idle_pp0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b1 == ap_CS_fsm_state1) & (ap_start == 1'b0))) begin
         ap_idle = 1'b1;
     end else begin
         ap_idle = 1'b0;
@@ -381,7 +240,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((ap_enable_reg_pp0_iter1 == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b0))) begin
+    if (((ap_enable_reg_pp0_iter0 == 1'b0) & (ap_enable_reg_pp0_iter1 == 1'b0))) begin
         ap_idle_pp0 = 1'b1;
     end else begin
         ap_idle_pp0 = 1'b0;
@@ -389,39 +248,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((ap_enable_reg_pp0_iter0 == 1'b0)) begin
-        ap_idle_pp0_0to0 = 1'b1;
-    end else begin
-        ap_idle_pp0_0to0 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if ((ap_enable_reg_pp0_iter1 == 1'b0)) begin
-        ap_idle_pp0_1to1 = 1'b1;
-    end else begin
-        ap_idle_pp0_1to1 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage3_subdone) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        ap_ready_int = 1'b1;
-    end else begin
-        ap_ready_int = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((done3_empty_n == 1'b1) & (ap_phi_mux_skipdone_2_phi_fu_126_p4 == 1'd0) & (1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        done3_read = 1'b1;
-    end else begin
-        done3_read = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((istrms1_empty_n == 1'b1) & (1'b0 == ap_block_pp0_stage1_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+    if (((1'b0 == ap_block_pp0_stage1_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (istrms1_empty_n == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
         istrms1_read = 1'b1;
     end else begin
         istrms1_read = 1'b0;
@@ -429,7 +256,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((istrms2_empty_n == 1'b1) & (1'b0 == ap_block_pp0_stage2_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2))) begin
+    if (((1'b0 == ap_block_pp0_stage2_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (istrms2_empty_n == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2))) begin
         istrms2_read = 1'b1;
     end else begin
         istrms2_read = 1'b0;
@@ -437,7 +264,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((istrms3_empty_n == 1'b1) & (1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
+    if (((1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (istrms3_empty_n == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
         istrms3_read = 1'b1;
     end else begin
         istrms3_read = 1'b0;
@@ -445,7 +272,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((istrms_empty_n == 1'b1) & (1'b0 == ap_block_pp0_stage0_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (istrms_empty_n == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         istrms_read = 1'b1;
     end else begin
         istrms_read = 1'b0;
@@ -453,7 +280,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((((1'b0 == ap_block_pp0_stage0) & (read_2_reg_272 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)) | ((1'b0 == ap_block_pp0_stage0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0) & (read_3_reg_282 == 1'd1)) | ((1'b0 == ap_block_pp0_stage3) & (read_2_reg_272 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((1'b0 == ap_block_pp0_stage3) & (read_1_reg_262 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((1'b0 == ap_block_pp0_stage2) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2) & (read_reg_252 == 1'd1)) | ((1'b0 == ap_block_pp0_stage2) & (read_1_reg_262 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2)) | ((1'b0 == ap_block_pp0_stage1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1) & (read_reg_252 == 1'd1)) | ((1'b0 == ap_block_pp0_stage1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1) & (read_3_reg_282 == 1'd1)))) begin
+    if ((((read_2_reg_197 == 1'd1) & (1'b0 == ap_block_pp0_stage3) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((read_2_reg_197 == 1'd1) & (1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0) & (ap_enable_reg_pp0_iter1 == 1'b1)) | ((read_1_reg_187 == 1'd1) & (1'b0 == ap_block_pp0_stage3) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((read_1_reg_187 == 1'd1) & (1'b0 == ap_block_pp0_stage2) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2)) | ((read_reg_172 == 1'd1) & (1'b0 == ap_block_pp0_stage2) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2)) | ((read_reg_172 == 1'd1) & (1'b0 == ap_block_pp0_stage1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1)) | ((1'b0 == ap_block_pp0_stage1) & (1'b1 == ap_CS_fsm_pp0_stage1) & (read_3_reg_207 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1)) | ((1'b0 == ap_block_pp0_stage0) & (1'b1 == ap_CS_fsm_pp0_stage0) & (read_3_reg_207 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1)))) begin
         photons_V_TDATA_blk_n = photons_V_TREADY_int_regslice;
     end else begin
         photons_V_TDATA_blk_n = 1'b1;
@@ -461,21 +288,21 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_01001) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0) & (read_3_reg_282 == 1'd1))) begin
-        photons_V_TDATA_int_regslice = photon_7_reg_286;
-    end else if (((1'b0 == ap_block_pp0_stage3_01001) & (read_2_reg_272 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
-        photons_V_TDATA_int_regslice = photon_5_reg_276;
-    end else if (((1'b0 == ap_block_pp0_stage2_01001) & (read_1_reg_262 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2))) begin
-        photons_V_TDATA_int_regslice = photon_3_reg_266;
-    end else if (((1'b0 == ap_block_pp0_stage1_01001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1) & (read_reg_252 == 1'd1))) begin
-        photons_V_TDATA_int_regslice = photon_1_reg_256;
+    if (((1'b0 == ap_block_pp0_stage0_01001) & (1'b1 == ap_CS_fsm_pp0_stage0) & (read_3_reg_207 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1))) begin
+        photons_V_TDATA_int_regslice = photon_6_reg_211;
+    end else if (((read_2_reg_197 == 1'd1) & (1'b0 == ap_block_pp0_stage3_01001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3))) begin
+        photons_V_TDATA_int_regslice = photon_4_reg_201;
+    end else if (((read_1_reg_187 == 1'd1) & (1'b0 == ap_block_pp0_stage2_01001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2))) begin
+        photons_V_TDATA_int_regslice = photon_2_reg_191;
+    end else if (((read_reg_172 == 1'd1) & (1'b0 == ap_block_pp0_stage1_01001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1))) begin
+        photons_V_TDATA_int_regslice = tmp_fu_89_p1;
     end else begin
         photons_V_TDATA_int_regslice = 'bx;
     end
 end
 
 always @ (*) begin
-    if ((((1'b0 == ap_block_pp0_stage3_11001) & (read_2_reg_272 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((1'b0 == ap_block_pp0_stage2_11001) & (read_1_reg_262 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2)) | ((1'b0 == ap_block_pp0_stage1_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1) & (read_reg_252 == 1'd1)) | ((1'b0 == ap_block_pp0_stage0_11001) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0) & (read_3_reg_282 == 1'd1)))) begin
+    if ((((read_2_reg_197 == 1'd1) & (1'b0 == ap_block_pp0_stage3_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage3)) | ((read_1_reg_187 == 1'd1) & (1'b0 == ap_block_pp0_stage2_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2)) | ((read_reg_172 == 1'd1) & (1'b0 == ap_block_pp0_stage1_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1)) | ((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0) & (read_3_reg_207 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1)))) begin
         photons_V_TVALID_int_regslice = 1'b1;
     end else begin
         photons_V_TVALID_int_regslice = 1'b0;
@@ -484,10 +311,15 @@ end
 
 always @ (*) begin
     case (ap_CS_fsm)
-        ap_ST_fsm_pp0_stage0 : begin
-            if (((ap_idle_pp0_0to0 == 1'b1) & (1'b1 == ap_condition_exit_pp0_iter1_stage0))) begin
+        ap_ST_fsm_state1 : begin
+            if ((~((ap_done_reg == 1'b1) | (ap_start == 1'b0)) & (1'b1 == ap_CS_fsm_state1))) begin
                 ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            end else if ((~((ap_start_int == 1'b0) & (ap_done_pending_pp0 == 1'b0) & (ap_idle_pp0_1to1 == 1'b1)) & (1'b0 == ap_block_pp0_stage0_subdone))) begin
+            end else begin
+                ap_NS_fsm = ap_ST_fsm_state1;
+            end
+        end
+        ap_ST_fsm_pp0_stage0 : begin
+            if ((1'b0 == ap_block_pp0_stage0_subdone)) begin
                 ap_NS_fsm = ap_ST_fsm_pp0_stage1;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_pp0_stage0;
@@ -520,168 +352,152 @@ always @ (*) begin
     endcase
 end
 
-assign ap_CS_fsm_pp0_stage0 = ap_CS_fsm[32'd0];
+assign ap_CS_fsm_pp0_stage0 = ap_CS_fsm[32'd1];
 
-assign ap_CS_fsm_pp0_stage1 = ap_CS_fsm[32'd1];
+assign ap_CS_fsm_pp0_stage1 = ap_CS_fsm[32'd2];
 
-assign ap_CS_fsm_pp0_stage2 = ap_CS_fsm[32'd2];
+assign ap_CS_fsm_pp0_stage2 = ap_CS_fsm[32'd3];
 
-assign ap_CS_fsm_pp0_stage3 = ap_CS_fsm[32'd3];
+assign ap_CS_fsm_pp0_stage3 = ap_CS_fsm[32'd4];
+
+assign ap_CS_fsm_state1 = ap_CS_fsm[32'd0];
 
 assign ap_block_pp0_stage0 = ~(1'b1 == 1'b1);
 
 always @ (*) begin
-    ap_block_pp0_stage0_01001 = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (ap_done_reg == 1'b1)) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((regslice_both_photons_V_U_apdone_blk == 1'b1) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)))));
+    ap_block_pp0_stage0_01001 = ((ap_enable_reg_pp0_iter1 == 1'b1) & (((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage0_11001 = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (ap_done_reg == 1'b1)) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((regslice_both_photons_V_U_apdone_blk == 1'b1) | (1'b1 == ap_block_state5_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)))));
+    ap_block_pp0_stage0_11001 = ((ap_enable_reg_pp0_iter1 == 1'b1) & ((1'b1 == ap_block_state6_io) | ((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage0_subdone = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (ap_done_reg == 1'b1)) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((regslice_both_photons_V_U_apdone_blk == 1'b1) | (1'b1 == ap_block_state5_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)))));
+    ap_block_pp0_stage0_subdone = ((ap_enable_reg_pp0_iter1 == 1'b1) & ((1'b1 == ap_block_state6_io) | ((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1))));
 end
 
 assign ap_block_pp0_stage1 = ~(1'b1 == 1'b1);
 
 always @ (*) begin
-    ap_block_pp0_stage1_01001 = ((ap_done_reg == 1'b1) | ((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b1) & (read_reg_252 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (read_3_reg_282 == 1'd1)));
+    ap_block_pp0_stage1_01001 = (((read_reg_172 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1)));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage1_11001 = ((ap_done_reg == 1'b1) | ((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state2_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)))) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((1'b1 == ap_block_state6_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)))));
+    ap_block_pp0_stage1_11001 = (((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state3_io) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)))) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((1'b1 == ap_block_state7_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1)))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage1_subdone = ((ap_done_reg == 1'b1) | ((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state2_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)))) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((1'b1 == ap_block_state6_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)))));
+    ap_block_pp0_stage1_subdone = (((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state3_io) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)))) | ((ap_enable_reg_pp0_iter1 == 1'b1) & ((1'b1 == ap_block_state7_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1)))));
 end
 
 assign ap_block_pp0_stage2 = ~(1'b1 == 1'b1);
 
 always @ (*) begin
-    ap_block_pp0_stage2_01001 = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)))));
+    ap_block_pp0_stage2_01001 = ((ap_enable_reg_pp0_iter0 == 1'b1) & (((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage2_11001 = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state3_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)))));
+    ap_block_pp0_stage2_11001 = ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state4_io) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage2_subdone = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state3_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)))));
+    ap_block_pp0_stage2_subdone = ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state4_io) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0))));
 end
 
 assign ap_block_pp0_stage3 = ~(1'b1 == 1'b1);
 
 always @ (*) begin
-    ap_block_pp0_stage3_01001 = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & (((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)))));
+    ap_block_pp0_stage3_01001 = ((ap_enable_reg_pp0_iter0 == 1'b1) & (((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage3_11001 = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state4_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)))));
+    ap_block_pp0_stage3_11001 = ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state5_io) | ((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage3_subdone = (((ap_loop_exit_ready_pp0_iter1_reg == 1'b1) & (regslice_both_photons_V_U_apdone_blk == 1'b1)) | ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state4_io) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)))));
+    ap_block_pp0_stage3_subdone = ((ap_enable_reg_pp0_iter0 == 1'b1) & ((1'b1 == ap_block_state5_io) | ((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_state1_pp0_stage0_iter0 = (ap_done_reg == 1'b1);
+    ap_block_state1 = ((ap_done_reg == 1'b1) | (ap_start == 1'b0));
+end
+
+assign ap_block_state2_pp0_stage0_iter0 = ~(1'b1 == 1'b1);
+
+always @ (*) begin
+    ap_block_state3_io = ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0));
 end
 
 always @ (*) begin
-    ap_block_state2_io = ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1));
+    ap_block_state3_pp0_stage1_iter0 = ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0));
 end
 
 always @ (*) begin
-    ap_block_state2_pp0_stage1_iter0 = ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1));
+    ap_block_state4_io = (((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)));
 end
 
 always @ (*) begin
-    ap_block_state3_io = (((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)));
+    ap_block_state4_pp0_stage2_iter0 = (((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_reg_172 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)));
 end
 
 always @ (*) begin
-    ap_block_state3_pp0_stage2_iter0 = (((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_reg_252 == 1'd1)));
+    ap_block_state5_io = (((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)));
 end
 
 always @ (*) begin
-    ap_block_state4_io = (((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)));
+    ap_block_state5_pp0_stage3_iter0 = (((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((read_1_reg_187 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)));
 end
 
 always @ (*) begin
-    ap_block_state4_pp0_stage3_iter0 = (((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_1_reg_262 == 1'd1)));
+    ap_block_state6_io = (((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1)));
 end
 
 always @ (*) begin
-    ap_block_state5_io = (((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)));
+    ap_block_state6_pp0_stage0_iter1 = (((read_2_reg_197 == 1'd1) & (photons_V_TREADY_int_regslice == 1'b0)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1)));
 end
 
 always @ (*) begin
-    ap_block_state5_pp0_stage0_iter1 = ((regslice_both_photons_V_U_apdone_blk == 1'b1) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_2_reg_272 == 1'd1)) | ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1)));
+    ap_block_state7_io = ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1));
 end
 
 always @ (*) begin
-    ap_block_state6_io = ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1));
+    ap_block_state7_pp0_stage1_iter1 = ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_207 == 1'd1));
 end
 
-always @ (*) begin
-    ap_block_state6_pp0_stage1_iter1 = ((photons_V_TREADY_int_regslice == 1'b0) & (read_3_reg_282 == 1'd1));
-end
-
-always @ (*) begin
-    ap_condition_248 = ((1'b0 == ap_block_pp0_stage0_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0));
-end
-
-always @ (*) begin
-    ap_condition_251 = ((1'b0 == ap_block_pp0_stage1_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage1));
-end
-
-always @ (*) begin
-    ap_condition_258 = ((1'b0 == ap_block_pp0_stage2_11001) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage2));
-end
+assign ap_done = ap_done_reg;
 
 assign ap_enable_pp0 = (ap_idle_pp0 ^ 1'b1);
 
-assign ap_loop_exit_ready = ap_condition_exit_pp0_iter0_stage3;
+assign ap_ready = 1'b0;
 
-assign ap_phi_mux_skipdone_2_phi_fu_126_p4 = ap_phi_reg_pp0_iter0_skipdone_2_reg_122;
+assign istrms1_read_nbread_fu_63_p2_0 = istrms1_empty_n;
 
-assign done3_read_nbread_fu_89_p2_0 = done3_empty_n;
+assign istrms2_read_nbread_fu_69_p2_0 = istrms2_empty_n;
 
-assign finished_fu_223_p2 = (done3_read_nbread_fu_89_p2_0 & done3_dout);
+assign istrms3_read_nbread_fu_75_p2_0 = istrms3_empty_n;
 
-assign istrms1_read_nbread_fu_71_p2_0 = istrms1_empty_n;
+assign istrms_read_nbread_fu_50_p2_0 = istrms_empty_n;
 
-assign istrms2_read_nbread_fu_77_p2_0 = istrms2_empty_n;
+assign photon_2_fu_115_p3 = ((istrms1_read_nbread_fu_63_p2_0[0:0] == 1'b1) ? tmp_8_fu_104_p1 : select_ln164_fu_108_p3);
 
-assign istrms3_read_nbread_fu_83_p2_0 = istrms3_empty_n;
+assign photon_4_fu_135_p3 = ((istrms2_read_nbread_fu_69_p2_0[0:0] == 1'b1) ? tmp_9_fu_131_p1 : photon_2_reg_191);
 
-assign istrms_read_nbread_fu_58_p2_0 = istrms_empty_n;
-
-assign photon_1_fu_150_p3 = ((istrms_read_nbread_fu_58_p2_0[0:0] == 1'b1) ? tmp_fu_146_p1 : photon_1_1_fu_54);
-
-assign photon_3_fu_170_p3 = ((istrms1_read_nbread_fu_71_p2_0[0:0] == 1'b1) ? tmp_9_fu_166_p1 : photon_1_reg_256);
-
-assign photon_5_fu_189_p3 = ((istrms2_read_nbread_fu_77_p2_0[0:0] == 1'b1) ? tmp_10_fu_185_p1 : photon_3_reg_266);
-
-assign photon_7_fu_208_p3 = ((istrms3_read_nbread_fu_83_p2_0[0:0] == 1'b1) ? tmp_11_fu_204_p1 : photon_5_reg_276);
+assign photon_6_fu_154_p3 = ((istrms3_read_nbread_fu_75_p2_0[0:0] == 1'b1) ? tmp_10_fu_150_p1 : photon_4_reg_201);
 
 assign photons_V_TVALID = regslice_both_photons_V_U_vld_out;
 
-assign read_1_fu_158_p1 = istrms1_read_nbread_fu_71_p2_0;
+assign select_ln164_fu_108_p3 = ((read_reg_172[0:0] == 1'b1) ? tmp_fu_89_p1 : photon_1_fu_46);
 
-assign read_2_fu_177_p1 = istrms2_read_nbread_fu_77_p2_0;
+assign tmp_10_fu_150_p1 = istrms3_dout;
 
-assign read_3_fu_196_p1 = istrms3_read_nbread_fu_83_p2_0;
+assign tmp_8_fu_104_p1 = istrms1_dout;
 
-assign read_fu_138_p1 = istrms_read_nbread_fu_58_p2_0;
+assign tmp_9_fu_131_p1 = istrms2_dout;
 
-assign tmp_10_fu_185_p1 = istrms2_dout;
+assign tmp_fu_89_p1 = tmp_1_reg_177;
 
-assign tmp_11_fu_204_p1 = istrms3_dout;
-
-assign tmp_9_fu_166_p1 = istrms1_dout;
-
-assign tmp_fu_146_p1 = istrms_dout;
+always @ (posedge ap_clk) begin
+    ap_done_reg <= 1'b0;
+end
 
 endmodule //photon_read_distribute

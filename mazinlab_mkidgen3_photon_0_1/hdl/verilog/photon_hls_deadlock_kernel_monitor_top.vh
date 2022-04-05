@@ -13,7 +13,7 @@ assign axis_block_sigs[1] = ~photon_factory_U0.timestamps_V_TDATA_blk_n;
 assign axis_block_sigs[2] = ~read_distribute_U0.photons_V_TDATA_blk_n;
 
 assign inst_idle_sigs[0] = photon_factory_U0.ap_idle;
-assign inst_block_sigs[0] = (photon_factory_U0.ap_done & ~photon_factory_U0.ap_continue) | ~photon_factory_U0.photon_fifo_blk_n | ~photon_factory_U0.photon_fifo1_blk_n | ~photon_factory_U0.photon_fifo2_blk_n | ~photon_factory_U0.photon_fifo3_blk_n | ~photon_factory_U0.done3_blk_n;
+assign inst_block_sigs[0] = (photon_factory_U0.ap_done & ~photon_factory_U0.ap_continue) | ~photon_factory_U0.photon_fifo_blk_n | ~photon_factory_U0.photon_fifo1_blk_n | ~photon_factory_U0.photon_fifo2_blk_n | ~photon_factory_U0.photon_fifo3_blk_n;
 assign inst_idle_sigs[1] = read_distribute_U0.ap_idle;
 assign inst_block_sigs[1] = (read_distribute_U0.ap_done & ~read_distribute_U0.ap_continue);
 

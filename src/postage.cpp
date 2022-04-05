@@ -326,22 +326,22 @@ void write_stream(hls::stream<iq_t> istrms[N_MONITOR], hls::stream<bool> &done, 
 void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
 
-//#pragma HLS INTERFACE ap_ctrl_none port=return
+#pragma HLS INTERFACE s_axilite port=return  bundle=control
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=74752 //register
 #pragma HLS INTERFACE mode=axis port=iniq register_mode=off depth=74752 //register
 #pragma HLS INTERFACE mode=axis port=iq_out register_mode=off depth=200 //register
 #pragma HLS ARRAY_PARTITION variable=iq_out type=complete
-#pragma HLS INTERFACE mode=s_axilite port=monitor
+#pragma HLS INTERFACE mode=s_axilite port=monitor bundle=control
 #pragma HLS ARRAY_PARTITION variable=monitor type=complete
 
-	static ap_shift_reg<unsigned int, N_CAPPRE> iqprereg[N_MONITOR];
-	static unsigned char tocapture[N_MONITOR];
+	 ap_shift_reg<unsigned int, N_CAPPRE> iqprereg[N_MONITOR];
+	 unsigned char tocapture[N_MONITOR];
 #pragma HLS ARRAY_PARTITION variable=tocapture type=complete
 #pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
 
 
-	unsigned int cycle=0;
-	while(!instream.empty()) {
+//	unsigned int cycle=0;
+	while(true){//!instream.empty()) {
 	#pragma HLS PIPELINE II=1
 		trigstream_t in;
 		iqstreamnarrow_t iq;
@@ -407,7 +407,7 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 					tocapture[i]--;
 			}
 		}
-		cycle++;
+//		cycle++;
 	}
 }
 

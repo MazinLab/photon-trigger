@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-(* CORE_GENERATION_INFO="photon_photon,hls_ip_2021_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=1.818000,HLS_INPUT_ARCH=dataflow,HLS_SYN_CLOCK=1.192570,HLS_SYN_LAT=-1,HLS_SYN_TPT=-1,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=853,HLS_SYN_LUT=848,HLS_VERSION=2021_1}" *)
+(* CORE_GENERATION_INFO="photon_photon,hls_ip_2021_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=1.818000,HLS_INPUT_ARCH=dataflow,HLS_SYN_CLOCK=1.192570,HLS_SYN_LAT=-1,HLS_SYN_TPT=-1,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=741,HLS_SYN_LUT=690,HLS_VERSION=2021_1}" *)
 
 module photon (
 // synthesis translate_off
@@ -26,12 +26,8 @@ module photon (
         instream_TREADY,
         timestamps_V_TVALID,
         timestamps_V_TREADY,
-        ap_start,
         photons_V_TVALID,
-        photons_V_TREADY,
-        ap_done,
-        ap_ready,
-        ap_idle
+        photons_V_TREADY
 );
 
 
@@ -51,12 +47,8 @@ input   instream_TVALID;
 output   instream_TREADY;
 input   timestamps_V_TVALID;
 output   timestamps_V_TREADY;
-input   ap_start;
 output   photons_V_TVALID;
 input   photons_V_TREADY;
-output   ap_done;
-output   ap_ready;
-output   ap_idle;
 
  reg    ap_rst_n_inv;
 wire    photon_factory_U0_ap_start;
@@ -64,6 +56,10 @@ wire    photon_factory_U0_ap_done;
 wire    photon_factory_U0_ap_continue;
 wire    photon_factory_U0_ap_idle;
 wire    photon_factory_U0_ap_ready;
+wire    photon_factory_U0_start_out;
+wire    photon_factory_U0_start_write;
+wire    photon_factory_U0_instream_TREADY;
+wire    photon_factory_U0_timestamps_V_TREADY;
 wire   [43:0] photon_factory_U0_photon_fifo_din;
 wire    photon_factory_U0_photon_fifo_write;
 wire   [43:0] photon_factory_U0_photon_fifo1_din;
@@ -72,12 +68,6 @@ wire   [43:0] photon_factory_U0_photon_fifo2_din;
 wire    photon_factory_U0_photon_fifo2_write;
 wire   [43:0] photon_factory_U0_photon_fifo3_din;
 wire    photon_factory_U0_photon_fifo3_write;
-wire    photon_factory_U0_start_out;
-wire    photon_factory_U0_start_write;
-wire    photon_factory_U0_instream_TREADY;
-wire    photon_factory_U0_timestamps_V_TREADY;
-wire   [0:0] photon_factory_U0_done3_din;
-wire    photon_factory_U0_done3_write;
 wire    read_distribute_U0_ap_start;
 wire    read_distribute_U0_ap_done;
 wire    read_distribute_U0_ap_continue;
@@ -87,7 +77,6 @@ wire    read_distribute_U0_istrms_read;
 wire    read_distribute_U0_istrms1_read;
 wire    read_distribute_U0_istrms2_read;
 wire    read_distribute_U0_istrms3_read;
-wire    read_distribute_U0_done3_read;
 wire   [47:0] read_distribute_U0_photons_V_TDATA;
 wire    read_distribute_U0_photons_V_TVALID;
 wire    photon_fifos_0_full_n;
@@ -102,9 +91,6 @@ wire    photon_fifos_2_empty_n;
 wire    photon_fifos_3_full_n;
 wire   [43:0] photon_fifos_3_dout;
 wire    photon_fifos_3_empty_n;
-wire    done_full_n;
-wire   [0:0] done_dout;
-wire    done_empty_n;
 wire   [0:0] start_for_read_distribute_U0_din;
 wire    start_for_read_distribute_U0_full_n;
 wire   [0:0] start_for_read_distribute_U0_dout;
@@ -119,18 +105,6 @@ photon_photon_factory photon_factory_U0(
     .ap_continue(photon_factory_U0_ap_continue),
     .ap_idle(photon_factory_U0_ap_idle),
     .ap_ready(photon_factory_U0_ap_ready),
-    .photon_fifo_din(photon_factory_U0_photon_fifo_din),
-    .photon_fifo_full_n(photon_fifos_0_full_n),
-    .photon_fifo_write(photon_factory_U0_photon_fifo_write),
-    .photon_fifo1_din(photon_factory_U0_photon_fifo1_din),
-    .photon_fifo1_full_n(photon_fifos_1_full_n),
-    .photon_fifo1_write(photon_factory_U0_photon_fifo1_write),
-    .photon_fifo2_din(photon_factory_U0_photon_fifo2_din),
-    .photon_fifo2_full_n(photon_fifos_2_full_n),
-    .photon_fifo2_write(photon_factory_U0_photon_fifo2_write),
-    .photon_fifo3_din(photon_factory_U0_photon_fifo3_din),
-    .photon_fifo3_full_n(photon_fifos_3_full_n),
-    .photon_fifo3_write(photon_factory_U0_photon_fifo3_write),
     .start_out(photon_factory_U0_start_out),
     .start_write(photon_factory_U0_start_write),
     .instream_TDATA(instream_TDATA),
@@ -143,9 +117,18 @@ photon_photon_factory photon_factory_U0(
     .timestamps_V_TDATA(timestamps_V_TDATA),
     .timestamps_V_TVALID(timestamps_V_TVALID),
     .timestamps_V_TREADY(photon_factory_U0_timestamps_V_TREADY),
-    .done3_din(photon_factory_U0_done3_din),
-    .done3_full_n(done_full_n),
-    .done3_write(photon_factory_U0_done3_write)
+    .photon_fifo_din(photon_factory_U0_photon_fifo_din),
+    .photon_fifo_full_n(photon_fifos_0_full_n),
+    .photon_fifo_write(photon_factory_U0_photon_fifo_write),
+    .photon_fifo1_din(photon_factory_U0_photon_fifo1_din),
+    .photon_fifo1_full_n(photon_fifos_1_full_n),
+    .photon_fifo1_write(photon_factory_U0_photon_fifo1_write),
+    .photon_fifo2_din(photon_factory_U0_photon_fifo2_din),
+    .photon_fifo2_full_n(photon_fifos_2_full_n),
+    .photon_fifo2_write(photon_factory_U0_photon_fifo2_write),
+    .photon_fifo3_din(photon_factory_U0_photon_fifo3_din),
+    .photon_fifo3_full_n(photon_fifos_3_full_n),
+    .photon_fifo3_write(photon_factory_U0_photon_fifo3_write)
 );
 
 photon_read_distribute read_distribute_U0(
@@ -156,7 +139,6 @@ photon_read_distribute read_distribute_U0(
     .ap_continue(read_distribute_U0_ap_continue),
     .ap_idle(read_distribute_U0_ap_idle),
     .ap_ready(read_distribute_U0_ap_ready),
-    .photons_V_TREADY(photons_V_TREADY),
     .istrms_dout(photon_fifos_0_dout),
     .istrms_empty_n(photon_fifos_0_empty_n),
     .istrms_read(read_distribute_U0_istrms_read),
@@ -169,11 +151,9 @@ photon_read_distribute read_distribute_U0(
     .istrms3_dout(photon_fifos_3_dout),
     .istrms3_empty_n(photon_fifos_3_empty_n),
     .istrms3_read(read_distribute_U0_istrms3_read),
-    .done3_dout(done_dout),
-    .done3_empty_n(done_empty_n),
-    .done3_read(read_distribute_U0_done3_read),
     .photons_V_TDATA(read_distribute_U0_photons_V_TDATA),
-    .photons_V_TVALID(read_distribute_U0_photons_V_TVALID)
+    .photons_V_TVALID(read_distribute_U0_photons_V_TVALID),
+    .photons_V_TREADY(photons_V_TREADY)
 );
 
 photon_fifo_w44_d4_S photon_fifos_0_U(
@@ -228,19 +208,6 @@ photon_fifo_w44_d4_S photon_fifos_3_U(
     .if_read(read_distribute_U0_istrms3_read)
 );
 
-photon_fifo_w1_d2_S done_U(
-    .clk(ap_clk),
-    .reset(ap_rst_n_inv),
-    .if_read_ce(1'b1),
-    .if_write_ce(1'b1),
-    .if_din(photon_factory_U0_done3_din),
-    .if_full_n(done_full_n),
-    .if_write(photon_factory_U0_done3_write),
-    .if_dout(done_dout),
-    .if_empty_n(done_empty_n),
-    .if_read(read_distribute_U0_done3_read)
-);
-
 photon_start_for_read_distribute_U0 start_for_read_distribute_U0_U(
     .clk(ap_clk),
     .reset(ap_rst_n_inv),
@@ -254,12 +221,6 @@ photon_start_for_read_distribute_U0 start_for_read_distribute_U0_U(
     .if_read(read_distribute_U0_ap_ready)
 );
 
-assign ap_done = read_distribute_U0_ap_done;
-
-assign ap_idle = (read_distribute_U0_ap_idle & photon_factory_U0_ap_idle);
-
-assign ap_ready = photon_factory_U0_ap_ready;
-
 always @ (*) begin
     ap_rst_n_inv = ~ap_rst_n;
 end
@@ -268,7 +229,7 @@ assign instream_TREADY = photon_factory_U0_instream_TREADY;
 
 assign photon_factory_U0_ap_continue = 1'b1;
 
-assign photon_factory_U0_ap_start = ap_start;
+assign photon_factory_U0_ap_start = 1'b1;
 
 assign photons_V_TDATA = read_distribute_U0_photons_V_TDATA;
 

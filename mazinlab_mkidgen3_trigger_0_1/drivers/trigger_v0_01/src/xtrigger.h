@@ -39,13 +39,11 @@ typedef uint64_t u64;
 typedef struct {
     u16 DeviceId;
     u32 Control_BaseAddress;
-    u32 Control_r_BaseAddress;
 } XTrigger_Config;
 #endif
 
 typedef struct {
     u64 Control_BaseAddress;
-    u64 Control_r_BaseAddress;
     u32 IsReady;
 } XTrigger;
 
