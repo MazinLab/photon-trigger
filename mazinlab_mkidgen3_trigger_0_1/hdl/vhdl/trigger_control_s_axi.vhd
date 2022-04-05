@@ -31,37 +31,18 @@ port (
     RRESP                 :out  STD_LOGIC_VECTOR(1 downto 0);
     RVALID                :out  STD_LOGIC;
     RREADY                :in   STD_LOGIC;
-    interrupt             :out  STD_LOGIC;
     holdoff               :out  STD_LOGIC_VECTOR(15 downto 0);
     thresholds_address0   :in   STD_LOGIC_VECTOR(8 downto 0);
     thresholds_ce0        :in   STD_LOGIC;
-    thresholds_q0         :out  STD_LOGIC_VECTOR(63 downto 0);
-    ap_start              :out  STD_LOGIC;
-    ap_done               :in   STD_LOGIC;
-    ap_ready              :in   STD_LOGIC;
-    ap_idle               :in   STD_LOGIC
+    thresholds_q0         :out  STD_LOGIC_VECTOR(63 downto 0)
 );
 end entity trigger_control_s_axi;
 
 -- ------------------------Address Info-------------------
--- 0x0000 : Control signals
---          bit 0  - ap_start (Read/Write/COH)
---          bit 1  - ap_done (Read/COR)
---          bit 2  - ap_idle (Read)
---          bit 3  - ap_ready (Read/COR)
---          bit 7  - auto_restart (Read/Write)
---          others - reserved
--- 0x0004 : Global Interrupt Enable Register
---          bit 0  - Global Interrupt Enable (Read/Write)
---          others - reserved
--- 0x0008 : IP Interrupt Enable Register (Read/Write)
---          bit 0  - enable ap_done interrupt (Read/Write)
---          bit 1  - enable ap_ready interrupt (Read/Write)
---          others - reserved
--- 0x000c : IP Interrupt Status Register (Read/TOW)
---          bit 0  - ap_done (COR/TOW)
---          bit 1  - ap_ready (COR/TOW)
---          others - reserved
+-- 0x0000 : reserved
+-- 0x0004 : reserved
+-- 0x0008 : reserved
+-- 0x000c : reserved
 -- 0x0010 : Data signal of holdoff
 --          bit 15~0 - holdoff[15:0] (Read/Write)
 --          others   - reserved
@@ -77,10 +58,6 @@ architecture behave of trigger_control_s_axi is
     signal wstate  : states := wrreset;
     signal rstate  : states := rdreset;
     signal wnext, rnext: states;
-    constant ADDR_AP_CTRL         : INTEGER := 16#0000#;
-    constant ADDR_GIE             : INTEGER := 16#0004#;
-    constant ADDR_IER             : INTEGER := 16#0008#;
-    constant ADDR_ISR             : INTEGER := 16#000c#;
     constant ADDR_HOLDOFF_DATA_0  : INTEGER := 16#0010#;
     constant ADDR_HOLDOFF_CTRL    : INTEGER := 16#0014#;
     constant ADDR_THRESHOLDS_BASE : INTEGER := 16#1000#;
@@ -99,19 +76,6 @@ architecture behave of trigger_control_s_axi is
     signal ARREADY_t           : STD_LOGIC;
     signal RVALID_t            : STD_LOGIC;
     -- internal registers
-    signal int_ap_idle         : STD_LOGIC := '0';
-    signal int_ap_ready        : STD_LOGIC := '0';
-    signal task_ap_ready       : STD_LOGIC;
-    signal int_ap_done         : STD_LOGIC := '0';
-    signal task_ap_done        : STD_LOGIC;
-    signal int_task_ap_done    : STD_LOGIC := '0';
-    signal int_ap_start        : STD_LOGIC := '0';
-    signal int_auto_restart    : STD_LOGIC := '0';
-    signal auto_restart_status : STD_LOGIC := '0';
-    signal auto_restart_done   : STD_LOGIC;
-    signal int_gie             : STD_LOGIC := '0';
-    signal int_ier             : UNSIGNED(1 downto 0) := (others => '0');
-    signal int_isr             : UNSIGNED(1 downto 0) := (others => '0');
     signal int_holdoff         : UNSIGNED(15 downto 0) := (others => '0');
     -- memory signals
     signal int_thresholds_address0 : UNSIGNED(8 downto 0);
@@ -295,18 +259,6 @@ port map (
                 if (ar_hs = '1') then
                     rdata_data <= (others => '0');
                     case (TO_INTEGER(raddr)) is
-                    when ADDR_AP_CTRL =>
-                        rdata_data(7) <= int_auto_restart;
-                        rdata_data(3) <= int_ap_ready;
-                        rdata_data(2) <= int_ap_idle;
-                        rdata_data(1) <= int_task_ap_done;
-                        rdata_data(0) <= int_ap_start;
-                    when ADDR_GIE =>
-                        rdata_data(0) <= int_gie;
-                    when ADDR_IER =>
-                        rdata_data(1 downto 0) <= int_ier;
-                    when ADDR_ISR =>
-                        rdata_data(1 downto 0) <= int_isr;
                     when ADDR_HOLDOFF_DATA_0 =>
                         rdata_data <= RESIZE(int_holdoff(15 downto 0), 32);
                     when others =>
@@ -320,167 +272,7 @@ port map (
     end process;
 
 -- ----------------------- Register logic ----------------
-    interrupt            <= int_gie and (int_isr(0) or int_isr(1));
-    ap_start             <= int_ap_start;
-    task_ap_done         <= (ap_done and not auto_restart_status) or auto_restart_done;
-    task_ap_ready        <= ap_ready and not int_auto_restart;
-    auto_restart_done    <= auto_restart_status and (ap_idle and not int_ap_idle);
     holdoff              <= STD_LOGIC_VECTOR(int_holdoff);
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_ap_start <= '0';
-            elsif (ACLK_EN = '1') then
-                if (w_hs = '1' and waddr = ADDR_AP_CTRL and WSTRB(0) = '1' and WDATA(0) = '1') then
-                    int_ap_start <= '1';
-                elsif (ap_ready = '1') then
-                    int_ap_start <= int_auto_restart; -- clear on handshake/auto restart
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_ap_done <= '0';
-            elsif (ACLK_EN = '1') then
-                if (true) then
-                    int_ap_done <= ap_done;
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_task_ap_done <= '0';
-            elsif (ACLK_EN = '1') then
-                if (task_ap_done = '1') then
-                    int_task_ap_done <= '1';
-                elsif (ar_hs = '1' and raddr = ADDR_AP_CTRL) then
-                    int_task_ap_done <= '0'; -- clear on read
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_ap_idle <= '0';
-            elsif (ACLK_EN = '1') then
-                if (true) then
-                    int_ap_idle <= ap_idle;
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_ap_ready <= '0';
-            elsif (ACLK_EN = '1') then
-                if (task_ap_ready = '1') then
-                    int_ap_ready <= '1';
-                elsif (ar_hs = '1' and raddr = ADDR_AP_CTRL) then
-                    int_ap_ready <= '0';
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_auto_restart <= '0';
-            elsif (ACLK_EN = '1') then
-                if (w_hs = '1' and waddr = ADDR_AP_CTRL and WSTRB(0) = '1') then
-                    int_auto_restart <= WDATA(7);
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                auto_restart_status <= '0';
-            elsif (ACLK_EN = '1') then
-                if (int_auto_restart = '1') then
-                    auto_restart_status <= '1';
-                elsif (ap_idle = '1') then
-                    auto_restart_status <= '0';
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_gie <= '0';
-            elsif (ACLK_EN = '1') then
-                if (w_hs = '1' and waddr = ADDR_GIE and WSTRB(0) = '1') then
-                    int_gie <= WDATA(0);
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_ier <= (others => '0');
-            elsif (ACLK_EN = '1') then
-                if (w_hs = '1' and waddr = ADDR_IER and WSTRB(0) = '1') then
-                    int_ier <= UNSIGNED(WDATA(1 downto 0));
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_isr(0) <= '0';
-            elsif (ACLK_EN = '1') then
-                if (int_ier(0) = '1' and ap_done = '1') then
-                    int_isr(0) <= '1';
-                elsif (w_hs = '1' and waddr = ADDR_ISR and WSTRB(0) = '1') then
-                    int_isr(0) <= int_isr(0) xor WDATA(0); -- toggle on write
-                end if;
-            end if;
-        end if;
-    end process;
-
-    process (ACLK)
-    begin
-        if (ACLK'event and ACLK = '1') then
-            if (ARESET = '1') then
-                int_isr(1) <= '0';
-            elsif (ACLK_EN = '1') then
-                if (int_ier(1) = '1' and ap_ready = '1') then
-                    int_isr(1) <= '1';
-                elsif (w_hs = '1' and waddr = ADDR_ISR and WSTRB(0) = '1') then
-                    int_isr(1) <= int_isr(1) xor WDATA(1); -- toggle on write
-                end if;
-            end if;
-        end if;
-    end process;
 
     process (ACLK)
     begin

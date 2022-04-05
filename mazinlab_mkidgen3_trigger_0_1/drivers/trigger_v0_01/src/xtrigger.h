@@ -80,12 +80,6 @@ int XTrigger_Initialize(XTrigger *InstancePtr, const char* InstanceName);
 int XTrigger_Release(XTrigger *InstancePtr);
 #endif
 
-void XTrigger_Start(XTrigger *InstancePtr);
-u32 XTrigger_IsDone(XTrigger *InstancePtr);
-u32 XTrigger_IsIdle(XTrigger *InstancePtr);
-u32 XTrigger_IsReady(XTrigger *InstancePtr);
-void XTrigger_EnableAutoRestart(XTrigger *InstancePtr);
-void XTrigger_DisableAutoRestart(XTrigger *InstancePtr);
 
 void XTrigger_Set_holdoff(XTrigger *InstancePtr, u32 Data);
 u32 XTrigger_Get_holdoff(XTrigger *InstancePtr);
@@ -98,14 +92,6 @@ u32 XTrigger_Write_thresholds_Words(XTrigger *InstancePtr, int offset, word_type
 u32 XTrigger_Read_thresholds_Words(XTrigger *InstancePtr, int offset, word_type *data, int length);
 u32 XTrigger_Write_thresholds_Bytes(XTrigger *InstancePtr, int offset, char *data, int length);
 u32 XTrigger_Read_thresholds_Bytes(XTrigger *InstancePtr, int offset, char *data, int length);
-
-void XTrigger_InterruptGlobalEnable(XTrigger *InstancePtr);
-void XTrigger_InterruptGlobalDisable(XTrigger *InstancePtr);
-void XTrigger_InterruptEnable(XTrigger *InstancePtr, u32 Mask);
-void XTrigger_InterruptDisable(XTrigger *InstancePtr, u32 Mask);
-void XTrigger_InterruptClear(XTrigger *InstancePtr, u32 Mask);
-u32 XTrigger_InterruptGetEnabled(XTrigger *InstancePtr);
-u32 XTrigger_InterruptGetStatus(XTrigger *InstancePtr);
 
 #ifdef __cplusplus
 }

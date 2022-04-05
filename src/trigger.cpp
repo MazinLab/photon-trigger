@@ -21,13 +21,13 @@ void phase_trigger(phase_t phase, threshold_t thresh, interval_t holdoff, previo
 void trigger(hls::stream<phasestream_t> &instream, thresholds_t thresholds[N_PHASEGROUPS],
 			 interval_t holdoff, hls::stream<trigstream_t> &outstream){
 
-#pragma HLS INTERFACE mode=s_axilite port=return bundle=control
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return// bundle=control
 #pragma HLS INTERFACE mode=axis port=outstream depth=13500
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
 #pragma HLS INTERFACE mode=s_axilite port=holdoff bundle=control
 #pragma HLS INTERFACE mode=s_axilite port=thresholds bundle=control
 
-	static previousgroup_t previous_data[N_PHASEGROUPS], previous_cache;
+	previousgroup_t previous_data[N_PHASEGROUPS], previous_cache;
 
 #pragma HLS DEPENDENCE variable=previous_data intra WAR false
 #pragma HLS DEPENDENCE variable=previous_data intra RAW false
@@ -35,8 +35,8 @@ void trigger(hls::stream<phasestream_t> &instream, thresholds_t thresholds[N_PHA
 #pragma HLS AGGREGATE compact=auto variable=previous_data
 
 //	int cycle=0;
-	while (!instream.empty()) {
-	#pragma HLS PIPELINE II=1 rewind
+	while (true) {
+	#pragma HLS PIPELINE II=1 //rewind
 		previousgroup_t previous;
 		phasestream_t in;
 		datasetnotime_t dataset;

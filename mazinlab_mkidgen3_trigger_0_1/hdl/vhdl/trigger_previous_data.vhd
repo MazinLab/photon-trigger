@@ -31,7 +31,7 @@ architecture rtl of trigger_previous_data is
 
 signal address1_tmp : std_logic_vector(AddressWidth-1 downto 0); 
 type mem_array is array (0 to AddressRange-1) of std_logic_vector (DataWidth-1 downto 0); 
-signal ram : mem_array := (others=>(others=>'0'));
+signal ram : mem_array;
 
 
 begin 

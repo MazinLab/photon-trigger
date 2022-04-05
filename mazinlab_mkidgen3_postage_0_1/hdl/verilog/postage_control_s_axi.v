@@ -28,7 +28,6 @@ module postage_control_s_axi
     output wire [1:0]                    RRESP,
     output wire                          RVALID,
     input  wire                          RREADY,
-    output wire                          interrupt,
     output wire [11:0]                   monitor_0,
     output wire [11:0]                   monitor_1,
     output wire [11:0]                   monitor_2,
@@ -36,31 +35,13 @@ module postage_control_s_axi
     output wire [11:0]                   monitor_4,
     output wire [11:0]                   monitor_5,
     output wire [11:0]                   monitor_6,
-    output wire [11:0]                   monitor_7,
-    output wire                          ap_start,
-    input  wire                          ap_done,
-    input  wire                          ap_ready,
-    input  wire                          ap_idle
+    output wire [11:0]                   monitor_7
 );
 //------------------------Address Info-------------------
-// 0x00 : Control signals
-//        bit 0  - ap_start (Read/Write/COH)
-//        bit 1  - ap_done (Read/COR)
-//        bit 2  - ap_idle (Read)
-//        bit 3  - ap_ready (Read/COR)
-//        bit 7  - auto_restart (Read/Write)
-//        others - reserved
-// 0x04 : Global Interrupt Enable Register
-//        bit 0  - Global Interrupt Enable (Read/Write)
-//        others - reserved
-// 0x08 : IP Interrupt Enable Register (Read/Write)
-//        bit 0  - enable ap_done interrupt (Read/Write)
-//        bit 1  - enable ap_ready interrupt (Read/Write)
-//        others - reserved
-// 0x0c : IP Interrupt Status Register (Read/TOW)
-//        bit 0  - ap_done (COR/TOW)
-//        bit 1  - ap_ready (COR/TOW)
-//        others - reserved
+// 0x00 : reserved
+// 0x04 : reserved
+// 0x08 : reserved
+// 0x0c : reserved
 // 0x10 : Data signal of monitor_0
 //        bit 11~0 - monitor_0[11:0] (Read/Write)
 //        others   - reserved
@@ -97,10 +78,6 @@ module postage_control_s_axi
 
 //------------------------Parameter----------------------
 localparam
-    ADDR_AP_CTRL          = 7'h00,
-    ADDR_GIE              = 7'h04,
-    ADDR_IER              = 7'h08,
-    ADDR_ISR              = 7'h0c,
     ADDR_MONITOR_0_DATA_0 = 7'h10,
     ADDR_MONITOR_0_CTRL   = 7'h14,
     ADDR_MONITOR_1_DATA_0 = 7'h18,
@@ -139,19 +116,6 @@ localparam
     wire                          ar_hs;
     wire [ADDR_BITS-1:0]          raddr;
     // internal registers
-    reg                           int_ap_idle;
-    reg                           int_ap_ready = 1'b0;
-    wire                          task_ap_ready;
-    reg                           int_ap_done = 1'b0;
-    wire                          task_ap_done;
-    reg                           int_task_ap_done = 1'b0;
-    reg                           int_ap_start = 1'b0;
-    reg                           int_auto_restart = 1'b0;
-    reg                           auto_restart_status = 1'b0;
-    wire                          auto_restart_done;
-    reg                           int_gie = 1'b0;
-    reg  [1:0]                    int_ier = 2'b0;
-    reg  [1:0]                    int_isr = 2'b0;
     reg  [11:0]                   int_monitor_0 = 'b0;
     reg  [11:0]                   int_monitor_1 = 'b0;
     reg  [11:0]                   int_monitor_2 = 'b0;
@@ -252,22 +216,6 @@ always @(posedge ACLK) begin
         if (ar_hs) begin
             rdata <= 'b0;
             case (raddr)
-                ADDR_AP_CTRL: begin
-                    rdata[0] <= int_ap_start;
-                    rdata[1] <= int_task_ap_done;
-                    rdata[2] <= int_ap_idle;
-                    rdata[3] <= int_ap_ready;
-                    rdata[7] <= int_auto_restart;
-                end
-                ADDR_GIE: begin
-                    rdata <= int_gie;
-                end
-                ADDR_IER: begin
-                    rdata <= int_ier;
-                end
-                ADDR_ISR: begin
-                    rdata <= int_isr;
-                end
                 ADDR_MONITOR_0_DATA_0: begin
                     rdata <= int_monitor_0[11:0];
                 end
@@ -299,139 +247,14 @@ end
 
 
 //------------------------Register logic-----------------
-assign interrupt         = int_gie & (|int_isr);
-assign ap_start          = int_ap_start;
-assign task_ap_done      = (ap_done && !auto_restart_status) || auto_restart_done;
-assign task_ap_ready     = ap_ready && !int_auto_restart;
-assign auto_restart_done = auto_restart_status && (ap_idle && !int_ap_idle);
-assign monitor_0         = int_monitor_0;
-assign monitor_1         = int_monitor_1;
-assign monitor_2         = int_monitor_2;
-assign monitor_3         = int_monitor_3;
-assign monitor_4         = int_monitor_4;
-assign monitor_5         = int_monitor_5;
-assign monitor_6         = int_monitor_6;
-assign monitor_7         = int_monitor_7;
-// int_ap_start
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_ap_start <= 1'b0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_AP_CTRL && WSTRB[0] && WDATA[0])
-            int_ap_start <= 1'b1;
-        else if (ap_ready)
-            int_ap_start <= int_auto_restart; // clear on handshake/auto restart
-    end
-end
-
-// int_ap_done
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_ap_done <= 1'b0;
-    else if (ACLK_EN) begin
-            int_ap_done <= ap_done;
-    end
-end
-
-// int_task_ap_done
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_task_ap_done <= 1'b0;
-    else if (ACLK_EN) begin
-        if (task_ap_done)
-            int_task_ap_done <= 1'b1;
-        else if (ar_hs && raddr == ADDR_AP_CTRL)
-            int_task_ap_done <= 1'b0; // clear on read
-    end
-end
-
-// int_ap_idle
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_ap_idle <= 1'b0;
-    else if (ACLK_EN) begin
-            int_ap_idle <= ap_idle;
-    end
-end
-
-// int_ap_ready
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_ap_ready <= 1'b0;
-    else if (ACLK_EN) begin
-        if (task_ap_ready)
-            int_ap_ready <= 1'b1;
-        else if (ar_hs && raddr == ADDR_AP_CTRL)
-            int_ap_ready <= 1'b0;
-    end
-end
-
-// int_auto_restart
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_auto_restart <= 1'b0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_AP_CTRL && WSTRB[0])
-            int_auto_restart <=  WDATA[7];
-    end
-end
-
-// auto_restart_status
-always @(posedge ACLK) begin
-    if (ARESET)
-        auto_restart_status <= 1'b0;
-    else if (ACLK_EN) begin
-        if (int_auto_restart)
-            auto_restart_status <= 1'b1;
-        else if (ap_idle)
-            auto_restart_status <= 1'b0;
-    end
-end
-
-// int_gie
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_gie <= 1'b0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_GIE && WSTRB[0])
-            int_gie <= WDATA[0];
-    end
-end
-
-// int_ier
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_ier <= 1'b0;
-    else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_IER && WSTRB[0])
-            int_ier <= WDATA[1:0];
-    end
-end
-
-// int_isr[0]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_isr[0] <= 1'b0;
-    else if (ACLK_EN) begin
-        if (int_ier[0] & ap_done)
-            int_isr[0] <= 1'b1;
-        else if (w_hs && waddr == ADDR_ISR && WSTRB[0])
-            int_isr[0] <= int_isr[0] ^ WDATA[0]; // toggle on write
-    end
-end
-
-// int_isr[1]
-always @(posedge ACLK) begin
-    if (ARESET)
-        int_isr[1] <= 1'b0;
-    else if (ACLK_EN) begin
-        if (int_ier[1] & ap_ready)
-            int_isr[1] <= 1'b1;
-        else if (w_hs && waddr == ADDR_ISR && WSTRB[0])
-            int_isr[1] <= int_isr[1] ^ WDATA[1]; // toggle on write
-    end
-end
-
+assign monitor_0 = int_monitor_0;
+assign monitor_1 = int_monitor_1;
+assign monitor_2 = int_monitor_2;
+assign monitor_3 = int_monitor_3;
+assign monitor_4 = int_monitor_4;
+assign monitor_5 = int_monitor_5;
+assign monitor_6 = int_monitor_6;
+assign monitor_7 = int_monitor_7;
 // int_monitor_0[11:0]
 always @(posedge ACLK) begin
     if (ARESET)

@@ -326,7 +326,7 @@ void write_stream(hls::stream<iq_t> istrms[N_MONITOR], hls::stream<bool> &done, 
 void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
 
-#pragma HLS INTERFACE s_axilite port=return  bundle=control
+#pragma HLS INTERFACE ap_ctrl_none port=return // bundle=control
 #pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=74752 //register
 #pragma HLS INTERFACE mode=axis port=iniq register_mode=off depth=74752 //register
 #pragma HLS INTERFACE mode=axis port=iq_out register_mode=off depth=200 //register
