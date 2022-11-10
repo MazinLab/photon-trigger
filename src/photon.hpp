@@ -76,6 +76,16 @@ typedef struct photon_t {
 	reschan_t id;
 } photon_t;
 
+
+typedef struct photon_noid_t {
+	timestamp_t time;
+	phase_t phase;
+} photon_noid_t;
+
+typedef struct photongroup_t {
+	photon_noid_t lane[N_PHASE];
+} photongroup_t;
+
 typedef struct dataset_t {
 	thresholds_t threshs;
 	phases_t phases;
