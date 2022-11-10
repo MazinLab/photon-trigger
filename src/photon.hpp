@@ -29,14 +29,27 @@ typedef ap_uint<9> group512_t;
 //typedef ap_uint<7> group128_t;
 typedef ap_uint<12> reschan_t;
 
+#define THRESHOLD_BITS 8
+#define HOLDOFF_BITS 8
+#define THRESHOFF_BITS (HOLDOFF_BITS+THRESHOLD_BITS)
+typedef unsigned short threshoff_t;
+typedef ap_uint<THRESHOFF_BITS*N_PHASE> threshoffs_t;
 
-//typedef ap_uint<10> interval_t;
-typedef unsigned short interval_t;
+typedef uint8_t interval_t;
+
+
+typedef struct sincegroup_t {
+	interval_t since[N_PHASE];
+} sincegroup_t;
+
+
 typedef ap_uint<7> pgroup256_t;
-//typedef ap_uint<16> phase_t;
+
 
 typedef group512_t group_t;
+
 typedef unsigned short phase_t;
+//typedef ap_uint<16> phase_t;
 
 typedef unsigned int uint32_t;
 typedef uint32_t iq_t;
@@ -49,8 +62,9 @@ typedef ap_uint<512> uint512_t;
 
 
 typedef ap_uint<N_PHASE*PHASE_BITS> phases_t;
-typedef phases_t thresholds_t;
-typedef phase_t threshold_t;
+typedef ap_uint<N_PHASE*THRESHOLD_BITS> thresholds_t;
+typedef uint8_t threshold_t;
+
 
 typedef struct phaseset_t {
 	phase_t phase[N_PHASE];
@@ -102,10 +116,6 @@ typedef struct previous_t {
 	phase_t phase;
 } previous_t;
 
-typedef struct previousgroup_t {
-	previous_t data[N_PHASE];
-} previousgroup_t;
-
 
 typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2,0,0> phasestream_t;
 typedef ap_axiu<N_PHASE*IQ_BITS,0,0,0> iqstreamnarrow_t;
@@ -115,9 +125,8 @@ typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
 
 
 void trigger(hls::stream<phasestream_t> &instream,
-		thresholds_t thresholds[N_PHASEGROUPS],
-		interval_t holdoff,
-		hls::stream<trigstream_t> &outstream);
+			 threshoffs_t threshoffs[N_PHASEGROUPS],
+			 hls::stream<trigstream_t> &outstream);
 
 void postage(hls::stream<trigstream_t> &instream,
 		hls::stream<iqstreamnarrow_t> &iniq,

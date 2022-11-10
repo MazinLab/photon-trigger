@@ -17,80 +17,67 @@ void phase_trigger(phase_t phase, threshold_t thresh, interval_t holdoff, previo
 	prev_dat.phase=phase;
 }
 
-//This is a top level dataflow function that streams out phases and  aggregates the streams with a variant of the code in load_balance.hpp
-void trigger(hls::stream<phasestream_t> &instream, thresholds_t thresholds[N_PHASEGROUPS],
-			 interval_t holdoff, hls::stream<trigstream_t> &outstream){
+inline void unpack_thresholds(threshoffs_t toffs, threshold_t threshs[N_PHASE], interval_t holdsoffs[N_PHASE]) {
 
-#pragma HLS INTERFACE mode=ap_ctrl_none port=return// bundle=control
-#pragma HLS INTERFACE mode=axis port=outstream depth=13500
-#pragma HLS INTERFACE mode=axis port=instream register_mode=off depth=13500 //register
-#pragma HLS INTERFACE mode=s_axilite port=holdoff bundle=control
-#pragma HLS INTERFACE mode=s_axilite port=thresholds bundle=control
-
-	previousgroup_t previous_data[N_PHASEGROUPS], previous_cache;
-
-#pragma HLS DEPENDENCE variable=previous_data intra WAR false
-#pragma HLS DEPENDENCE variable=previous_data intra RAW false
-#pragma HLS DEPENDENCE variable=previous_data inter RAW distance=128 true
-#pragma HLS AGGREGATE compact=auto variable=previous_data
-
-//	int cycle=0;
-	while (true) {
-	#pragma HLS PIPELINE II=1 //rewind
-		previousgroup_t previous;
-		phasestream_t in;
-		datasetnotime_t dataset;
-		in = instream.read();
-		dataset.phases=in.data;
-		dataset.group=in.user;
-		dataset.last=in.last;
-		dataset.threshs=thresholds[in.user];
-
-		ap_uint<N_PHASE> trigger=0;
-		previous_data[group_t(dataset.group-1)]=previous_cache;
-		previous = previous_data[dataset.group];
-		phases_t outputdata;
-		for (int j=0;j<N_PHASE;j++) {
+	unpack: for (int i=0;i<N_PHASE;i++) {
 		#pragma HLS UNROLL
-			outputdata.range(PHASE_BITS*(j+1)-1, PHASE_BITS*j)=previous.data[j].phase;
-		}
-
-		lanes: for (int i=0;i<N_PHASE;i++) {
-			#pragma HLS UNROLL
-			phase_t phase=dataset.phases.range(PHASE_BITS*(i+1)-1,PHASE_BITS*i);
-			threshold_t thresh=dataset.threshs.range(PHASE_BITS*(i+1)-1,PHASE_BITS*i);
-			bool trig;
-	//		phase_trigger(phase, thresh, holdoff, previous.data[i], trig);
-
-			trig=previous.data[i].phase>thresh && phase<previous.data[i].phase && previous.data[i].since==0;
-
-//#ifndef __SYNTHESIS__
-//	if ((dataset.group==511 || dataset.group==0) && i==0) {
-//		cout<<"T Cycle "<<cycle<<" ("<<dataset.group<<") phase0: "<<phase<<" was "<< previous.data[i].phase<<" holdoffctr="<<previous.data[i].since<<" trig="<<trig<<endl;
-//	}
-////	if ((dataset.group==511 || dataset.group==0) && i==3) {
-////		cout<<"T Cycle "<<cycle<<" ("<<dataset.group<<") phase0: "<<phase<<" was "<< previous.data[i].phase<<" holdoffctr="<<previous.data[i].since<<" trig="<<trig<<endl;
-////	}
-//#endif
-			previous.data[i].phase=phase;
-			if (trig) {
-				previous.data[i].since=holdoff;
-			} else if (previous.data[i].since!=0) {
-				previous.data[i].since--;
-			}
-
-			trigger[i]=trig;
-
-		}
-
-		previous_cache=previous;
-
-		trigstream_t out;
-		out.user.range(N_PHASEGROUPS_LOG2-1, 0)=dataset.group;
-		out.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2) = trigger;
-		out.last=dataset.last;
-		out.data=outputdata;
-		outstream.write(out);
-//		cycle++;
+		threshoff_t to = toffs.range(THRESHOFF_BITS*(i+1)-1, THRESHOFF_BITS*i);
+		threshs[i]=to&(2^THRESHOLD_BITS -1);
+		holdsoffs[i]=to>>THRESHOLD_BITS;
 	}
+}
+
+void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHASEGROUPS],  hls::stream<trigstream_t> &outstream){
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+#pragma HLS INTERFACE mode=axis port=outstream depth=13500
+#pragma HLS INTERFACE mode=axis port=instream depth=13500 register
+#pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
+
+	static sincegroup_t since_data[N_PHASEGROUPS], since_cache;
+#pragma HLS DEPENDENCE variable=since_data intra WAR false
+#pragma HLS DEPENDENCE variable=since_data intra RAW false
+#pragma HLS DEPENDENCE variable=since_data inter RAW distance=512 true
+#pragma HLS AGGREGATE compact=auto variable=since_data
+
+
+	#pragma HLS PIPELINE II=1 //rewind
+	sincegroup_t sinces;
+	phasestream_t in;
+	ap_uint<N_PHASE> trigger=0;
+	threshold_t threshs[N_PHASE];
+	interval_t hoffs[N_PHASE];
+
+	in = instream.read();
+	since_data[group_t(in.user-1)]=since_cache;
+	sinces = since_data[in.user];
+
+	unpack_thresholds(threshoffs[in.user], threshs, hoffs);
+
+	lanes: for (int i=0;i<N_PHASE;i++) {
+		#pragma HLS UNROLL
+		bool trig;
+
+		phase_t phase=in.data.range(PHASE_BITS*(i+1)-1,PHASE_BITS*i);
+
+
+		trig=phase<threshs[i] && sinces.since[i]==0;
+		if (trig) {
+			sinces.since[i]=hoffs[i];
+		} else if (sinces.since[i]!=0) {
+			sinces.since[i]--;
+		}
+
+		trigger[i]=trig;
+
+	}
+
+	since_cache=sinces;
+
+	trigstream_t out;
+	out.user.range(N_PHASEGROUPS_LOG2-1, 0)=in.user;
+	out.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2) = trigger;
+	out.last=in.last;
+	out.data=in.data;
+	outstream.write(out);
+
 }
