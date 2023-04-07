@@ -26,8 +26,9 @@ using namespace std;
 typedef ap_uint<16> timestamp_t;
 typedef ap_uint<8> group256_t;
 typedef ap_uint<9> group512_t;
-//typedef ap_uint<7> group128_t;
+typedef ap_uint<7> group128_t;
 typedef ap_uint<12> reschan_t;
+typedef ap_uint<N_PHASE_LOG2> lane_t;
 
 #define THRESHOLD_BITS 8
 #define HOLDOFF_BITS 8

@@ -28,13 +28,15 @@ inline void unpack_thresholds(threshoffs_t toffs, threshold_t threshs[N_PHASE], 
 }
 
 void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHASEGROUPS],  hls::stream<trigstream_t> &outstream,
-		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE]){
+		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE],
+		hls::stream<ap_uint<N_PHASE>> &photon_overflow){
+#pragma HLS INTERFACE mode=axis port=photon_overflow
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=outstream depth=13500 register
 #pragma HLS INTERFACE mode=axis port=instream depth=13500 register
 #pragma HLS INTERFACE mode=axis port=timestamp depth=13500 register
 #pragma HLS ARRAY_PARTITION dim=1 type=complete variable=photon_fifos
-#pragma HLS INTERFACE mode=ap_fifo depth=13500 port=photon_fifos register
+#pragma HLS INTERFACE mode=ap_fifo depth=4 port=photon_fifos register
 #pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
 
 	static sincegroup_t since_data[N_PHASEGROUPS], since_cache;
@@ -50,7 +52,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 #pragma HLS AGGREGATE compact=auto variable=photon_data
 
 
-	#pragma HLS PIPELINE II=1 //rewind
+	#pragma HLS PIPELINE II=1
 	sincegroup_t sinces;
 	photongroup_t photons;
 	phasestream_t in;
@@ -58,6 +60,12 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	ap_uint<N_PHASE> trigger=0;
 	threshold_t threshs[N_PHASE];
 	interval_t hoffs[N_PHASE];
+	static bool fifo_empty[N_PHASE];
+#pragma HLS ARRAY_PARTITION variable=fifo_empty type=complete
+
+	ap_uint<N_PHASE> overflow;
+	for (int i=0;i<N_PHASE;i++) overflow[i]=fifo_empty[i];
+	photon_overflow.write(overflow);
 
 	in = instream.read();
 	time=timestamp.read();
@@ -74,8 +82,9 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 		#pragma HLS UNROLL
 		bool trig;
 		photon_noid_t photon;
+		phase_t phase;
 
-		phase_t phase=in.data.range(PHASE_BITS*(i+1)-1,PHASE_BITS*i);
+		phase=in.data.range(PHASE_BITS*(i+1)-1,PHASE_BITS*i);
 
 
 		trig=phase<threshs[i] && sinces.since[i]==0;
@@ -97,12 +106,11 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 					photon_out.id=id;
 					photon_out.phase=photons.lane[i].phase;
 					photon_out.time=photons.lane[i].time;
-					photon_fifos[i].write_nb(photon_out);
+					fifo_empty[i]=!photon_fifos[i].write_nb(photon_out);
 				}
 				sinces.since[i]--;
 			}
 		}
-
 	}
 
 	photon_cache=photons;
@@ -115,4 +123,21 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	out.data=in.data;
 	outstream.write(out);
 
+}
+
+const int _N_PHASE = N_PHASE;
+
+void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons) {
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+#pragma HLS ARRAY_PARTITION variable = photon_fifos complete
+#pragma HLS PIPELINE II = _N_PHASE
+	for (int n=0;n<N_PHASE;n++) {
+#pragma HLS UNROLL
+		photon_t photon;
+		bool read;
+		read=photon_fifos[n].read_nb(photon);
+		if (read) {
+			photons.write(photon);
+		}
+	}
 }
