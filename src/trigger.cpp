@@ -51,8 +51,11 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 #pragma HLS DEPENDENCE variable=photon_data inter RAW distance=512 true
 #pragma HLS AGGREGATE compact=auto variable=photon_data
 
+	static bool fifo_empty[N_PHASE];
+#pragma HLS ARRAY_PARTITION variable=fifo_empty type=complete
 
-	#pragma HLS PIPELINE II=1
+#pragma HLS PIPELINE II=1
+
 	sincegroup_t sinces;
 	photongroup_t photons;
 	phasestream_t in;
@@ -60,40 +63,42 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	ap_uint<N_PHASE> trigger=0;
 	threshold_t threshs[N_PHASE];
 	interval_t hoffs[N_PHASE];
-	static bool fifo_empty[N_PHASE];
-#pragma HLS ARRAY_PARTITION variable=fifo_empty type=complete
-
 	ap_uint<N_PHASE> overflow;
+
 	for (int i=0;i<N_PHASE;i++) overflow[i]=fifo_empty[i];
 	photon_overflow.write(overflow);
 
 	in = instream.read();
 	time=timestamp.read();
-	since_data[group_t(in.user-1)]=since_cache;
-	sinces = since_data[in.user];
 
 	group_t group=in.user;
-	photon_data[group_t(group-1)]=photon_cache;
+	group_t last_group=group_t(in.user-1);
+
+	since_data[last_group]=since_cache;
+	sinces = since_data[group];
+
+	photon_data[last_group]=photon_cache;
 	photons = photon_data[group];
 
-	unpack_thresholds(threshoffs[in.user], threshs, hoffs);
+	unpack_thresholds(threshoffs[group], threshs, hoffs);
 
 	lanes: for (int i=0;i<N_PHASE;i++) {
 		#pragma HLS UNROLL
 		bool trig;
 		photon_noid_t photon;
 		phase_t phase;
+		reschan_t id;
+		bool update_photon;
 
+		id = N_PHASE*reschan_t(group.range()) + i;
 		phase=in.data.range(PHASE_BITS*(i+1)-1,PHASE_BITS*i);
-
 
 		trig=phase<threshs[i] && sinces.since[i]==0;
 		trigger[i]=trig;
 
 		photon.phase=phase;
 		photon.time=time;
-		bool update_photon  = photons.lane[i].phase<phase && sinces.since[i]!=0;
-		reschan_t id = N_PHASE*reschan_t(group.range()) + i;
+		update_photon = photons.lane[i].phase>phase;// && sinces.since[i]!=0;  //is the second condition needed?
 
 		if (trig) {
 			sinces.since[i]=hoffs[i];
