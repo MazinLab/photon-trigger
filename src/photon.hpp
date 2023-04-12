@@ -49,8 +49,7 @@ typedef ap_uint<7> pgroup256_t;
 
 typedef group512_t group_t;
 
-typedef unsigned short phase_t;
-//typedef ap_uint<16> phase_t;
+typedef short phase_t;
 
 typedef unsigned int uint32_t;
 typedef uint32_t iq_t;
@@ -135,9 +134,12 @@ typedef ap_axiu<IQ_BITS,N_MONITOR_LOG2,0,0> singleiqstream_t;
 typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
 
 
-void trigger(hls::stream<phasestream_t> &instream,
-			 threshoffs_t threshoffs[N_PHASEGROUPS],
-			 hls::stream<trigstream_t> &outstream);
+void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons);
+
+void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHASEGROUPS],
+		hls::stream<trigstream_t> &outstream,
+		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE],
+		hls::stream<ap_uint<N_PHASE>> &photon_overflow);
 
 void postage(hls::stream<trigstream_t> &instream,
 		hls::stream<iqstreamnarrow_t> &iniq,
