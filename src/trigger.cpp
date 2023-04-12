@@ -165,6 +165,7 @@ void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS ARRAY_PARTITION variable = photon_fifos complete
 #pragma HLS PIPELINE II = _N_PHASE
+#pragma HLS INTERFACE mode=axis port=photons depth=_N_PHASE register
 	for (int n=0;n<N_PHASE;n++) {
 #pragma HLS UNROLL
 		photon_t photon;
