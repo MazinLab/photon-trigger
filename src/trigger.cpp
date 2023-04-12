@@ -32,7 +32,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE],
 		hls::stream<ap_uint<N_PHASE>> &photon_overflow){
 #pragma HLS INTERFACE mode=axis port=photon_overflow
-//#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=outstream depth=32000 register
 #pragma HLS INTERFACE mode=axis port=instream depth=32000 register
 #pragma HLS INTERFACE mode=axis port=timestamp depth=32000 register
