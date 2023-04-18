@@ -1,5 +1,34 @@
 #include "photon.hpp"
 
+/*
+ *
+ * The postage stamping plan calls for monitoring up to 8 resonators for their holdoff so
+ * N_MONITOR*1MHz*4 or in bursts of (N_CAPDATA+N_CAPPRE)*4 bytes or 480 byte bursts at 32MiB/s
+ *
+ * The trigger core is at 512 as is the IQ stream so we need to first pull out the relevant bits
+ * and then run them through a stream interconnect (8 slave 1 master w/cc)
+ * Then we can grab and write them at 256 to PSRAM
+ *
+ *
+ *
+ * Postage stamp data comes in sequenitally and easily. Photons arrive randomly but clustered so need to be sorted
+ * worst case scenario after a full N_CAPDATA+N_CAPPRE arrives on one stream it will be 512 clocks before the next
+ * sample. 1/(5000cps*1e-6MHz) means 200 samples between photons/triggers with an N_CAPDATA+N_CAPPRE of 120
+ * (~8300cps) that leaves 80*512 ~40k 512MHz tics before the next sample we need to capture would arrive.
+ * Bursting out the 480 bytes at 256 MHz/16B needs only ~60+overhead 512MHz tics.
+ * So even if we serially read from the postage stamp channels we are looking at
+ * N_MONITOR*((N_CAPDATA+N_CAPPRE)+(N_CAPDATA+N_CAPPRE)*4/16) or about 1200 256MHz clocks or 2400 512 or about
+ * 6% of our time before we need need to deal with a photon.
+ *
+ * So deal with them serially and have a buffer long enough for 1 full postage for each channel (~3.8KiB)!
+ *
+ *
+ * Nick has encouraged support for every trigger up to 10k counts per second, At 10k we have a trigger every 100us
+ * samples arrive every us. with a window of 100 post trigger we can just attain this. getting the data out
+ * takes 1<us so that isn't the limit
+ *
+ *
+ */
 
 inline void channel_to_grouplane(reschan_t x, group_t &group, lane_t &lane){
 	lane=x.range(N_PHASE_LOG2-1,0);
@@ -7,7 +36,7 @@ inline void channel_to_grouplane(reschan_t x, group_t &group, lane_t &lane){
 }
 
 
-void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
+void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
 
 #pragma HLS INTERFACE ap_ctrl_none port=return // bundle=control
@@ -25,7 +54,7 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 
 
 //	unsigned int cycle=0;
-	while(true){//!instream.empty()) {
+	while(true) {
 	#pragma HLS PIPELINE II=1 REWIND
 		trigstream_t in;
 		iqstreamnarrow_t iq;
@@ -76,5 +105,40 @@ void postage(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> 
 }
 
 
-//Nick has encouraged support for every trigger up to 10k counts per second, At 10k we have a trigger every 100us
-// samples arrive every us. with a window of 100 post trigger we can just attain this. getting the data out takes 1<us so that isn't the limit
+
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPPRE+N_CAPDATA],
+				  uint16_t event_count[N_MONITOR]){
+#pragma HLS INTERFACE mode=s_axilite port=return
+#pragma HLS INTERFACE mode=axis port=postage register
+#pragma HSL INTERFACE mode=s_axilite port=event_count
+#pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=128 port=iq offset=slave
+
+
+	iq_t buf[N_MONITOR][N_CAPPRE+N_CAPDATA];
+	uint8_t sample_count[N_MONITOR];
+	uint16_t _event_count[N_MONITOR];
+
+	while(true) {
+
+		singleiqstream_t tmp;
+		bool read;
+		bool have_burst;
+
+		tmp = postage.read();
+		buf[tmp.user][sample_count[tmp.user]]=tmp.data;
+		have_burst = sample_count[tmp.user] == N_CAPPRE+N_CAPDATA-1;
+		sample_count[tmp.user]++;
+		if (have_burst) {
+			for (int k=0;k<N_CAPPRE+N_CAPDATA;k++)
+				iq[tmp.user][_event_count[tmp.user]][k]=buf[tmp.user][k];
+			sample_count[tmp.user]=0;
+			_event_count[tmp.user]++;
+			event_count[tmp.user]=_event_count[tmp.user];
+		} else {
+			sample_count[tmp.user]++;
+		}
+	}
+
+}
+
+

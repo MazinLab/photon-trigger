@@ -8,10 +8,12 @@ using namespace std;
 #include "hls_stream.h"
 #include "ap_shift_reg.h"
 
-
+#define MAX_CPS 5000
+#define N_RES 2048
 #define N_MONITOR 8
 #define N_CAPDATA 90
 #define N_CAPPRE 30
+#define N_PHOTON_BUFFERS 2
 
 #define N_IQ 8
 #define N_PHASE 4
@@ -22,6 +24,8 @@ using namespace std;
 #define PHASE_BITS 16
 #define IQ_BITS 32
 #define N_MONITOR_LOG2 3
+#define POSTAGE_BUFSIZE 1000
+#define FLAT_PHOTON_BUFSIZE 32000
 
 typedef ap_uint<16> timestamp_t;
 typedef ap_uint<8> group256_t;
@@ -65,6 +69,7 @@ typedef ap_uint<N_PHASE*PHASE_BITS> phases_t;
 typedef ap_uint<N_PHASE*THRESHOLD_BITS> thresholds_t;
 typedef uint8_t threshold_t;
 
+typedef uint32_t photoncount_t;
 
 typedef struct phaseset_t {
 	phase_t phase[N_PHASE];
@@ -76,11 +81,21 @@ typedef struct photon_t {
 	reschan_t id;
 } photon_t;
 
+typedef struct smallphoton_t {
+	timestamp_t time;
+	phase_t phase;
+} smallphoton_t;
 
 typedef struct photon_noid_t {
 	timestamp_t time;
 	phase_t phase;
 } photon_noid_t;
+
+typedef struct destined_photon_t {
+	photon_noid_t photon;
+	unsigned int offset;
+} destined_photon_t;
+
 
 typedef struct photongroup_t {
 	photon_noid_t lane[N_PHASE];
@@ -141,11 +156,15 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE],
 		hls::stream<ap_uint<N_PHASE>> &photon_overflow);
 
-void postage(hls::stream<trigstream_t> &instream,
-		hls::stream<iqstreamnarrow_t> &iniq,
-		reschan_t monitor[N_MONITOR],
-		hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
+void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
+		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
 
-void photon(hls::stream<trigstream_t> &instream,
-		hls::stream<timestamp_t> &timestamps,
-		hls::stream<photon_t> &photons);
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPPRE+N_CAPDATA],
+				  uint16_t event_count[N_MONITOR]);
+
+
+void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][MAX_CPS*N_RES],
+				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer);
+
+void photons_maxi_structured(hls::stream<photon_t> &photons, smallphoton_t photons_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
+				  	  	  	 photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], unsigned char &active_buffer);
