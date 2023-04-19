@@ -153,8 +153,7 @@ void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream
 
 void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHASEGROUPS],
 		hls::stream<trigstream_t> &outstream,
-		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE],
-		hls::stream<ap_uint<N_PHASE>> &photon_overflow);
+		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE]);
 
 void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]);

@@ -316,19 +316,13 @@ bool drive() {
 
 	i=0;
 	while(!phases.empty()) {
-		trigger(phases, threshoffs,  trigger_out, timestamps, photon_output_fifos, photon_overflow);
+		trigger(phases, threshoffs,  trigger_out, timestamps, photon_output_fifos);
 		photon_fifo_merger(photon_output_fifos, photons_out);
 		i++;
 	}
 	fail|=verify_trigger(trigger_out, trigger_gold);
 	fail|=verify_photons(photons_out, photons_gold);
 
-	i=0;
-	while (!photon_overflow.empty()) {
-		ap_uint<N_PHASE> x = photon_overflow.read();
-		if (x!=0) cout<<"Photon overflow: "<<x<<" on "<<i<<endl;
-		i++;
-	}
 
 	while (!iqs.empty()) {iqs.read();}
 
