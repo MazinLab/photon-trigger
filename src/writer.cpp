@@ -102,7 +102,7 @@ void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOT
 #pragma HLS INTERFACE mode=m_axi depth=64 max_widen_bitwidth=128 port=photons_out offset=slave max_write_burst_length=256
 #pragma HLS INTERFACE mode=s_axilite port=active_buffer
 #pragma HLS INTERFACE mode=s_axilite port=n_photons
-
+#pragma HLS ARRAY_PARTITION variable=photons_out type=complete
 #pragma HLS DEPENDENCE direction=WAW type=inter variable=photons_out distance=8000 true
 #pragma HLS DEPENDENCE direction=WAR type=inter variable=photons_out false
 #pragma HLS DEPENDENCE direction=RAW type=inter variable=photons_out false
