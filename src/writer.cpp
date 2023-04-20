@@ -35,46 +35,63 @@
 
 void photons_maxi_structured(hls::stream<photon_t> &photons, smallphoton_t photons_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
 				  	  	  	 photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], unsigned char &active_buffer) {
-//#pragma HLS INTERFACE mode=s_axilite port=return
-//#pragma HLS INTERFACE mode=axis port=photons depth=64 register
-//#pragma HLS INTERFACE mode=m_axi depth=64 max_widen_bitwidth=128 port=photons_out offset=slave
-//#pragma HLS INTERFACE mode=s_axilite port=active_buffer
-//#pragma HLS INTERFACE mode=s_axilite port=n_photons
+#pragma HLS INTERFACE mode=s_axilite port=return
+#pragma HLS INTERFACE mode=axis port=photons depth=64 register
+#pragma HLS INTERFACE mode=m_axi depth=64 max_widen_bitwidth=128 port=photons_out offset=slave
+#pragma HLS INTERFACE mode=s_axilite port=active_buffer
+#pragma HLS INTERFACE mode=s_axilite port=n_photons
 
 // buffer address consists of three consecutive photon buffers each of 2048*(n) length
 //format is photons_i....
 
 
 	unsigned short _n_photons[2048];
+	for (int j=0;j<N_RES;j++) _n_photons[j]=0;
 //#pragma HLS ARRAY_PARTITION variable = next complete
 
-	for (unsigned char i=0;i<N_PHOTON_BUFFERS;i++) {
-		bool full=false;
+	unsigned char i=0;
+	uint32_t _total_photons=0;
+	timestamp_t _start=0;
+	bool started=false;
+	while(!photons.empty()) {
 
-		active_buffer=i;
+		photon_t photon;
+		smallphoton_t sphot;
+		photoncount_t _n_phot_rid;
+		timestamp_t _elapsed;
 
-		for (int j=0;j<N_RES;j++)
-			_n_photons[j]=0;
+		photon = photons.read();
+		_total_photons++;
+		sphot.time=photon.time;
+		sphot.phase=photon.phase;
 
-		while (!full) {
-			photon_t photon;
-			smallphoton_t sphot;
-			unsigned short tmp;
+		_n_phot_rid=_n_photons[photon.id]+1;
 
-			photon = photons.read();
-			sphot.time=photon.time;
-			sphot.phase=photon.phase;
+		photons_out[i][photon.id][_n_photons[photon.id]]=sphot;
+		_n_photons[photon.id]=_n_phot_rid;
+		n_photons[i][photon.id]=_n_phot_rid;
 
-			photons_out[i][photon.id][_n_photons[photon.id]]=sphot;
 
-			full = !(_n_photons[photon.id]<MAX_CPS-1);
-
-			tmp=_n_photons[photon.id]+1;
-			_n_photons[photon.id]=tmp;
-			n_photons[i][photon.id]=tmp;
+		if (_start>photon.time) {
+			_elapsed = photon.time + (65535 - _start);
+		} else {
+			_elapsed = photon.time-_start;
 		}
-	}
 
+		if (_total_photons>N_PHOTON_LATENCY || _n_phot_rid>=MAX_CPS || (_elapsed>MAX_TIME_LATENCY&&started)) {
+#ifndef __SYNTHESIS__
+			cout<<" rotate buffer "<<_total_photons<<", "<<_n_phot_rid<<", "<<_elapsed<<endl;
+#endif
+			_total_photons=0;
+			_start=photon.time;
+			i = i<N_PHOTON_BUFFERS-1 ? i+1: 0;
+			for (int j=0;j<N_RES;j++) _n_photons[j]=0;
+		}
+		active_buffer=i;
+		started=true;
+	}
+//	i = i<N_PHOTON_BUFFERS-1 ? i+1: 0;
+//	active_buffer=i;
 }
 
 //

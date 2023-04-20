@@ -8,11 +8,14 @@ using namespace std;
 #include "hls_stream.h"
 #include "ap_shift_reg.h"
 
-#define MAX_CPS 5000
+
+#define N_PHOTON_LATENCY 5120
+#define MAX_TIME_LATENCY 50000 //1us ticks clocks
+#define MAX_CPS 10 //5000
 #define N_RES 2048
 #define N_MONITOR 8
-#define N_CAPDATA 90
-#define N_CAPPRE 30
+#define N_CAPDATA 15
+#define N_CAPPRE 3
 #define N_PHOTON_BUFFERS 2
 
 #define N_IQ 8
@@ -56,7 +59,7 @@ typedef group512_t group_t;
 typedef short phase_t;
 
 typedef unsigned int uint32_t;
-typedef uint32_t iq_t;
+typedef int32_t iq_t;
 typedef ap_uint<IQ_BITS*N_PHASE> iqpgroup_t;
 typedef ap_uint<512> uint512_t;
 typedef ap_uint<256> uint256_t;
@@ -158,7 +161,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
 
-void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPPRE+N_CAPDATA],
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA],
 				  uint16_t event_count[N_MONITOR]);
 
 

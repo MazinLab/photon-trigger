@@ -47,14 +47,14 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 #pragma HLS INTERFACE mode=s_axilite port=monitor bundle=control
 #pragma HLS ARRAY_PARTITION variable=monitor type=complete
 
-	 ap_shift_reg<unsigned int, N_CAPPRE> iqprereg[N_MONITOR];
-	 unsigned char tocapture[N_MONITOR];
+	 static ap_shift_reg<unsigned int, N_CAPPRE+1> iqprereg[N_MONITOR];
+	 static unsigned char tocapture[N_MONITOR];
+	 //for (int i=0;i<N_MONITOR;i++) tocapture[i]=0;
 #pragma HLS ARRAY_PARTITION variable=tocapture type=complete
 #pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
 
 
-//	unsigned int cycle=0;
-	while(true) {
+	while(!instream.empty()) {
 	#pragma HLS PIPELINE II=1 REWIND
 		trigstream_t in;
 		iqstreamnarrow_t iq;
@@ -79,34 +79,43 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 			group_t gid;
 			iq_t laneiq;
 			unsigned char nexttocap;
-			channel_to_grouplane(monitor[i], group, lane);
+			channel_to_grouplane(monitor[i], gid, lane);
 
-			laneiq = iqprereg[i].shift(x[lane], N_CAPPRE-1, gid==group);
+			laneiq = iqprereg[i].shift(x[lane], N_CAPPRE, gid==group);
 
 			nexttocap = tocapture[i]-1;
 
 			singleiqstream_t tmp;
 			tmp.user=i;
-			tmp.last=tocapture[i]==0;
+			tmp.last=tocapture[i]==1;
 			tmp.data=laneiq;
 
 			if (gid==group) {
 				if (tocapture[i]>0) {
+//#ifndef __SYNTHESIS__
+////		if (group==0 && i==0) {
+//			cout<<" iq "<<tmp.data<<" for monitor "<<tmp.user<<" last="<<tmp.last<<endl;
+////		}
+//#endif
 					iq_out[i].write(tmp);
 					tocapture[i] = nexttocap;
 				}
 				else if (trigger[lane]) {
+//#ifndef __SYNTHESIS__
+////		if (group==0 && i==0) {
+//			cout<<" Initiate postage rid "<<monitor[i]<<" for monitor "<<i<<endl;
+////		}
+//#endif
 					tocapture[i]=N_CAPDATA;
 				}
 			}
 		}
-//		cycle++;
 	}
 }
 
 
 
-void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPPRE+N_CAPDATA],
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA],
 				  uint16_t event_count[N_MONITOR]){
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=postage register
@@ -114,22 +123,36 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POS
 #pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=128 port=iq offset=slave
 
 
-	iq_t buf[N_MONITOR][N_CAPPRE+N_CAPDATA];
+	iq_t buf[N_MONITOR][N_CAPDATA];
 	uint8_t sample_count[N_MONITOR];
 	uint16_t _event_count[N_MONITOR];
+	for (int i=0;i<N_MONITOR;i++) {
+		for (int j=0;j<N_CAPDATA;j++) buf[i][j]=0;
+		sample_count[i]=0;
+		_event_count[i]=0;
+	}
 
-	while(true) {
+	while(!postage.empty()) {
 
 		singleiqstream_t tmp;
 		bool read;
 		bool have_burst;
 
 		tmp = postage.read();
+//		#ifndef __SYNTHESIS__
+//				if (tmp.user==0) {
+//					cout<<" iq "<<tmp.data<<" sample  "<<(uint16_t)sample_count[tmp.user]<<" last="<<tmp.last<<endl;
+//				}
+//		#endif
 		buf[tmp.user][sample_count[tmp.user]]=tmp.data;
-		have_burst = sample_count[tmp.user] == N_CAPPRE+N_CAPDATA-1;
-		sample_count[tmp.user]++;
+		have_burst = sample_count[tmp.user] == N_CAPDATA-1;
 		if (have_burst) {
-			for (int k=0;k<N_CAPPRE+N_CAPDATA;k++)
+//#ifndef __SYNTHESIS__
+//		if (tmp.user==0) {
+//			cout<<"Bursting"<<endl;
+//		}
+//#endif
+			for (int k=0;k<N_CAPDATA;k++)
 				iq[tmp.user][_event_count[tmp.user]][k]=buf[tmp.user][k];
 			sample_count[tmp.user]=0;
 			_event_count[tmp.user]++;

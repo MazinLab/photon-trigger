@@ -22,6 +22,25 @@ inline phases_t phaseset2phases(phaseset_t p) {
 	return r;
 }
 
+void flatten_postage_streams(hls::stream<singleiqstream_t> multi[N_MONITOR], hls::stream<singleiqstream_t> &flat) {
+	int i=0;
+	while (true) {
+		int done=0;
+		for (int i=0;i<N_MONITOR;i++)
+			done+=multi[i].empty();
+		if (done==N_MONITOR)
+			break;
+		while (not multi[i].empty()) {
+			singleiqstream_t x;
+			x=multi[i].read();
+			flat.write(x);
+			if (x.last) break;
+		}
+		i = i<N_MONITOR-1 ? i+1:0;
+	}
+}
+
+
 //photons trigger at 10
 // 3, 5,4,3
 // 3, 10,10,3
@@ -78,7 +97,6 @@ bool verify_trigger(hls::stream<trigstream_t> &out, hls::stream<trigstream_t> &e
 	if (!fail) cout<<"TRIGGER PASSED!"<<endl;
 	return fail;
 }
-
 
 
 bool verify_photons(hls::stream<photon_t> &out, hls::stream<photon_t> &expected) {
@@ -153,7 +171,7 @@ bool verify_postage(hls::stream<singleiqstream_t> out[N_MONITOR], hls::stream<si
 
 			got=out[j].read();
 			expect=expected[j].read();
-			if (expect.last!=got.last || expect.data!=got.data) {
+			if (expect.last!=got.last || expect.data!=got.data || expect.user!=got.user) {
 				cout<<" Cycle "<<i<<":"<<endl;
 			}
 
@@ -174,10 +192,64 @@ bool verify_postage(hls::stream<singleiqstream_t> out[N_MONITOR], hls::stream<si
 			i++;
 		}
 	}
+	if (!fail) cout<<"POSTAGE FILTER PASSED!"<<endl;
 	return fail;
 }
 
 
+bool verify_postage_maxi(iq_t iq_cap_buffer[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA], uint16_t event_count[N_MONITOR],
+		iq_t iq_cap_buffer_gold[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA], uint16_t event_count_gold[N_MONITOR]) {
+	bool fail=false;
+
+
+	for (int i=0;i<N_MONITOR;i++) {
+		cout<<"Expected "<<event_count_gold[i]<<" postage stamps on monitor "<<i<<", got "<<event_count[i]<<endl;
+		fail|=event_count_gold[i]!=event_count[i];
+
+		for (int j=0;j<POSTAGE_BUFSIZE;j++){//event_count_gold[i];j++) {
+			for (int k=0;k<N_CAPDATA;k++) {
+				if (iq_cap_buffer[i][j][k]!=iq_cap_buffer_gold[i][j][k]){
+					fail|=true;
+					cout<<"mismatch "<<i<<","<<j<<","<<k<<": "<<iq_cap_buffer[i][j][k]<<" should be "<<iq_cap_buffer_gold[i][j][k]<<endl;
+				}
+			}
+		}
+	}
+	if (!fail) cout<<"POSTAGE MAXI PASSED!"<<endl;
+	return fail;
+}
+
+
+bool verify_photons_maxi_structured(smallphoton_t photons_buffer[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
+	  	  	 photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], unsigned char active_buffer,
+			 smallphoton_t photons_buffer_gold[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
+  	  	  	 photoncount_t n_photons_gold[N_PHOTON_BUFFERS][N_RES]) {
+	bool fail=false;
+
+	if (active_buffer>=N_PHOTON_BUFFERS) {
+		fail=true;
+		cout<<"Invalid active buffer"<<endl;
+		return fail;
+	}
+	for (int i=0;i<N_RES;i++) {
+		if (n_photons[active_buffer][i]!=n_photons_gold[active_buffer][i]) {
+			fail=true;
+			cout<<"Got "<<n_photons[active_buffer][i]<<" photons, expected "<<n_photons_gold[active_buffer][i]<<" for res "<<i<<endl;
+		}
+		for (int j=0;j<n_photons[active_buffer][i];i++) {
+			smallphoton_t got, expect;
+			got = photons_buffer[active_buffer][i][j];
+			expect = photons_buffer_gold[active_buffer][i][j];
+			if (got.time!=expect.time || got.phase!=expect.phase) {
+				fail=true;
+				cout<<"Got "<<got.time<<","<<got.phase<<" expected "<<expect.time<<","<<expect.phase<<" for res,phot "<<i<<","<<j<<endl;
+			}
+		}
+	}
+
+	if (!fail) cout<<"PHOTON MAXI STRUCTURED PASSED!"<<endl;
+	return fail;
+}
 
 bool drive() {
 
@@ -190,13 +262,45 @@ bool drive() {
 	hls::stream<timestamp_t> timestamps("Timestamps");
 
 	hls::stream<trigstream_t> trigger_out("Trig out"), trigger_gold("Trig gold"), trigger_gold2("Trig gold2"), postage_trigger("postage Trig input");
-	hls::stream<photon_t> photons_out("Photons out"), photons_gold("Photon gold"), photon_output_fifos[N_PHASE];
-	hls::stream<singleiqstream_t> postage_out[N_MONITOR], postage_gold[N_MONITOR];
+	hls::stream<photon_t> photons_out("Photons out"), photons_gold("Photon gold"), photons_gold2("Photon gold2"), photon_output_fifos[N_PHASE];
+	hls::stream<singleiqstream_t> postage_out[N_MONITOR], postage_gold[N_MONITOR], postage_gold_flat("postage flat gold");
 
 	hls::stream<ap_uint<N_PHASE>> photon_overflow("Overflow Out");
 
+	iq_t iq_cap_buffer[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA];
+	iq_t iq_cap_buffer_gold[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA];
+	uint16_t event_count[N_MONITOR];
+	uint16_t event_count_gold[N_MONITOR];
+	for (int i=0;i<N_MONITOR;i++) {
+		event_count[i]=0;
+		event_count_gold[i]=0;
+		for (int j=0;j<POSTAGE_BUFSIZE;j++) {
+			for (int k=0;k<N_CAPDATA;k++) {
+				iq_cap_buffer[i][j][k]=0;
+				iq_cap_buffer_gold[i][j][k]=0;
+			}
+		}
+	}
+
+	smallphoton_t photon_buffer_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS], photon_buffer_out_gold[N_PHOTON_BUFFERS][N_RES][MAX_CPS];
+	photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], n_photons_gold[N_PHOTON_BUFFERS][N_RES];
+	unsigned char active_buffer;
+	for (int i=0;i<N_PHOTON_BUFFERS;i++) {
+		for (int j=0;j<N_RES;j++) {
+			n_photons_gold[i][j]=0;
+			n_photons[i][j]=0;
+			for (int k=0;k<MAX_CPS;k++) {
+				smallphoton_t x={0,0};
+				photon_buffer_out[i][j][k]=x;
+				photon_buffer_out_gold[i][j][k]=x;
+			}
+		}
+	}
+
 	threshoffs_t threshoffs[N_PHASEGROUPS];
 	reschan_t monitor[N_MONITOR]={0,1,2,3,4,6,1025,2047};
+	unsigned int photon_trigger_sample_ndx[10];
+	unsigned int n_photon_triggers=0;
 	interval_t holdoff;
 	threshold_t threshold;
 
@@ -239,6 +343,10 @@ bool drive() {
 		stringstream strm(buf);
 		strm>>phase>>trig_event>>photon_event>>photon_phase;
 
+		if (trig_event) {
+			photon_trigger_sample_ndx[n_photon_triggers]=i;
+			n_photon_triggers++;
+		}
 		ap_uint<N_PHASE> trigger;
 		for (int group=0; group<N_PHASEGROUPS; group++) {
 
@@ -264,14 +372,24 @@ bool drive() {
 				x.phase[lane]=phase;
 
 				trigger[lane]=trig_event;
+
 				if (photon_event) {
 					photon_t photon;
+					smallphoton_t sphoton;
 					photon.time=i*N_PHASEGROUPS+group;
 					photon.id=rid;
 					photon.phase=phase;
+					sphoton.time=photon.time;
+					sphoton.phase=photon.phase;
 					photons_gold.write(photon);
+					photons_gold2.write(photon);
+					int rid_int=rid.to_int();
+					assert(rid_int<N_RES);
+					unsigned int nphot=n_photons_gold[0][rid_int];
+					assert(nphot<MAX_CPS);
+					photon_buffer_out_gold[0][rid_int][nphot]=sphoton;
+					n_photons_gold[0][rid_int]++;
 				}
-
 			}
 
 			// Load phase stream, trigger gold stream
@@ -294,25 +412,57 @@ bool drive() {
 		}
 		i++;
 	}
-//	for (int j=0;j<7;j++) {
-//		phases.write(phasetmp);
-//		timestamps.write(0);
-//	}
+
 
 	unsigned int N_SAMP=i;
 	//Load IQs
 	iqstreamnarrow_t iqtmp;
-	iqtmp.data=-1;
+	iqtmp.data=0;
 	for (int i=0;i<(N_SAMP+N_CAPDATA+N_CAPPRE)*N_PHASEGROUPS*N_PHASE;i++) { //-1 because the trigger stream has 1 cycle of windup and we won't bother testing that
 
-		int group, lane;
+		int group, lane, samp;
+		samp=i/2048 - N_CAPPRE;
 		group=(i/N_PHASE)%N_PHASEGROUPS;
 		lane=i%N_PHASE;
 		iqtmp.data.range(IQ_BITS*(lane+1)-1,IQ_BITS*lane)=i;
 		iqtmp.last=group==N_PHASEGROUPS-1;
+
 		if (lane==N_PHASE-1)
 			iqs.write(iqtmp);
 	}
+
+	for (int i=0;i<N_MONITOR;i++){
+		event_count_gold[i]=n_photon_triggers;
+	}
+
+	for (int k=0; k<n_photon_triggers;k++) {
+		if (k>0 && (photon_trigger_sample_ndx[k]-photon_trigger_sample_ndx[k-1]<N_CAPDATA)) {
+			for (int i=0;i<N_MONITOR;i++) event_count_gold[i]--;
+			cout<<"Skipping trigger "<<k<<" at "<<photon_trigger_sample_ndx[k]<<" diff ";
+			cout<<photon_trigger_sample_ndx[k]-photon_trigger_sample_ndx[k-1]<<endl;
+			continue;
+		}
+		for (int j=0;j<N_MONITOR;j++) {
+			for (int i=0; i<N_CAPDATA; i++) {
+
+				iq_t iq;
+				singleiqstream_t x;
+				int samp;
+				samp=photon_trigger_sample_ndx[k]-N_CAPPRE+i;
+				iq=samp*2048+monitor[j];
+
+
+				x.user=j;
+				x.data=iq;
+				x.last=i==N_CAPDATA-1;
+				postage_gold_flat.write(x);
+				iq_cap_buffer_gold[j][k][i]=x.data;
+				postage_gold[j].write(x);
+			}
+		}
+	}
+
+
 
 	i=0;
 	while(!phases.empty()) {
@@ -324,168 +474,19 @@ bool drive() {
 	fail|=verify_photons(photons_out, photons_gold);
 
 
-	while (!iqs.empty()) {iqs.read();}
+	photons_maxi_structured(photons_gold2, photon_buffer_out, n_photons, active_buffer);
+	fail|=verify_photons_maxi_structured(photon_buffer_out, n_photons, active_buffer, photon_buffer_out_gold, n_photons_gold);
 
-//	cout<<"Calling postage with "<<postage_trigger.size()<<", "<<iqs.size()<<" samples"<<endl;
-//	postage(postage_trigger, iqs, monitor, postage_out);
-//	fail|=verify_postage(postage_out, postage_gold);
-//
-//	const unsigned int N_SAMP = sizeof(phasedat) / sizeof(int);
-	//Build phase inputs and expected outputs, let timestamp just be the clock
+	postage_filter(postage_trigger, iqs, monitor, postage_out);
+	fail|=verify_postage(postage_out, postage_gold);
 
-	//trigger needs phases for all resonators with photon events placed on specific resonators at specific points
-	//Threshold level
-	// holdoff time
-	// verify only phase > thershold triggers even and only if holdoff after previous
-	// trigger should come on phase of/immediately after peak  //todo which
+	if (!iqs.empty()) {
+		cout<<"IQs left: "<<iqs.size()<<endl;
+		while(!iqs.empty()) iqs.read();
+	}
 
-	//photon, needs trigger stream and timestamps
-	// should emit photons in resonator order with resonator, phase of peak, and
-
-
-//
-//	holdoff=3;
-//	previous_t last[N_PHASEGROUPS][N_PHASE];
-//	thres=10;
-//
-//
-////
-////
-////	//Load some filler trigstream so we can vet the pre-samples
-////	for (int i=0;i<N_CAPPRE*N_PHASEGROUPS;i++) {
-////		trigstream_t trigtmp;
-////		trigtmp.data=-1;
-////		trigtmp.user=(i%N_PHASEGROUPS);
-////		trigtmp.last=(i%N_PHASEGROUPS)==N_PHASEGROUPS-1;
-////		postage_trigger.write(trigtmp);
-////	}
-//
-//
-//
-//	//Zero cache data
-//	for (int i=0;i<N_PHASEGROUPS;i++) {
-//		for (int j=0;j<N_PHASE;j++) {
-//			last[i][j].phase=0;
-//			last[i][j].since=0;
-//		}
-//	}
-//
-//	//Phase data and trigger events
-//	phaseset_t tmp;
-//	ap_uint<N_PHASE> trigv;
-//	unsigned short last_phase[N_PHASEGROUPS][N_PHASE];
-//	short holdoffctr[N_PHASEGROUPS][N_PHASE];
-//	phases_t inphase_previous[N_PHASEGROUPS];
-//	for (int i=0;i<N_PHASEGROUPS;i++) {
-//		for (int j=0;j<N_PHASE;j++) {
-//			last_phase[i][j]=0;
-//			holdoffctr[i][j]=-1000;
-//		}
-//		inphase_previous[i]=0;
-//	}
-//
-//	group_t next_group=0;
-//	for (int i=0;i<N_SAMP*N_PHASEGROUPS*N_PHASE;i++) {
-//		iqstreamnarrow_t in;
-//		phase_t phase;
-//		threshold_t thresh;
-//		int group, lane, rid, beat, samp;
-//		group=(i/N_PHASE)%N_PHASEGROUPS;
-//		lane=i%N_PHASE;
-//		rid=i%(N_PHASEGROUPS*N_PHASE);
-//		beat=i/N_PHASE;
-//		samp=i/N_PHASEGROUPS/N_PHASE;
-//
-//
-//
-//		thresh=phases2phaseset(thresholds[group]).phase[lane];
-//		phase=group<2 ? phasedat[samp]: 0;
-//
-//		tmp.phase[lane]=phase;
-//
-//		trigv[lane]=last_phase[group][lane]>thresh && last_phase[group][lane]>phase && holdoffctr[group][lane]<=0;
-//
-//		photon_t phot;
-//		phot.id=rid;
-//		phot.time=beat;
-//		phot.phase=phasedat[samp-1];
-//
-//
-//
-//		if (lane==N_PHASE-1) {
-//			phasestream_t inphase;
-//			inphase.data=phaseset2phases(tmp);
-//			inphase.user=group;
-//			inphase.last=inphase.user==N_PHASEGROUPS-1;
-//			phases.write(inphase);
-//
-//			trigstream_t trigtmp;
-//			trigtmp.data=inphase_previous[group];
-//			trigtmp.user=group;
-//			trigtmp.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1,N_PHASEGROUPS_LOG2)=trigv;
-//			trigtmp.last=inphase.last;
-//			trigger_gold.write(trigtmp);
-//			trigger_gold2.write(trigtmp);
-//			if (beat>N_PHASEGROUPS-1) {
-//				postage_trigger.write(trigtmp);
-//				next_group++;
-//			}
-//
-//			inphase_previous[group]=inphase.data;
-//		}
-//
-//		if (lane==0 && (group==0||group==1)||(group==511 &&lane==3) || (group==0)){
-//			if (trigv[lane]) {
-//			cout<<"Cycle "<<beat<<" rid="<<rid<<" phase is "<<phase<<" was "<<last_phase[group][lane];
-//			cout<<". Thresh is "<<thresh;
-//			cout<<" Trigger event: "<<trigv[lane]<<" Holdoff counter: "<<holdoffctr[group][lane]<<endl;
-//
-//		    //cout<<"  EXPECT Photon: rid="<<phot.id<<" "<<phot.phase<<" at "<<phot.time<<endl;
-//			}
-//		}
-//		if (trigv[lane]) {cout<<"  EXPECT Photon: rid="<<phot.id<<" "<<phot.phase<<" at "<<phot.time<<endl;}
-//
-//		if (trigv[lane]) {
-//			photons_gold.write(phot);
-//			for (int mon=0; mon<N_MONITOR;mon++) {
-//				if (rid==monitor[mon] && holdoffctr[group][lane]<-(N_CAPDATA-holdoff)) {
-//					if (rid==0) cout<<"  EXPECT IQ Packet: ";
-//					for (int i_cap=0;i_cap<N_CAPDATA;i_cap++) {
-//						singleiqstream_t tmp;
-//						int x;
-//						x=i+i_cap*2048;
-//						tmp.data=x;//<0? 0: x;
-//						tmp.last=i_cap==(N_CAPDATA-1);
-//						tmp.user=mon;
-//						if (rid==0 && i_cap==-N_CAPPRE) cout<<tmp.data<<" to ";
-//						if (rid==0 && i_cap==N_CAPDATA-N_CAPPRE-1) cout<<tmp.data;
-//						postage_gold[mon].write(tmp);
-//					}
-//					if (rid==0) cout<<endl;
-//				}
-//			}
-//		}
-//		if (trigv[lane])
-//			holdoffctr[group][lane]=holdoff;
-//		else
-//			holdoffctr[group][lane]--;
-//		last_phase[group][lane]=phase;
-//	}
-//
-//	while (postage_trigger.size()!=iqs.size()) {
-//		trigstream_t trigtmp;
-//		trigtmp.data=0;
-//		trigtmp.user=next_group++;
-//		trigtmp.last=trigtmp.user==N_PHASEGROUPS-1;
-//		postage_trigger.write(trigtmp);
-//	}
-//
-
-
-
-//	cout<<"Calling postage, "<<postage_trigger.size()<<", "<<iqs.size()<<" samples"<<endl;
-//	postage(postage_trigger, iqs, monitor, postage_out);
-//	fail|=verify_postage(postage_out, postage_gold);
+	postage_maxi(postage_gold_flat, iq_cap_buffer, event_count);
+	fail|=verify_postage_maxi(iq_cap_buffer, event_count, iq_cap_buffer_gold, event_count_gold);
 
 	return fail;
 }
