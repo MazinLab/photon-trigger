@@ -54,8 +54,8 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 #pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
 
 
-	while(!instream.empty()) {
-	#pragma HLS PIPELINE II=1 REWIND
+//	while(!instream.empty()) {
+	#pragma HLS PIPELINE II=1
 		trigstream_t in;
 		iqstreamnarrow_t iq;
 		group_t group;
@@ -92,25 +92,15 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 
 			if (gid==group) {
 				if (tocapture[i]>0) {
-//#ifndef __SYNTHESIS__
-////		if (group==0 && i==0) {
-//			cout<<" iq "<<tmp.data<<" for monitor "<<tmp.user<<" last="<<tmp.last<<endl;
-////		}
-//#endif
 					iq_out[i].write(tmp);
 					tocapture[i] = nexttocap;
 				}
 				else if (trigger[lane]) {
-//#ifndef __SYNTHESIS__
-////		if (group==0 && i==0) {
-//			cout<<" Initiate postage rid "<<monitor[i]<<" for monitor "<<i<<endl;
-////		}
-//#endif
 					tocapture[i]=N_CAPDATA;
 				}
 			}
 		}
-	}
+//	}
 }
 
 

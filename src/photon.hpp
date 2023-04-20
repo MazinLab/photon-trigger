@@ -10,13 +10,14 @@ using namespace std;
 
 
 #define N_PHOTON_LATENCY 5120
-#define MAX_TIME_LATENCY 50000 //1us ticks clocks
+#define MAX_TIME_LATENCY 500 //1us ticks clocks
 #define MAX_CPS 10 //5000
 #define N_RES 2048
 #define N_MONITOR 8
 #define N_CAPDATA 15
 #define N_CAPPRE 3
 #define N_PHOTON_BUFFERS 2
+#define PHOTON_BUFF_N 8192
 
 #define N_IQ 8
 #define N_PHASE 4
@@ -72,7 +73,7 @@ typedef ap_uint<N_PHASE*PHASE_BITS> phases_t;
 typedef ap_uint<N_PHASE*THRESHOLD_BITS> thresholds_t;
 typedef uint8_t threshold_t;
 
-typedef uint32_t photoncount_t;
+typedef ap_uint<13> photoncount_t;
 
 typedef struct phaseset_t {
 	phase_t phase[N_PHASE];
@@ -165,7 +166,7 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POS
 				  uint16_t event_count[N_MONITOR]);
 
 
-void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][MAX_CPS*N_RES],
+void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][PHOTON_BUFF_N],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer);
 
 void photons_maxi_structured(hls::stream<photon_t> &photons, smallphoton_t photons_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS],

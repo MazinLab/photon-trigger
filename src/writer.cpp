@@ -45,7 +45,7 @@ void photons_maxi_structured(hls::stream<photon_t> &photons, smallphoton_t photo
 //format is photons_i....
 
 
-	unsigned short _n_photons[2048];
+	photoncount_t _n_photons[2048];
 	for (int j=0;j<N_RES;j++) _n_photons[j]=0;
 //#pragma HLS ARRAY_PARTITION variable = next complete
 
@@ -94,46 +94,53 @@ void photons_maxi_structured(hls::stream<photon_t> &photons, smallphoton_t photo
 //	active_buffer=i;
 }
 
-//
-//void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][MAX_CPS*N_RES],
-//				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer) {
-////#pragma HLS INTERFACE mode=s_axilite port=return
-////#pragma HLS INTERFACE mode=axis port=photons depth=64 register
-////#pragma HLS INTERFACE mode=m_axi depth=64 max_widen_bitwidth=128 port=photons_out offset=slave
-////#pragma HLS INTERFACE mode=s_axilite port=active_buffer
-////#pragma HLS INTERFACE mode=s_axilite port=n_photons
-////#pragma HLS ARRAY_PARTITION variable=count_out complete
-//
-//// buffer address consists of three consecutive photon buffers each of 2048*(n) length
-////format is photons_i....
-//
-//
-//	unsigned int _n_photons[N_PHOTON_BUFFERS];
-//#pragma HLS ARRAY_PARTITION variable = next complete
-//
-//	for (unsigned char i=0;i<N_PHOTON_BUFFERS;i++) {
-//		bool full=false;
-//
-//		_n_photons[i]=0;
-//		active_buffer=i;
-//
-//		while (!full) {
-//			photon_t photon;
-//
-//			photon = photons.read();
-//
-//			photons_out[i][_n_photons[i]]=photon;
-//
-//			full = !(_n_photons[i]<(MAX_CPS*N_RES-1));
-//
-//			unsigned int tmp=_n_photons[i]+1;
-//			_n_photons[i]=tmp;
-//			n_photons[i]=tmp;
-//		}
-//
-//	}
-//
-//}
+
+void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][PHOTON_BUFF_N],
+				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer) {
+#pragma HLS INTERFACE mode=s_axilite port=return
+#pragma HLS INTERFACE mode=axis port=photons depth=64 register
+#pragma HLS INTERFACE mode=m_axi depth=64 max_widen_bitwidth=128 port=photons_out offset=slave max_write_burst_length=256
+#pragma HLS INTERFACE mode=s_axilite port=active_buffer
+#pragma HLS INTERFACE mode=s_axilite port=n_photons
+
+#pragma HLS DEPENDENCE direction=WAW type=inter variable=photons_out distance=8000
+#pragma HLS DEPENDENCE direction=WAR type=inter variable=photons_out false
+#pragma HLS DEPENDENCE direction=RAW type=inter variable=photons_out false
+
+	static unsigned char _ab;
+	photoncount_t _n_photons;
+	timestamp_t _elapsed=0, _start;
+	bool started=false;
+
+	while (_n_photons<PHOTON_BUFF_N-1 && _elapsed<MAX_TIME_LATENCY) {
+#pragma HLS PIPELINE ii=3
+		active_buffer=_ab;
+
+		photon_t photon;
+
+		photon = photons.read();
+
+		if (!started) {
+			_start=photon.time;
+		} else if (_start>photon.time) {
+			_elapsed = photon.time + (65535 - _start);
+		} else {
+			_elapsed = photon.time-_start;
+		}
+
+		started=true;
+		photons_out[_ab][_n_photons]=photon;
+		_n_photons++;
+		n_photons[_ab]=_n_photons;
+	}
+
+	#ifndef __SYNTHESIS__
+	cout<<" rotate buffer "<<_n_photons<<", "<<_elapsed<<endl;
+	#endif
+	_ab = _ab<N_PHOTON_BUFFERS-1 ? _ab+1: 0;
+	_n_photons=0;
+	n_photons[_ab]=0;
+}
 
 
 //
