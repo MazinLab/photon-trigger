@@ -14,7 +14,7 @@ using namespace std;
 #define MAX_CPS 5000
 #define N_RES 2048
 #define N_MONITOR 8
-#define N_CAPDATA 90
+#define N_CAPDATA 120
 #define N_CAPPRE 30
 #define N_PHOTON_BUFFERS 2
 #define PHOTON_BUFF_N 8192
