@@ -93,6 +93,101 @@ u64 XPostage_maxi_Get_iq(XPostage_maxi *InstancePtr) {
     return Data;
 }
 
+u32 XPostage_maxi_Get_event_count_BaseAddress(XPostage_maxi *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Control_BaseAddress + XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE);
+}
+
+u32 XPostage_maxi_Get_event_count_HighAddress(XPostage_maxi *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (InstancePtr->Control_BaseAddress + XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_HIGH);
+}
+
+u32 XPostage_maxi_Get_event_count_TotalBytes(XPostage_maxi *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return (XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_HIGH - XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + 1);
+}
+
+u32 XPostage_maxi_Get_event_count_BitWidth(XPostage_maxi *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XPOSTAGE_MAXI_CONTROL_WIDTH_EVENT_COUNT;
+}
+
+u32 XPostage_maxi_Get_event_count_Depth(XPostage_maxi *InstancePtr) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    return XPOSTAGE_MAXI_CONTROL_DEPTH_EVENT_COUNT;
+}
+
+u32 XPostage_maxi_Write_event_count_Words(XPostage_maxi *InstancePtr, int offset, word_type *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_HIGH - XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(int *)(InstancePtr->Control_BaseAddress + XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + (offset + i)*4) = *(data + i);
+    }
+    return length;
+}
+
+u32 XPostage_maxi_Read_event_count_Words(XPostage_maxi *InstancePtr, int offset, word_type *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length)*4 > (XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_HIGH - XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(int *)(InstancePtr->Control_BaseAddress + XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + (offset + i)*4);
+    }
+    return length;
+}
+
+u32 XPostage_maxi_Write_event_count_Bytes(XPostage_maxi *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_HIGH - XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(char *)(InstancePtr->Control_BaseAddress + XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + offset + i) = *(data + i);
+    }
+    return length;
+}
+
+u32 XPostage_maxi_Read_event_count_Bytes(XPostage_maxi *InstancePtr, int offset, char *data, int length) {
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr -> IsReady == XIL_COMPONENT_IS_READY);
+
+    int i;
+
+    if ((offset + length) > (XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_HIGH - XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + 1))
+        return 0;
+
+    for (i = 0; i < length; i++) {
+        *(data + i) = *(char *)(InstancePtr->Control_BaseAddress + XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_BASE + offset + i);
+    }
+    return length;
+}
+
 void XPostage_maxi_InterruptGlobalEnable(XPostage_maxi *InstancePtr) {
     Xil_AssertVoid(InstancePtr != NULL);
     Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);

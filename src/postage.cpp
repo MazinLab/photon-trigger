@@ -109,7 +109,7 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POS
 				  uint16_t event_count[N_MONITOR]){
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=postage register
-#pragma HSL INTERFACE mode=s_axilite port=event_count
+#pragma HLS INTERFACE mode=s_axilite port=event_count
 #pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=128 port=iq offset=slave max_write_burst_length=256
 
 

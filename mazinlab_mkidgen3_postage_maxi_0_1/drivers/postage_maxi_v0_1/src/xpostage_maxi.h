@@ -90,6 +90,15 @@ void XPostage_maxi_DisableAutoRestart(XPostage_maxi *InstancePtr);
 
 void XPostage_maxi_Set_iq(XPostage_maxi *InstancePtr, u64 Data);
 u64 XPostage_maxi_Get_iq(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Get_event_count_BaseAddress(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Get_event_count_HighAddress(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Get_event_count_TotalBytes(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Get_event_count_BitWidth(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Get_event_count_Depth(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Write_event_count_Words(XPostage_maxi *InstancePtr, int offset, word_type *data, int length);
+u32 XPostage_maxi_Read_event_count_Words(XPostage_maxi *InstancePtr, int offset, word_type *data, int length);
+u32 XPostage_maxi_Write_event_count_Bytes(XPostage_maxi *InstancePtr, int offset, char *data, int length);
+u32 XPostage_maxi_Read_event_count_Bytes(XPostage_maxi *InstancePtr, int offset, char *data, int length);
 
 void XPostage_maxi_InterruptGlobalEnable(XPostage_maxi *InstancePtr);
 void XPostage_maxi_InterruptGlobalDisable(XPostage_maxi *InstancePtr);

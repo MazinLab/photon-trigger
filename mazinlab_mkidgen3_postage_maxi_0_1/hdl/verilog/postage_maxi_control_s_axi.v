@@ -6,7 +6,7 @@
 `timescale 1ns/1ps
 module postage_maxi_control_s_axi
 #(parameter
-    C_S_AXI_ADDR_WIDTH = 5,
+    C_S_AXI_ADDR_WIDTH = 6,
     C_S_AXI_DATA_WIDTH = 32
 )(
     input  wire                          ACLK,
@@ -31,6 +31,10 @@ module postage_maxi_control_s_axi
     input  wire                          RREADY,
     output wire                          interrupt,
     output wire [63:0]                   iq,
+    input  wire [2:0]                    event_count_address0,
+    input  wire                          event_count_ce0,
+    input  wire                          event_count_we0,
+    input  wire [15:0]                   event_count_d0,
     output wire                          ap_start,
     input  wire                          ap_done,
     input  wire                          ap_ready,
@@ -61,25 +65,31 @@ module postage_maxi_control_s_axi
 // 0x14 : Data signal of iq
 //        bit 31~0 - iq[63:32] (Read/Write)
 // 0x18 : reserved
+// 0x20 ~
+// 0x2f : Memory 'event_count' (8 * 16b)
+//        Word n : bit [15: 0] - event_count[2n]
+//                 bit [31:16] - event_count[2n+1]
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 //------------------------Parameter----------------------
 localparam
-    ADDR_AP_CTRL   = 5'h00,
-    ADDR_GIE       = 5'h04,
-    ADDR_IER       = 5'h08,
-    ADDR_ISR       = 5'h0c,
-    ADDR_IQ_DATA_0 = 5'h10,
-    ADDR_IQ_DATA_1 = 5'h14,
-    ADDR_IQ_CTRL   = 5'h18,
-    WRIDLE         = 2'd0,
-    WRDATA         = 2'd1,
-    WRRESP         = 2'd2,
-    WRRESET        = 2'd3,
-    RDIDLE         = 2'd0,
-    RDDATA         = 2'd1,
-    RDRESET        = 2'd2,
-    ADDR_BITS                = 5;
+    ADDR_AP_CTRL          = 6'h00,
+    ADDR_GIE              = 6'h04,
+    ADDR_IER              = 6'h08,
+    ADDR_ISR              = 6'h0c,
+    ADDR_IQ_DATA_0        = 6'h10,
+    ADDR_IQ_DATA_1        = 6'h14,
+    ADDR_IQ_CTRL          = 6'h18,
+    ADDR_EVENT_COUNT_BASE = 6'h20,
+    ADDR_EVENT_COUNT_HIGH = 6'h2f,
+    WRIDLE                = 2'd0,
+    WRDATA                = 2'd1,
+    WRRESP                = 2'd2,
+    WRRESET               = 2'd3,
+    RDIDLE                = 2'd0,
+    RDDATA                = 2'd1,
+    RDRESET               = 2'd2,
+    ADDR_BITS                = 6;
 
 //------------------------Local signal-------------------
     reg  [1:0]                    wstate = WRRESET;
@@ -109,13 +119,44 @@ localparam
     reg  [1:0]                    int_ier = 2'b0;
     reg  [1:0]                    int_isr = 2'b0;
     reg  [63:0]                   int_iq = 'b0;
+    // memory signals
+    wire [1:0]                    int_event_count_address0;
+    wire                          int_event_count_ce0;
+    wire [3:0]                    int_event_count_be0;
+    wire [31:0]                   int_event_count_d0;
+    wire [1:0]                    int_event_count_address1;
+    wire                          int_event_count_ce1;
+    wire [31:0]                   int_event_count_q1;
+    reg                           int_event_count_read;
+    reg                           int_event_count_write;
+    reg  [0:0]                    int_event_count_shift0;
 
 //------------------------Instantiation------------------
+// int_event_count
+postage_maxi_control_s_axi_ram #(
+    .MEM_STYLE ( "auto" ),
+    .MEM_TYPE  ( "S2P" ),
+    .BYTES     ( 4 ),
+    .DEPTH     ( 4 )
+) int_event_count (
+    .clk0      ( ACLK ),
+    .address0  ( int_event_count_address0 ),
+    .ce0       ( int_event_count_ce0 ),
+    .we0       ( int_event_count_be0 ),
+    .d0        ( int_event_count_d0 ),
+    .q0        (  ),
+    .clk1      ( ACLK ),
+    .address1  ( int_event_count_address1 ),
+    .ce1       ( int_event_count_ce1 ),
+    .we1       ( {4{1'b0}} ),
+    .d1        ( {16{1'b0}} ),
+    .q1        ( int_event_count_q1 )
+);
 
 
 //------------------------AXI write fsm------------------
 assign AWREADY = (wstate == WRIDLE);
-assign WREADY  = (wstate == WRDATA);
+assign WREADY  = (wstate == WRDATA) && (!ar_hs);
 assign BRESP   = 2'b00;  // OKAY
 assign BVALID  = (wstate == WRRESP);
 assign wmask   = { {8{WSTRB[3]}}, {8{WSTRB[2]}}, {8{WSTRB[1]}}, {8{WSTRB[0]}} };
@@ -139,7 +180,7 @@ always @(*) begin
             else
                 wnext = WRIDLE;
         WRDATA:
-            if (WVALID)
+            if (w_hs)
                 wnext = WRRESP;
             else
                 wnext = WRDATA;
@@ -165,7 +206,7 @@ end
 assign ARREADY = (rstate == RDIDLE);
 assign RDATA   = rdata;
 assign RRESP   = 2'b00;  // OKAY
-assign RVALID  = (rstate == RDDATA);
+assign RVALID  = (rstate == RDDATA) & !int_event_count_read;
 assign ar_hs   = ARVALID & ARREADY;
 assign raddr   = ARADDR[ADDR_BITS-1:0];
 
@@ -225,6 +266,9 @@ always @(posedge ACLK) begin
                     rdata <= int_iq[63:32];
                 end
             endcase
+        end
+        else if (int_event_count_read) begin
+            rdata <= int_event_count_q1;
         end
     end
 end
@@ -401,5 +445,140 @@ end
 //synthesis translate_on
 
 //------------------------Memory logic-------------------
+// event_count
+assign int_event_count_address0 = event_count_address0 >> 1;
+assign int_event_count_ce0      = event_count_ce0;
+assign int_event_count_be0      = {2{event_count_we0}} << (event_count_address0[0] * 2);
+assign int_event_count_d0       = {2{event_count_d0}};
+assign int_event_count_address1 = ar_hs? raddr[3:2] : waddr[3:2];
+assign int_event_count_ce1      = ar_hs | (int_event_count_write & WVALID);
+// int_event_count_read
+always @(posedge ACLK) begin
+    if (ARESET)
+        int_event_count_read <= 1'b0;
+    else if (ACLK_EN) begin
+        if (ar_hs && raddr >= ADDR_EVENT_COUNT_BASE && raddr <= ADDR_EVENT_COUNT_HIGH)
+            int_event_count_read <= 1'b1;
+        else
+            int_event_count_read <= 1'b0;
+    end
+end
+
+// int_event_count_shift0
+always @(posedge ACLK) begin
+    if (ARESET)
+        int_event_count_shift0 <= 1'b0;
+    else if (ACLK_EN) begin
+        if (event_count_ce0)
+            int_event_count_shift0 <= event_count_address0[0];
+    end
+end
+
 
 endmodule
+
+
+`timescale 1ns/1ps
+
+module postage_maxi_control_s_axi_ram
+#(parameter
+    MEM_STYLE = "auto",
+    MEM_TYPE  = "S2P",
+    BYTES  = 4,
+    DEPTH  = 256,
+    AWIDTH = log2(DEPTH)
+) (
+    input  wire               clk0,
+    input  wire [AWIDTH-1:0]  address0,
+    input  wire               ce0,
+    input  wire [BYTES-1:0]   we0,
+    input  wire [BYTES*8-1:0] d0,
+    output reg  [BYTES*8-1:0] q0,
+    input  wire               clk1,
+    input  wire [AWIDTH-1:0]  address1,
+    input  wire               ce1,
+    input  wire [BYTES-1:0]   we1,
+    input  wire [BYTES*8-1:0] d1,
+    output reg  [BYTES*8-1:0] q1
+);
+//------------------------ Parameters -------------------
+localparam
+    BYTE_WIDTH = 8,
+    PORT0 = (MEM_TYPE == "S2P") ? "WO" : ((MEM_TYPE == "2P") ? "RO" : "RW"),
+    PORT1 = (MEM_TYPE == "S2P") ? "RO" : "RW";
+//------------------------Local signal-------------------
+(* ram_style = MEM_STYLE*)
+reg  [BYTES*8-1:0] mem[0:DEPTH-1];
+wire re0, re1;
+//------------------------Task and function--------------
+function integer log2;
+    input integer x;
+    integer n, m;
+begin
+    n = 1;
+    m = 2;
+    while (m < x) begin
+        n = n + 1;
+        m = m * 2;
+    end
+    log2 = n;
+end
+endfunction
+//------------------------Body---------------------------
+generate
+    if (MEM_STYLE == "hls_ultra" && PORT0 == "RW") begin
+        assign re0 = ce0 & ~|we0;
+    end else begin
+        assign re0 = ce0;
+    end
+endgenerate
+
+generate
+    if (MEM_STYLE == "hls_ultra" && PORT1 == "RW") begin
+        assign re1 = ce1 & ~|we1;
+    end else begin
+        assign re1 = ce1;
+    end
+endgenerate
+
+// read port 0
+generate if (PORT0 != "WO") begin
+    always @(posedge clk0) begin
+        if (re0) q0 <= mem[address0];
+    end
+end
+endgenerate
+
+// read port 1
+generate if (PORT1 != "WO") begin
+    always @(posedge clk1) begin
+        if (re1) q1 <= mem[address1];
+    end
+end
+endgenerate
+
+integer i;
+// write port 0
+generate if (PORT0 != "RO") begin
+    always @(posedge clk0) begin
+        if (ce0)
+        for (i = 0; i < BYTES; i = i + 1)
+            if (we0[i])
+                mem[address0][i*BYTE_WIDTH +: BYTE_WIDTH] <= d0[i*BYTE_WIDTH +: BYTE_WIDTH];
+    end
+end
+endgenerate
+
+// write port 1
+generate if (PORT1 != "RO") begin
+    always @(posedge clk1) begin
+        if (ce1)
+        for (i = 0; i < BYTES; i = i + 1)
+            if (we1[i])
+                mem[address1][i*BYTE_WIDTH +: BYTE_WIDTH] <= d1[i*BYTE_WIDTH +: BYTE_WIDTH];
+    end
+end
+endgenerate
+
+endmodule
+
