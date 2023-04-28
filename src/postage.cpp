@@ -105,7 +105,7 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 
 
 
-void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA],
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA/4],
 				  uint16_t event_count[N_MONITOR]){
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=postage register
@@ -113,8 +113,10 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POS
 #pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=128 port=iq offset=slave max_write_burst_length=256
 
 
-	iq_t buf[N_CAPDATA];
+	iq_4x_t buf[N_CAPDATA/4];
+
 	ap_uint<10> _event_count[N_MONITOR];
+//#pragma HLS ARRAY_PARTITION dim=1 type=complete variable=_event_count
 	ap_uint<10> _maxevents=0;
 	zero: for (int i=0;i<N_MONITOR;i++) _event_count[i]=0;
 
@@ -128,21 +130,24 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POS
 		uint16_t _event = _event_count[_chan];
 
 		//A
-		buf[0]=tmp.data;
-		read: for (int i=1; i<N_CAPDATA;i++) {
-			tmp = postage.read();
-			buf[i] = tmp.data;
+		iq_4x_t x;
+		x.range(IQ_BITS-1,0)=tmp.data;
+		x.range(IQ_BITS*2-1,IQ_BITS)=postage.read().data;
+		x.range(IQ_BITS*3-1,IQ_BITS*2)=postage.read().data;
+		x.range(IQ_BITS*4-1,IQ_BITS*3)=postage.read().data;
+		buf[0]=x;
+		read: for (int i=1; i<N_CAPDATA/4;i++) {
+#pragma HLS PIPELINE ii=4 rewind
+			iq_4x_t x;
+			x.range(IQ_BITS-1,0)=postage.read().data;
+			x.range(IQ_BITS*2-1,IQ_BITS)=postage.read().data;
+			x.range(IQ_BITS*3-1,IQ_BITS*2)=postage.read().data;
+			x.range(IQ_BITS*4-1,IQ_BITS*3)=postage.read().data;
+			buf[i]=x;
 		}
-		burst: for (int i=0; i<N_CAPDATA;i++)
+		burst: for (int i=0; i<N_CAPDATA/4;i++) {
 			iq[_chan][_event][i]=buf[i];
-		//or
-
-		//B
-//		iq[_chan][_event][0]=tmp.data;
-//		for (int i=1; i<N_CAPDATA;i++){
-//			tmp = postage.read();
-//			iq[_chan][_event][i]=tmp.data;
-//		}
+		}
 
 		_event_count[_chan]++;
 		event_count[_chan]=_event_count[_chan];
