@@ -22,7 +22,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 #pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
 
 	static sincegroup_t since_data[N_PHASEGROUPS], since_cache;
-	static photongroup_t photon_data[N_PHASEGROUPS], photon_cache;
+	static photongroupival_t photon_data[N_PHASEGROUPS], photon_cache;
 #pragma HLS DEPENDENCE variable=since_data intra WAR false
 #pragma HLS DEPENDENCE variable=since_data intra RAW false
 #pragma HLS DEPENDENCE variable=since_data inter RAW distance=512 true
@@ -40,7 +40,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 #pragma HLS PIPELINE II=1
 
 	sincegroup_t sinces;
-	photongroup_t photons;
+	photongroupival_t photons;
 	phasestream_t in;
 	timestamp_t time;
 	ap_uint<N_PHASE> trigger;
@@ -66,7 +66,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	lanes: for (int i=0;i<N_PHASE;i++) {
 		#pragma HLS UNROLL
 		bool trig;
-		photon_noid_t photon;
+		photon_noid_interval_t photon;
 		phase_t phase;
 		reschan_t id;
 		bool update_photon;
@@ -81,33 +81,30 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 		phase_signed.range()=(uint16_t) phase;
 		thresh_signed.range()=(uint8_t) threshs[i];
 
-		//trig=phase<threshs[i] && sinces.since[i]==0;
 		trig=phase_signed<thresh_signed && sinces.since[i]==0;
 		trigger[i]=trig;
 
 		photon.phase=phase;
-		photon.time=time;
+//		photon.time=time;
 		update_photon = photons.lane[i].phase>phase;
 
-//#ifndef __SYNTHESIS__
-//		if (group==1 && i<3) {
-//			cout<<"Phase "<<phase_signed<<" Thresh: "<<thresh_signed<<" Since:"<<(uint16_t)sinces.since[i];
-//			cout<<" id:"<<id<<" time: "<<time<<" Trig: "<<trig<<endl;
-//		}
-//#endif
 
 		emit=!trig && sinces.since[i]==1;
 
 		if (trig) {
 			sinces.since[i]=hoffs[i];
-			photons.lane[i]=photon;
+			photons.lane[i].phase=photon.phase;
+			photons.lane[i].time=sinces.since[i];
 		} else {
 			if (sinces.since[i]>0) {
-				if (update_photon)  photons.lane[i]=photon;
+				if (update_photon)  {
+					photons.lane[i].phase=photon.phase;
+					photons.lane[i].time=sinces.since[i];
+				}
 				if (sinces.since[i]==1) {
 					photon_out.id=id;
 					photon_out.phase=photons.lane[i].phase;
-					photon_out.time=photons.lane[i].time;
+					photon_out.time=time-photons.lane[i].time;
 				}
 				sinces.since[i]--;
 			}
@@ -125,12 +122,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	out.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2) = trigger;
 	out.last=in.last;
 	out.data=in.data;
-//#ifndef __SYNTHESIS__
-//		if (group==1) {
-////			cout<<" Trigger out: "<<trigger<<endl;
-//			cout<<" User out: "<<out.user<<endl;
-//		}
-//#endif
+
 	outstream.write(out);
 //}
 }

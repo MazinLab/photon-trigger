@@ -112,6 +112,16 @@ typedef struct photongroup_t {
 	photon_noid_t lane[N_PHASE];
 } photongroup_t;
 
+typedef struct photon_noid_interval_t {
+	interval_t time;
+	phase_t phase;
+} photon_noid_interval_t;
+
+typedef struct photongroupival_t {
+	photon_noid_interval_t lane[N_PHASE];
+} photongroupival_t;
+
+
 
 inline photon_uint_t photon2uint(photon_t x) {
 	photon_uint_t r;
