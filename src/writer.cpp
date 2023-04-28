@@ -128,7 +128,7 @@ void photons_maxi_id(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOT
 			_elapsed = photon.time-_start;
 		}
 
-		started=true;
+		started=_elapsed<MAX_TIME_LATENCY;
 		photons_out[_ab][_n_photons]=photon;
 		_n_photons++;
 		n_photons[_ab]=_n_photons;

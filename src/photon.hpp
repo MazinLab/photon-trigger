@@ -84,6 +84,7 @@ typedef struct photon_t {
 	phase_t phase;
 	reschan_t id;
 } photon_t;
+#define N_PHOTON_BITS 48
 
 typedef struct smallphoton_t {
 	timestamp_t time;
@@ -151,6 +152,7 @@ typedef ap_axiu<N_PHASE*IQ_BITS,0,0,0> iqstreamnarrow_t;
 typedef ap_axiu<N_IQ*IQ_BITS,8,0,0> iqstream_t;
 typedef ap_axiu<IQ_BITS,N_MONITOR_LOG2,0,0> singleiqstream_t;
 typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
+typedef ap_axiu<N_PHOTON_BITS,0,0,0> photonstream_t;
 
 
 void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons);

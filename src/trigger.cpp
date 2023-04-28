@@ -123,11 +123,6 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 					photon_out.id=id;
 					photon_out.phase=photons.lane[i].phase;
 					photon_out.time=photons.lane[i].time;
-//#ifndef __SYNTHESIS__
-//		if (group==0 && i==0) {
-//			cout<<" Photon out: "<<photon_out.phase;
-//		}
-//#endif
 				}
 				sinces.since[i]--;
 			}
@@ -155,20 +150,43 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 //}
 }
 
-const int _N_PHASE = N_PHASE;
 
-void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons) {
+void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet,// timestamp_t packet_duration,
+		hls::stream<photonstream_t> &photon_packets) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
-#pragma HLS ARRAY_PARTITION variable = photon_fifos complete
-#pragma HLS PIPELINE II = _N_PHASE
-#pragma HLS INTERFACE mode=axis port=photons depth=_N_PHASE register
-	for (int n=0;n<N_PHASE;n++) {
-#pragma HLS UNROLL
-		photon_t photon;
-		bool read;
-		read=photon_fifos[n].read_nb(photon);
-		if (read) {
-			photons.write(photon);
-		}
-	}
+#pragma HLS PIPELINE II = 1
+#pragma HLS INTERFACE mode=axis port=photons depth=100 register
+#pragma HLS INTERFACE mode=axis port=photon_packets depth=100 register
+#pragma HLS INTERFACE mode=s_axilite port=photons_per_packet
+//#pragma HLS INTERFACE mode=s_axilite port=packet_duration
+
+	static ap_uint<10> count=0;
+	static timestamp_t _last_time;
+	static bool seen_a_photon=false;
+
+	photon_t photon;
+	timestamp_t tmp_time;
+	photonstream_t beat;
+	ap_uint<48> packed_photon;
+
+
+	photon = photons.read();
+	packed_photon.range(15,0)=photon.time;
+	packed_photon.range(31,16)=photon.phase;
+	packed_photon.range(47,32)=photon.id;
+
+	tmp_time=photon.time>>9;
+
+	beat.data=packed_photon;
+	beat.last=(count==photons_per_packet || tmp_time!=_last_time) && seen_a_photon;
+	beat.dest=0;
+
+	_last_time=tmp_time;
+
+	photon_packets.write(beat);
+	if (beat.last) count=0;
+	else count++;
+	seen_a_photon=true;
+
+
 }
