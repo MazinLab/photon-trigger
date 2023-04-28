@@ -105,39 +105,47 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 
 
 
-void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA/4],
-				  uint16_t event_count[N_MONITOR]){
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR*POSTAGE_BUFSIZE][N_CAPDATA_MAXI],
+				  uint16_t event_count[N_MONITOR], uint16_t max_events){
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=postage register
 #pragma HLS INTERFACE mode=s_axilite port=event_count
+#pragma HLS INTERFACE mode=s_axilite port=max_events
 #pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=128 port=iq offset=slave max_write_burst_length=256
 
 
-	iq_4x_t buf[N_CAPDATA/4];
-
-	ap_uint<10> _event_count[N_MONITOR];
+	uint16_t _event_count[N_MONITOR];
 //#pragma HLS ARRAY_PARTITION dim=1 type=complete variable=_event_count
-	ap_uint<10> _maxevents=0;
-	zero: for (int i=0;i<N_MONITOR;i++) _event_count[i]=0;
+    zero: for (int i=0;i<N_MONITOR;i++) _event_count[i]=0;
 
-	capture: while(_maxevents<POSTAGE_BUFSIZE) {
+	iq_4x_t buf[N_CAPDATA/4];
+	uint16_t _max_events, _count=0;
+	_max_events=max_events;
+	_max_events = _max_events > (N_MONITOR*POSTAGE_BUFSIZE) ? N_MONITOR*POSTAGE_BUFSIZE:_max_events;
+
+	capture: while(_count<_max_events) {
 
 		singleiqstream_t tmp;
 		bool have_burst;
+		iq_4x_t x;
+		uint8_t _chan;
+		uint16_t _event;
 
 		tmp = postage.read();
-		uint8_t _chan = tmp.user;
-		uint16_t _event = _event_count[_chan];
+		_chan = tmp.user;
 
-		//A
-		iq_4x_t x;
-		x.range(IQ_BITS-1,0)=tmp.data;
-		x.range(IQ_BITS*2-1,IQ_BITS)=postage.read().data;
+//		x.range(IQ_BITS-1,0)=tmp.data;
+//		x.range(IQ_BITS*2-1,IQ_BITS)=postage.read().data;
+//		x.range(IQ_BITS*3-1,IQ_BITS*2)=postage.read().data;
+//		x.range(IQ_BITS*4-1,IQ_BITS*3)=postage.read().data;
+		x.range(IQ_BITS-1,0)=_chan;
+		x.range(IQ_BITS*2-1,IQ_BITS)=tmp.data;
 		x.range(IQ_BITS*3-1,IQ_BITS*2)=postage.read().data;
 		x.range(IQ_BITS*4-1,IQ_BITS*3)=postage.read().data;
 		buf[0]=x;
+
 		read: for (int i=1; i<N_CAPDATA/4;i++) {
-#pragma HLS PIPELINE ii=4 rewind
+#pragma HLS PIPELINE II=4 rewind
 			iq_4x_t x;
 			x.range(IQ_BITS-1,0)=postage.read().data;
 			x.range(IQ_BITS*2-1,IQ_BITS)=postage.read().data;
@@ -145,13 +153,13 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR][
 			x.range(IQ_BITS*4-1,IQ_BITS*3)=postage.read().data;
 			buf[i]=x;
 		}
-		burst: for (int i=0; i<N_CAPDATA/4;i++) {
-			iq[_chan][_event][i]=buf[i];
+		burst: for (int i=0; i<N_CAPDATA_MAXI;i++) {
+			iq[_count][i]=buf[i];
 		}
 
+		_count++;
 		_event_count[_chan]++;
 		event_count[_chan]=_event_count[_chan];
-		_maxevents = _maxevents>_event_count[_chan] ? _maxevents: _event_count[_chan];
 	}
 
 }
