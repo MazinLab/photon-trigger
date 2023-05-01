@@ -85,7 +85,6 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 		trigger[i]=trig;
 
 		photon.phase=phase;
-//		photon.time=time;
 		update_photon = photons.lane[i].phase>phase;
 
 
@@ -95,18 +94,23 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 			sinces.since[i]=hoffs[i];
 			photons.lane[i].phase=photon.phase;
 			photons.lane[i].time=sinces.since[i];
+//			cout<<"Trigger at "<<time<<" Since: "<<(uint16_t)sinces.since[i]<<" Saving: "<<(uint16_t)photons.lane[i].time<<endl;
 		} else {
 			if (sinces.since[i]>0) {
+				interval_t new_since;
+				new_since=sinces.since[i]-1;
 				if (update_photon)  {
 					photons.lane[i].phase=photon.phase;
-					photons.lane[i].time=sinces.since[i];
+					photons.lane[i].time=new_since;
+//					cout<<"Updating at "<<time<<" to "<<(uint16_t)photons.lane[i].time<<endl;
 				}
 				if (sinces.since[i]==1) {
 					photon_out.id=id;
 					photon_out.phase=photons.lane[i].phase;
 					photon_out.time=time-photons.lane[i].time;
+//					cout<<"Outputting photon w/time "<<photon_out.time<<" Time: "<<time<<" Saved: "<<(uint16_t)photons.lane[i].time<<endl;
 				}
-				sinces.since[i]--;
+				sinces.since[i]=new_since;
 			}
 		}
 
@@ -250,8 +254,27 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 	n_photons[_ab]=0;
 
 	#ifndef __SYNTHESIS__
-	cout<<" rotate buffer "<<_n_photons<<", "<<_elapsed<<endl;
+	cout<<" rotate buffer "<<_n_photons<<endl;
 	#endif
 
+}
+
+
+const int _N_PHASE = N_PHASE;
+
+void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons) {
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+#pragma HLS ARRAY_PARTITION variable = photon_fifos complete
+#pragma HLS PIPELINE II = _N_PHASE
+#pragma HLS INTERFACE mode=axis port=photons depth=_N_PHASE register
+	for (int n=0;n<N_PHASE;n++) {
+#pragma HLS UNROLL
+		photon_t photon;
+		bool read;
+		read=photon_fifos[n].read_nb(photon);
+		if (read) {
+			photons.write(photon);
+		}
+	}
 }
 

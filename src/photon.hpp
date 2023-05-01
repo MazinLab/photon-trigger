@@ -172,5 +172,4 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POS
 void photon_maxi(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer);
 
-//void photons_maxi_structured(hls::stream<photon_t> &photons, smallphoton_t photons_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
-//				  	  	  	 photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], unsigned char &active_buffer);
+void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons);

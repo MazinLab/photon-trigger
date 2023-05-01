@@ -652,7 +652,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>7eb7a8b2</spirit:value>
+            <spirit:value>8a647822</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -668,7 +668,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>828decb8</spirit:value>
+            <spirit:value>33cdce2f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -684,7 +684,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>cc465df4</spirit:value>
+            <spirit:value>d8a38334</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -700,7 +700,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>2fdcb348</spirit:value>
+            <spirit:value>5508d790</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1623,7 +1623,7 @@
       <spirit:file>
         <spirit:name>hdl/vhdl/trigger.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_15cffc8d</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_c3307248</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -1758,8 +1758,8 @@
       </xilinx:taxonomies>
       <xilinx:displayName>Photon Trigger</xilinx:displayName>
       <xilinx:definitionSource>HLS</xilinx:definitionSource>
-      <xilinx:coreRevision>2113006992</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2023-04-28T16:12:54Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>2113011273</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2023-05-01T15:33:23Z</xilinx:coreCreationDateTime>
       <xilinx:sdxKernelAttributes>
         <xilinx:sdx_kernel>true</xilinx:sdx_kernel>
         <xilinx:sdx_kernel_type>hls</xilinx:sdx_kernel_type>
@@ -1769,7 +1769,7 @@
       <xilinx:xilinxVersion>2022.1</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="ed82091f"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="248d4760"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="9c326e5a"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="7153572c"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="195d57b3"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b86ad1d1"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="a35ff577"/>

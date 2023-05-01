@@ -220,37 +220,6 @@ bool verify_postage_maxi(iq_t iq_cap_buffer[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDAT
 }
 
 
-bool verify_photons_maxi_structured(smallphoton_t photons_buffer[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
-	  	  	 photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], unsigned char active_buffer,
-			 smallphoton_t photons_buffer_gold[N_PHOTON_BUFFERS][N_RES][MAX_CPS],
-  	  	  	 photoncount_t n_photons_gold[N_PHOTON_BUFFERS][N_RES]) {
-	bool fail=false;
-
-	if (active_buffer>=N_PHOTON_BUFFERS) {
-		fail=true;
-		cout<<"Invalid active buffer"<<endl;
-		return fail;
-	}
-	for (int i=0;i<N_RES;i++) {
-		if (n_photons[active_buffer][i]!=n_photons_gold[active_buffer][i]) {
-			fail=true;
-			cout<<"Got "<<n_photons[active_buffer][i]<<" photons, expected "<<n_photons_gold[active_buffer][i]<<" for res "<<i<<endl;
-		}
-		for (int j=0;j<n_photons[active_buffer][i];i++) {
-			smallphoton_t got, expect;
-			got = photons_buffer[active_buffer][i][j];
-			expect = photons_buffer_gold[active_buffer][i][j];
-			if (got.time!=expect.time || got.phase!=expect.phase) {
-				fail=true;
-				cout<<"Got "<<got.time<<","<<got.phase<<" expected "<<expect.time<<","<<expect.phase<<" for res,phot "<<i<<","<<j<<endl;
-			}
-		}
-	}
-
-	if (!fail) cout<<"PHOTON MAXI STRUCTURED PASSED!"<<endl;
-	return fail;
-}
-
 bool drive() {
 
 
@@ -473,9 +442,6 @@ bool drive() {
 	fail|=verify_trigger(trigger_out, trigger_gold);
 	fail|=verify_photons(photons_out, photons_gold);
 
-
-	photons_maxi_structured(photons_gold2, photon_buffer_out, n_photons, active_buffer);
-	fail|=verify_photons_maxi_structured(photon_buffer_out, n_photons, active_buffer, photon_buffer_out_gold, n_photons_gold);
 
 	postage_filter(postage_trigger, iqs, monitor, postage_out);
 	fail|=verify_postage(postage_out, postage_gold);
