@@ -219,7 +219,7 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 			burst512: for (int i=0;i<256;i++) {
 				photon_uint_2x_t x;
 				x.range(N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2]);
-				x.range(2*N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2+1]);
+				x.range(2*N_PHOTON_BITS-1,N_PHOTON_BITS)=photon2uint(burstcache[i*2+1]);
 				photons_out[_ab][_n_photons/2+i]=x;
 			}
 			cache_i=0;
@@ -244,7 +244,7 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 	burstvar: for (int i=0;i<cache_i/2;i++) {
 		photon_uint_2x_t x;
 		x.range(N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2]);
-		x.range(2*N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2+1]);
+		x.range(2*N_PHOTON_BITS-1,N_PHOTON_BITS)=photon2uint(burstcache[i*2+1]);
 		photons_out[_ab][_n_photons/2+i]=x;
 	}
 	_n_photons+=cache_i;

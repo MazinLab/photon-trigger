@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-(* CORE_GENERATION_INFO="photon_maxi_photon_maxi,hls_ip_2022_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=3.906000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.851380,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=2,HLS_SYN_DSP=0,HLS_SYN_FF=1639,HLS_SYN_LUT=3666,HLS_VERSION=2022_1}" *)
+(* CORE_GENERATION_INFO="photon_maxi_photon_maxi,hls_ip_2022_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=3.906000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.851380,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=4,HLS_SYN_DSP=0,HLS_SYN_FF=1767,HLS_SYN_LUT=3694,HLS_VERSION=2022_1}" *)
 
 module photon_maxi (
         ap_clk,
@@ -210,13 +210,13 @@ reg    gmem_blk_n_AW;
 wire    ap_CS_fsm_state4;
 reg    gmem_blk_n_B;
 wire    ap_CS_fsm_state11;
-reg   [0:0] icmp_ln222_reg_626;
+reg   [0:0] icmp_ln218_reg_626;
 wire    ap_CS_fsm_state12;
 wire    ap_CS_fsm_state19;
-reg   [0:0] icmp_ln248_reg_646;
+reg   [0:0] icmp_ln244_reg_646;
 reg    photons_TDATA_blk_n;
 wire    ap_CS_fsm_state3;
-wire   [0:0] ap_phi_mux_phi_ln212_phi_fu_238_p4;
+wire   [0:0] ap_phi_mux_phi_ln208_phi_fu_238_p4;
 reg   [4:0] time_shift_read_reg_581;
 reg   [16:0] photons_per_buf_read_reg_587;
 reg   [63:0] photons_out_read_reg_592;
@@ -225,24 +225,27 @@ reg   [7:0] conv_reg_600;
 wire    ap_CS_fsm_state2;
 wire   [35:0] sh_prom_i_fu_331_p1;
 reg   [35:0] sh_prom_i_reg_605;
-wire   [63:0] add_ln223_fu_343_p2;
-reg   [63:0] add_ln223_reg_610;
+wire   [63:0] add_ln219_fu_343_p2;
+reg   [63:0] add_ln219_reg_610;
 reg   [0:0] n_photons_addr_reg_616;
 wire   [35:0] photon_time_V_fu_348_p1;
 reg   [35:0] photon_time_V_reg_621;
-wire   [0:0] icmp_ln222_fu_357_p2;
+wire   [0:0] icmp_ln218_fu_357_p2;
 reg   [59:0] trunc_ln1_reg_630;
 wire   [14:0] div_fu_412_p4;
 reg   [14:0] div_reg_636;
 wire   [31:0] div_cast2_fu_422_p1;
 reg   [31:0] div_cast2_reg_641;
-wire   [0:0] icmp_ln248_fu_426_p2;
+wire   [0:0] icmp_ln244_fu_426_p2;
 reg   [59:0] trunc_ln2_reg_650;
-wire   [0:0] xor_ln212_fu_514_p2;
+wire   [0:0] xor_ln208_fu_514_p2;
 reg   [8:0] burstcache_address0;
 reg    burstcache_ce0;
 reg    burstcache_we0;
 wire   [63:0] burstcache_q0;
+reg   [8:0] burstcache_address1;
+reg    burstcache_ce1;
+wire   [63:0] burstcache_q1;
 wire    grp_photon_maxi_Pipeline_burst512_fu_259_ap_start;
 wire    grp_photon_maxi_Pipeline_burst512_fu_259_ap_done;
 wire    grp_photon_maxi_Pipeline_burst512_fu_259_ap_idle;
@@ -281,6 +284,8 @@ wire    grp_photon_maxi_Pipeline_burst512_fu_259_m_axi_gmem_RREADY;
 wire    grp_photon_maxi_Pipeline_burst512_fu_259_m_axi_gmem_BREADY;
 wire   [8:0] grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_address0;
 wire    grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_ce0;
+wire   [8:0] grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_address1;
+wire    grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_ce1;
 wire    grp_photon_maxi_Pipeline_burstvar_fu_267_ap_start;
 wire    grp_photon_maxi_Pipeline_burstvar_fu_267_ap_done;
 wire    grp_photon_maxi_Pipeline_burstvar_fu_267_ap_idle;
@@ -319,6 +324,8 @@ wire    grp_photon_maxi_Pipeline_burstvar_fu_267_m_axi_gmem_RREADY;
 wire    grp_photon_maxi_Pipeline_burstvar_fu_267_m_axi_gmem_BREADY;
 wire   [8:0] grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_address0;
 wire    grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_ce0;
+wire   [8:0] grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_address1;
+wire    grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_ce1;
 reg    gmem_AWVALID;
 wire    gmem_AWREADY;
 reg   [63:0] gmem_AWADDR;
@@ -333,7 +340,7 @@ wire   [127:0] gmem_RDATA;
 wire   [8:0] gmem_RFIFONUM;
 wire    gmem_BVALID;
 reg    gmem_BREADY;
-reg   [0:0] phi_ln212_reg_234;
+reg   [0:0] phi_ln208_reg_234;
 reg    ap_block_state11;
 reg   [0:0] seen_a_photon_reg_245;
 reg    grp_photon_maxi_Pipeline_burst512_fu_259_ap_start_reg;
@@ -343,10 +350,10 @@ reg    grp_photon_maxi_Pipeline_burstvar_fu_267_ap_start_reg;
 wire    ap_CS_fsm_state13;
 wire    ap_CS_fsm_state14;
 wire   [63:0] conv_i_fu_296_p1;
-wire   [63:0] zext_ln220_fu_352_p1;
+wire   [63:0] zext_ln216_fu_352_p1;
 wire   [63:0] zext_ln587_fu_546_p1;
-wire  signed [63:0] sext_ln223_fu_459_p1;
-wire  signed [63:0] sext_ln248_fu_525_p1;
+wire  signed [63:0] sext_ln219_fu_459_p1;
+wire  signed [63:0] sext_ln244_fu_525_p1;
 reg    ap_block_state19;
 wire   [0:0] xor_ln886_fu_535_p2;
 reg   [15:0] cache_i_fu_138;
@@ -362,19 +369,19 @@ wire   [0:0] cmp_i_i83_fu_305_p2;
 wire   [4:0] shft_V_fu_310_p3;
 wire   [0:0] cmp_i_i_fu_317_p2;
 wire   [4:0] shft_V_1_fu_323_p3;
-wire   [63:0] select_ln223_fu_335_p3;
+wire   [63:0] select_ln219_fu_335_p3;
 wire   [15:0] grp_fu_282_p4;
 wire   [19:0] shl_ln_fu_374_p3;
-wire   [63:0] zext_ln223_fu_382_p1;
-wire   [63:0] add_ln223_1_fu_386_p2;
+wire   [63:0] zext_ln219_fu_382_p1;
+wire   [63:0] add_ln219_1_fu_386_p2;
 wire   [19:0] shl_ln1_fu_432_p3;
-wire   [63:0] zext_ln248_fu_440_p1;
-wire   [63:0] add_ln248_fu_444_p2;
+wire   [63:0] zext_ln244_fu_440_p1;
+wire   [63:0] add_ln244_fu_444_p2;
 wire   [35:0] r_V_fu_477_p2;
 wire   [0:0] icmp_ln1077_fu_485_p2;
 wire   [0:0] xor_ln1077_fu_490_p2;
 wire   [0:0] icmp_ln1069_fu_496_p2;
-wire   [0:0] or_ln241_fu_502_p2;
+wire   [0:0] or_ln237_fu_502_p2;
 wire   [0:0] rotate_buffer_fu_508_p2;
 wire   [16:0] zext_ln886_fu_551_p1;
 reg   [19:0] ap_NS_fsm;
@@ -424,7 +431,10 @@ burstcache_U(
     .ce0(burstcache_ce0),
     .we0(burstcache_we0),
     .d0(photons_TDATA_int_regslice),
-    .q0(burstcache_q0)
+    .q0(burstcache_q0),
+    .address1(burstcache_address1),
+    .ce1(burstcache_ce1),
+    .q1(burstcache_q1)
 );
 
 photon_maxi_photon_maxi_Pipeline_burst512 grp_photon_maxi_Pipeline_burst512_fu_259(
@@ -480,10 +490,13 @@ photon_maxi_photon_maxi_Pipeline_burst512 grp_photon_maxi_Pipeline_burst512_fu_2
     .m_axi_gmem_BRESP(2'd0),
     .m_axi_gmem_BID(1'd0),
     .m_axi_gmem_BUSER(1'd0),
-    .sext_ln223(trunc_ln1_reg_630),
+    .sext_ln219(trunc_ln1_reg_630),
     .burstcache_address0(grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_address0),
     .burstcache_ce0(grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_ce0),
-    .burstcache_q0(burstcache_q0)
+    .burstcache_q0(burstcache_q0),
+    .burstcache_address1(grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_address1),
+    .burstcache_ce1(grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_ce1),
+    .burstcache_q1(burstcache_q1)
 );
 
 photon_maxi_photon_maxi_Pipeline_burstvar grp_photon_maxi_Pipeline_burstvar_fu_267(
@@ -539,11 +552,14 @@ photon_maxi_photon_maxi_Pipeline_burstvar grp_photon_maxi_Pipeline_burstvar_fu_2
     .m_axi_gmem_BRESP(2'd0),
     .m_axi_gmem_BID(1'd0),
     .m_axi_gmem_BUSER(1'd0),
-    .sext_ln248(trunc_ln2_reg_650),
+    .sext_ln244(trunc_ln2_reg_650),
     .div(div_reg_636),
     .burstcache_address0(grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_address0),
     .burstcache_ce0(grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_ce0),
-    .burstcache_q0(burstcache_q0)
+    .burstcache_q0(burstcache_q0),
+    .burstcache_address1(grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_address1),
+    .burstcache_ce1(grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_ce1),
+    .burstcache_q1(burstcache_q1)
 );
 
 photon_maxi_control_s_axi #(
@@ -723,23 +739,23 @@ always @ (posedge ap_clk) begin
 end
 
 always @ (posedge ap_clk) begin
-    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln222_fu_357_p2 == 1'd0) & (phi_ln212_reg_234 == 1'd1))) begin
+    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln218_fu_357_p2 == 1'd0) & (phi_ln208_reg_234 == 1'd1))) begin
         cache_i_fu_138 <= cache_i_1_fu_363_p2;
-    end else if ((~((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11) & (icmp_ln222_reg_626 == 1'd1))) begin
+    end else if ((~((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11) & (icmp_ln218_reg_626 == 1'd1))) begin
         cache_i_fu_138 <= 16'd0;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if ((~((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
-        phi_ln212_reg_234 <= xor_ln212_fu_514_p2;
+    if ((~((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
+        phi_ln208_reg_234 <= xor_ln208_fu_514_p2;
     end else if ((1'b1 == ap_CS_fsm_state2)) begin
-        phi_ln212_reg_234 <= 1'd1;
+        phi_ln208_reg_234 <= 1'd1;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if ((~((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
+    if ((~((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
         seen_a_photon_reg_245 <= 1'd1;
     end else if ((1'b1 == ap_CS_fsm_state2)) begin
         seen_a_photon_reg_245 <= 1'd0;
@@ -748,7 +764,7 @@ end
 
 always @ (posedge ap_clk) begin
     if ((1'b1 == ap_CS_fsm_state2)) begin
-        add_ln223_reg_610 <= add_ln223_fu_343_p2;
+        add_ln219_reg_610 <= add_ln219_fu_343_p2;
         conv_reg_600[0] <= conv_fu_301_p1[0];
         n_photons_addr_reg_616 <= conv_i_fu_296_p1;
         sh_prom_i_reg_605[4 : 0] <= sh_prom_i_fu_331_p1[4 : 0];
@@ -756,34 +772,34 @@ always @ (posedge ap_clk) begin
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state3) & (ap_phi_mux_phi_ln212_phi_fu_238_p4 == 1'd0))) begin
+    if (((1'b1 == ap_CS_fsm_state3) & (ap_phi_mux_phi_ln208_phi_fu_238_p4 == 1'd0))) begin
         div_cast2_reg_641[14 : 0] <= div_cast2_fu_422_p1[14 : 0];
         div_reg_636 <= {{cache_i_fu_138[15:1]}};
-        icmp_ln248_reg_646 <= icmp_ln248_fu_426_p2;
+        icmp_ln244_reg_646 <= icmp_ln244_fu_426_p2;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state3) & (phi_ln212_reg_234 == 1'd1))) begin
-        icmp_ln222_reg_626 <= icmp_ln222_fu_357_p2;
+    if (((1'b1 == ap_CS_fsm_state3) & (phi_ln208_reg_234 == 1'd1))) begin
+        icmp_ln218_reg_626 <= icmp_ln218_fu_357_p2;
         photon_time_V_reg_621 <= photon_time_V_fu_348_p1;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if ((~((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19))) begin
+    if ((~((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19))) begin
         p_ab <= xor_ln886_fu_535_p2;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if ((~((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
+    if ((~((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
         p_last_time_V_fu_142 <= trunc_ln993_fu_481_p1;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln222_fu_357_p2 == 1'd1) & (phi_ln212_reg_234 == 1'd1))) begin
+    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln218_fu_357_p2 == 1'd1) & (phi_ln208_reg_234 == 1'd1))) begin
         p_n_photons_V_fu_146 <= p_n_photons_V_1_fu_401_p2;
     end
 end
@@ -797,19 +813,19 @@ always @ (posedge ap_clk) begin
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state3) & (icmp_ln222_fu_357_p2 == 1'd1) & (phi_ln212_reg_234 == 1'd1))) begin
-        trunc_ln1_reg_630 <= {{add_ln223_1_fu_386_p2[63:4]}};
+    if (((1'b1 == ap_CS_fsm_state3) & (icmp_ln218_fu_357_p2 == 1'd1) & (phi_ln208_reg_234 == 1'd1))) begin
+        trunc_ln1_reg_630 <= {{add_ln219_1_fu_386_p2[63:4]}};
     end
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state3) & (icmp_ln248_fu_426_p2 == 1'd0) & (ap_phi_mux_phi_ln212_phi_fu_238_p4 == 1'd0))) begin
-        trunc_ln2_reg_650 <= {{add_ln248_fu_444_p2[63:4]}};
+    if (((1'b1 == ap_CS_fsm_state3) & (icmp_ln244_fu_426_p2 == 1'd0) & (ap_phi_mux_phi_ln208_phi_fu_238_p4 == 1'd0))) begin
+        trunc_ln2_reg_650 <= {{add_ln244_fu_444_p2[63:4]}};
     end
 end
 
 always @ (*) begin
-    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (phi_ln212_reg_234 == 1'd1))) begin
+    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (phi_ln208_reg_234 == 1'd1))) begin
         active_buffer_ap_vld = 1'b1;
     end else begin
         active_buffer_ap_vld = 1'b0;
@@ -819,7 +835,7 @@ end
 assign ap_ST_fsm_state10_blk = 1'b0;
 
 always @ (*) begin
-    if (((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1))) begin
+    if (((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1))) begin
         ap_ST_fsm_state11_blk = 1'b1;
     end else begin
         ap_ST_fsm_state11_blk = 1'b0;
@@ -853,7 +869,7 @@ assign ap_ST_fsm_state17_blk = 1'b0;
 assign ap_ST_fsm_state18_blk = 1'b0;
 
 always @ (*) begin
-    if (((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0))) begin
+    if (((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0))) begin
         ap_ST_fsm_state19_blk = 1'b1;
     end else begin
         ap_ST_fsm_state19_blk = 1'b0;
@@ -873,7 +889,7 @@ assign ap_ST_fsm_state20_blk = 1'b0;
 assign ap_ST_fsm_state2_blk = 1'b0;
 
 always @ (*) begin
-    if (((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1))) begin
+    if (((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1))) begin
         ap_ST_fsm_state3_blk = 1'b1;
     end else begin
         ap_ST_fsm_state3_blk = 1'b0;
@@ -930,7 +946,7 @@ end
 
 always @ (*) begin
     if ((1'b1 == ap_CS_fsm_state3)) begin
-        burstcache_address0 = zext_ln220_fu_352_p1;
+        burstcache_address0 = zext_ln216_fu_352_p1;
     end else if ((1'b1 == ap_CS_fsm_state14)) begin
         burstcache_address0 = grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_address0;
     end else if ((1'b1 == ap_CS_fsm_state6)) begin
@@ -941,7 +957,17 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3))) begin
+    if ((1'b1 == ap_CS_fsm_state14)) begin
+        burstcache_address1 = grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_address1;
+    end else if ((1'b1 == ap_CS_fsm_state6)) begin
+        burstcache_address1 = grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_address1;
+    end else begin
+        burstcache_address1 = 'bx;
+    end
+end
+
+always @ (*) begin
+    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3))) begin
         burstcache_ce0 = 1'b1;
     end else if ((1'b1 == ap_CS_fsm_state14)) begin
         burstcache_ce0 = grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_ce0;
@@ -953,7 +979,17 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (phi_ln212_reg_234 == 1'd1))) begin
+    if ((1'b1 == ap_CS_fsm_state14)) begin
+        burstcache_ce1 = grp_photon_maxi_Pipeline_burstvar_fu_267_burstcache_ce1;
+    end else if ((1'b1 == ap_CS_fsm_state6)) begin
+        burstcache_ce1 = grp_photon_maxi_Pipeline_burst512_fu_259_burstcache_ce1;
+    end else begin
+        burstcache_ce1 = 1'b0;
+    end
+end
+
+always @ (*) begin
+    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (phi_ln208_reg_234 == 1'd1))) begin
         burstcache_we0 = 1'b1;
     end else begin
         burstcache_we0 = 1'b0;
@@ -962,9 +998,9 @@ end
 
 always @ (*) begin
     if (((gmem_AWREADY == 1'b1) & (1'b1 == ap_CS_fsm_state12))) begin
-        gmem_AWADDR = sext_ln248_fu_525_p1;
+        gmem_AWADDR = sext_ln244_fu_525_p1;
     end else if (((gmem_AWREADY == 1'b1) & (1'b1 == ap_CS_fsm_state4))) begin
-        gmem_AWADDR = sext_ln223_fu_459_p1;
+        gmem_AWADDR = sext_ln219_fu_459_p1;
     end else if (((1'b1 == ap_CS_fsm_state14) | (1'b1 == ap_CS_fsm_state13))) begin
         gmem_AWADDR = grp_photon_maxi_Pipeline_burstvar_fu_267_m_axi_gmem_AWADDR;
     end else if (((1'b1 == ap_CS_fsm_state6) | (1'b1 == ap_CS_fsm_state5))) begin
@@ -1001,7 +1037,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((~((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19) & (icmp_ln248_reg_646 == 1'd0)) | (~((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11) & (icmp_ln222_reg_626 == 1'd1)))) begin
+    if (((~((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19) & (icmp_ln244_reg_646 == 1'd0)) | (~((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11) & (icmp_ln218_reg_626 == 1'd1)))) begin
         gmem_BREADY = 1'b1;
     end else if (((1'b1 == ap_CS_fsm_state14) | (1'b1 == ap_CS_fsm_state13))) begin
         gmem_BREADY = grp_photon_maxi_Pipeline_burstvar_fu_267_m_axi_gmem_BREADY;
@@ -1051,7 +1087,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((((1'b1 == ap_CS_fsm_state19) & (icmp_ln248_reg_646 == 1'd0)) | ((1'b1 == ap_CS_fsm_state11) & (icmp_ln222_reg_626 == 1'd1)))) begin
+    if ((((1'b1 == ap_CS_fsm_state19) & (icmp_ln244_reg_646 == 1'd0)) | ((1'b1 == ap_CS_fsm_state11) & (icmp_ln218_reg_626 == 1'd1)))) begin
         gmem_blk_n_B = m_axi_gmem_BVALID;
     end else begin
         gmem_blk_n_B = 1'b1;
@@ -1069,7 +1105,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b1 == ap_CS_fsm_state20) | (~((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19)))) begin
+    if (((1'b1 == ap_CS_fsm_state20) | (~((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19)))) begin
         n_photons_ce0 = 1'b1;
     end else begin
         n_photons_ce0 = 1'b0;
@@ -1087,7 +1123,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b1 == ap_CS_fsm_state20) | (~((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19)))) begin
+    if (((1'b1 == ap_CS_fsm_state20) | (~((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19)))) begin
         n_photons_we0 = 1'b1;
     end else begin
         n_photons_we0 = 1'b0;
@@ -1095,7 +1131,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b1 == ap_CS_fsm_state3) & (phi_ln212_reg_234 == 1'd1))) begin
+    if (((1'b1 == ap_CS_fsm_state3) & (phi_ln208_reg_234 == 1'd1))) begin
         photons_TDATA_blk_n = photons_TVALID_int_regslice;
     end else begin
         photons_TDATA_blk_n = 1'b1;
@@ -1103,7 +1139,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (phi_ln212_reg_234 == 1'd1))) begin
+    if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (phi_ln208_reg_234 == 1'd1))) begin
         photons_TREADY_int_regslice = 1'b1;
     end else begin
         photons_TREADY_int_regslice = 1'b0;
@@ -1123,13 +1159,13 @@ always @ (*) begin
             ap_NS_fsm = ap_ST_fsm_state3;
         end
         ap_ST_fsm_state3 : begin
-            if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln248_fu_426_p2 == 1'd1) & (ap_phi_mux_phi_ln212_phi_fu_238_p4 == 1'd0))) begin
+            if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln244_fu_426_p2 == 1'd1) & (ap_phi_mux_phi_ln208_phi_fu_238_p4 == 1'd0))) begin
                 ap_NS_fsm = ap_ST_fsm_state19;
-            end else if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln248_fu_426_p2 == 1'd0) & (ap_phi_mux_phi_ln212_phi_fu_238_p4 == 1'd0))) begin
+            end else if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln244_fu_426_p2 == 1'd0) & (ap_phi_mux_phi_ln208_phi_fu_238_p4 == 1'd0))) begin
                 ap_NS_fsm = ap_ST_fsm_state12;
-            end else if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln222_fu_357_p2 == 1'd0) & (phi_ln212_reg_234 == 1'd1))) begin
+            end else if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln218_fu_357_p2 == 1'd0) & (phi_ln208_reg_234 == 1'd1))) begin
                 ap_NS_fsm = ap_ST_fsm_state11;
-            end else if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln222_fu_357_p2 == 1'd1) & (phi_ln212_reg_234 == 1'd1))) begin
+            end else if ((~((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1)) & (1'b1 == ap_CS_fsm_state3) & (icmp_ln218_fu_357_p2 == 1'd1) & (phi_ln208_reg_234 == 1'd1))) begin
                 ap_NS_fsm = ap_ST_fsm_state4;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state3;
@@ -1165,7 +1201,7 @@ always @ (*) begin
             ap_NS_fsm = ap_ST_fsm_state11;
         end
         ap_ST_fsm_state11 : begin
-            if ((~((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
+            if ((~((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1)) & (1'b1 == ap_CS_fsm_state11))) begin
                 ap_NS_fsm = ap_ST_fsm_state3;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state11;
@@ -1201,7 +1237,7 @@ always @ (*) begin
             ap_NS_fsm = ap_ST_fsm_state19;
         end
         ap_ST_fsm_state19 : begin
-            if ((~((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19))) begin
+            if ((~((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0)) & (1'b1 == ap_CS_fsm_state19))) begin
                 ap_NS_fsm = ap_ST_fsm_state20;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state19;
@@ -1216,11 +1252,11 @@ always @ (*) begin
     endcase
 end
 
-assign add_ln223_1_fu_386_p2 = (zext_ln223_fu_382_p1 + add_ln223_reg_610);
+assign add_ln219_1_fu_386_p2 = (zext_ln219_fu_382_p1 + add_ln219_reg_610);
 
-assign add_ln223_fu_343_p2 = (select_ln223_fu_335_p3 + photons_out_read_reg_592);
+assign add_ln219_fu_343_p2 = (select_ln219_fu_335_p3 + photons_out_read_reg_592);
 
-assign add_ln248_fu_444_p2 = (zext_ln248_fu_440_p1 + add_ln223_reg_610);
+assign add_ln244_fu_444_p2 = (zext_ln244_fu_440_p1 + add_ln219_reg_610);
 
 assign ap_CS_fsm_state1 = ap_CS_fsm[32'd0];
 
@@ -1247,18 +1283,18 @@ assign ap_CS_fsm_state5 = ap_CS_fsm[32'd4];
 assign ap_CS_fsm_state6 = ap_CS_fsm[32'd5];
 
 always @ (*) begin
-    ap_block_state11 = ((gmem_BVALID == 1'b0) & (icmp_ln222_reg_626 == 1'd1));
+    ap_block_state11 = ((gmem_BVALID == 1'b0) & (icmp_ln218_reg_626 == 1'd1));
 end
 
 always @ (*) begin
-    ap_block_state19 = ((gmem_BVALID == 1'b0) & (icmp_ln248_reg_646 == 1'd0));
+    ap_block_state19 = ((gmem_BVALID == 1'b0) & (icmp_ln244_reg_646 == 1'd0));
 end
 
 always @ (*) begin
-    ap_block_state3 = ((photons_TVALID_int_regslice == 1'b0) & (phi_ln212_reg_234 == 1'd1));
+    ap_block_state3 = ((photons_TVALID_int_regslice == 1'b0) & (phi_ln208_reg_234 == 1'd1));
 end
 
-assign ap_phi_mux_phi_ln212_phi_fu_238_p4 = phi_ln212_reg_234;
+assign ap_phi_mux_phi_ln208_phi_fu_238_p4 = phi_ln208_reg_234;
 
 always @ (*) begin
     ap_rst_n_inv = ~ap_rst_n;
@@ -1288,11 +1324,11 @@ assign icmp_ln1069_fu_496_p2 = ((trunc_ln993_fu_481_p1 != p_last_time_V_fu_142) 
 
 assign icmp_ln1077_fu_485_p2 = ((p_n_photons_V_fu_146 < photons_per_buf_read_reg_587) ? 1'b1 : 1'b0);
 
-assign icmp_ln222_fu_357_p2 = ((cache_i_fu_138 == 16'd511) ? 1'b1 : 1'b0);
+assign icmp_ln218_fu_357_p2 = ((cache_i_fu_138 == 16'd511) ? 1'b1 : 1'b0);
 
-assign icmp_ln248_fu_426_p2 = ((div_fu_412_p4 == 15'd0) ? 1'b1 : 1'b0);
+assign icmp_ln244_fu_426_p2 = ((div_fu_412_p4 == 15'd0) ? 1'b1 : 1'b0);
 
-assign or_ln241_fu_502_p2 = (xor_ln1077_fu_490_p2 | icmp_ln1069_fu_496_p2);
+assign or_ln237_fu_502_p2 = (xor_ln1077_fu_490_p2 | icmp_ln1069_fu_496_p2);
 
 assign p_n_photons_V_1_fu_401_p2 = (p_n_photons_V_fu_146 + 17'd512);
 
@@ -1304,13 +1340,13 @@ assign photons_TREADY = regslice_both_photons_U_ack_in;
 
 assign r_V_fu_477_p2 = photon_time_V_reg_621 >> sh_prom_i_reg_605;
 
-assign rotate_buffer_fu_508_p2 = (seen_a_photon_reg_245 & or_ln241_fu_502_p2);
+assign rotate_buffer_fu_508_p2 = (seen_a_photon_reg_245 & or_ln237_fu_502_p2);
 
-assign select_ln223_fu_335_p3 = ((p_ab[0:0] == 1'b1) ? 64'd819200 : 64'd0);
+assign select_ln219_fu_335_p3 = ((p_ab[0:0] == 1'b1) ? 64'd819200 : 64'd0);
 
-assign sext_ln223_fu_459_p1 = $signed(trunc_ln1_reg_630);
+assign sext_ln219_fu_459_p1 = $signed(trunc_ln1_reg_630);
 
-assign sext_ln248_fu_525_p1 = $signed(trunc_ln2_reg_650);
+assign sext_ln244_fu_525_p1 = $signed(trunc_ln2_reg_650);
 
 assign sh_prom_i_fu_331_p1 = shft_V_1_fu_323_p3;
 
@@ -1326,15 +1362,15 @@ assign trunc_ln993_fu_481_p1 = r_V_fu_477_p2[26:0];
 
 assign xor_ln1077_fu_490_p2 = (icmp_ln1077_fu_485_p2 ^ 1'd1);
 
-assign xor_ln212_fu_514_p2 = (rotate_buffer_fu_508_p2 ^ 1'd1);
+assign xor_ln208_fu_514_p2 = (rotate_buffer_fu_508_p2 ^ 1'd1);
 
 assign xor_ln886_fu_535_p2 = (p_ab ^ 1'd1);
 
-assign zext_ln220_fu_352_p1 = cache_i_fu_138;
+assign zext_ln216_fu_352_p1 = cache_i_fu_138;
 
-assign zext_ln223_fu_382_p1 = shl_ln_fu_374_p3;
+assign zext_ln219_fu_382_p1 = shl_ln_fu_374_p3;
 
-assign zext_ln248_fu_440_p1 = shl_ln1_fu_432_p3;
+assign zext_ln244_fu_440_p1 = shl_ln1_fu_432_p3;
 
 assign zext_ln587_fu_546_p1 = xor_ln886_fu_535_p2;
 
