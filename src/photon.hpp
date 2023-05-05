@@ -16,7 +16,7 @@ using namespace std;
 #define N_MONITOR 8
 #define N_CAPDATA 128  //must be a multiple of 4
 #define N_CAPDATA_MAXI 32
-#define N_CAPPRE 30
+#define N_CAPPRE 8
 #define N_PHOTON_BUFFERS 2
 #define N_PHOTON_BUFFERS_LOG2 1
 
@@ -151,8 +151,9 @@ inline photon_uint_t photon2uint(photon_t x) {
 typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2,0,0> phasestream_t;
 typedef ap_axiu<N_PHASE*IQ_BITS,0,0,0> iqstreamnarrow_t;
 typedef ap_axiu<N_IQ*IQ_BITS,8,0,0> iqstream_t;
+typedef ap_axiu<N_PHASE*IQ_BITS,9,0,0> iqstream4x_t;
 typedef ap_axiu<IQ_BITS,N_MONITOR_LOG2,0,0> singleiqstream_t;
-typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
+typedef ap_axiu<N_PHASE*(PHASE_BITS+IQ_BITS),N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
 typedef ap_axiu<N_PHOTON_BITS,0,0,0> photonstream_t;
 
 

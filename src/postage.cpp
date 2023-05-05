@@ -36,12 +36,11 @@ inline void channel_to_grouplane(reschan_t x, group_t &group, lane_t &lane){
 }
 
 
-void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
+void postage_filter(hls::stream<trigstream_t> &postage_stream,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]) {
 
 #pragma HLS INTERFACE ap_ctrl_none port=return // bundle=control
-#pragma HLS INTERFACE mode=axis port=instream  depth=74752 register
-#pragma HLS INTERFACE mode=axis port=iniq depth=74752 register
+#pragma HLS INTERFACE mode=axis port=postage_stream  depth=74752 register
 #pragma HLS INTERFACE mode=axis port=iq_out depth=200 register
 #pragma HLS ARRAY_PARTITION variable=iq_out type=complete
 #pragma HLS INTERFACE mode=s_axilite port=monitor bundle=control
@@ -56,21 +55,18 @@ void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnar
 //	while(!instream.empty()) {
 	#pragma HLS PIPELINE II=1
 		trigstream_t in;
-		iqstreamnarrow_t iq;
 		group_t group;
 		ap_uint<N_PHASE> trigger;
 		group512_t align;
 
-		in=instream.read();
-		iq=iniq.read();
-
+		in=postage_stream.read();
 		group=in.user.range(N_PHASEGROUPS_LOG2-1,0);
 		trigger=in.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2);
 
 		iq_t x[N_PHASE];
 		#pragma HLS ARRAY_PARTITION variable=x type=complete
 		for (int i=0;i<N_PHASE;i++)
-			x[i]=iq.data.range(IQ_BITS*(i+1)-1, i*IQ_BITS);
+			x[i]=in.data.range(IQ_BITS*(i+1)-1, i*IQ_BITS+N_PHASE*PHASE_BITS);
 
 		for (int i=0;i<N_MONITOR;i++) {
 		#pragma HLS UNROLL

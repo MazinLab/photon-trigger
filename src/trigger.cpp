@@ -11,14 +11,15 @@ inline void unpack_thresholds(threshoffs_t toffs, threshold_t threshs[N_PHASE], 
 	}
 }
 
-void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHASEGROUPS],
-		hls::stream<trigstream_t> &outstream,
-		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE]){
+void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream4x_t> &iq4x_in, threshoffs_t threshoffs[N_PHASEGROUPS],
+		hls::stream<trigstream_t> &postage_stream,
+		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photons_lane[N_PHASE]) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=axis port=outstream depth=32000 register
-#pragma HLS INTERFACE mode=axis port=instream depth=32000 register
+#pragma HLS INTERFACE mode=axis port=postage_stream depth=32000 register
+#pragma HLS INTERFACE mode=axis port=phase4x_in depth=32000 register
+#pragma HLS INTERFACE mode=axis port=iq4x_in depth=32000 register
 #pragma HLS INTERFACE mode=axis port=timestamp depth=32000 register
-#pragma HLS INTERFACE mode=axis depth=4 port=photon_fifos register
+#pragma HLS INTERFACE mode=axis depth=4 port=photons_lane register
 #pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
 
 	static sincegroup_t since_data[N_PHASEGROUPS], since_cache;
@@ -32,7 +33,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 #pragma HLS DEPENDENCE variable=photon_data intra RAW false
 #pragma HLS DEPENDENCE variable=photon_data inter RAW distance=512 true
 #pragma HLS AGGREGATE compact=auto variable=photon_data
-#pragma HLS AGGREGATE compact=auto variable=photon_fifos
+#pragma HLS AGGREGATE compact=auto variable=photons_lane
 
 
 
@@ -47,10 +48,12 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	threshold_t threshs[N_PHASE];
 	interval_t hoffs[N_PHASE];
 	ap_uint<N_PHASE> overflow;
+	iqstream4x_t iq4x;
 
 
-	in = instream.read();
-	time=timestamp.read();
+	in = phase4x_in.read();
+	iq4x = iq4x_in.read();
+	time = timestamp.read();
 
 	group_t group=in.user;
 	group_t last_group=group_t(in.user-1);
@@ -114,7 +117,7 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 			}
 		}
 
-		if (emit) photon_fifos[i].write(photon_out);
+		if (emit) photons_lane[i].write(photon_out);
 	}
 
 	photon_cache=photons;
@@ -125,9 +128,10 @@ void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHA
 	out.user.range(N_PHASEGROUPS_LOG2-1, 0)=in.user;
 	out.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2) = trigger;
 	out.last=in.last;
-	out.data=in.data;
+	out.data.range(N_PHASE*PHASE_BITS-1,0)=in.data;
+	out.data.range(N_PHASE*(PHASE_BITS+IQ_BITS)-1,N_PHASE*PHASE_BITS)=iq4x.data;
 
-	outstream.write(out);
+	postage_stream.write(out);
 //}
 }
 

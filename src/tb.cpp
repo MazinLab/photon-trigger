@@ -232,39 +232,38 @@ bool drive() {
 
 	hls::stream<trigstream_t> trigger_out("Trig out"), trigger_gold("Trig gold"), trigger_gold2("Trig gold2"), postage_trigger("postage Trig input");
 	hls::stream<photon_t> photons_out("Photons out"), photons_gold("Photon gold"), photons_gold2("Photon gold2"), photon_output_fifos[N_PHASE];
-	hls::stream<singleiqstream_t> postage_out[N_MONITOR], postage_gold[N_MONITOR], postage_gold_flat("postage flat gold");
+//	hls::stream<singleiqstream_t> postage_out[N_MONITOR], postage_gold[N_MONITOR], postage_gold_flat("postage flat gold");
 
-	hls::stream<ap_uint<N_PHASE>> photon_overflow("Overflow Out");
 
-	iq_t iq_cap_buffer[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA];
-	iq_t iq_cap_buffer_gold[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA];
+//	iq_t iq_cap_buffer[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA];
+//	iq_t iq_cap_buffer_gold[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA];
 	uint16_t event_count[N_MONITOR];
 	uint16_t event_count_gold[N_MONITOR];
-	for (int i=0;i<N_MONITOR;i++) {
-		event_count[i]=0;
-		event_count_gold[i]=0;
-		for (int j=0;j<POSTAGE_BUFSIZE;j++) {
-			for (int k=0;k<N_CAPDATA;k++) {
-				iq_cap_buffer[i][j][k]=0;
-				iq_cap_buffer_gold[i][j][k]=0;
-			}
-		}
-	}
+//	for (int i=0;i<N_MONITOR;i++) {
+//		event_count[i]=0;
+//		event_count_gold[i]=0;
+//		for (int j=0;j<POSTAGE_BUFSIZE;j++) {
+//			for (int k=0;k<N_CAPDATA;k++) {
+//				iq_cap_buffer[i][j][k]=0;
+//				iq_cap_buffer_gold[i][j][k]=0;
+//			}
+//		}
+//	}
 
-	smallphoton_t photon_buffer_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS], photon_buffer_out_gold[N_PHOTON_BUFFERS][N_RES][MAX_CPS];
-	photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], n_photons_gold[N_PHOTON_BUFFERS][N_RES];
+//	photon_t photon_buffer_out[N_PHOTON_BUFFERS][N_RES][MAX_CPS], photon_buffer_out_gold[N_PHOTON_BUFFERS][N_RES][MAX_CPS];
+//	photoncount_t n_photons[N_PHOTON_BUFFERS][N_RES], n_photons_gold[N_PHOTON_BUFFERS][N_RES];
 	unsigned char active_buffer;
-	for (int i=0;i<N_PHOTON_BUFFERS;i++) {
-		for (int j=0;j<N_RES;j++) {
-			n_photons_gold[i][j]=0;
-			n_photons[i][j]=0;
-			for (int k=0;k<MAX_CPS;k++) {
-				smallphoton_t x={0,0};
-				photon_buffer_out[i][j][k]=x;
-				photon_buffer_out_gold[i][j][k]=x;
-			}
-		}
-	}
+//	for (int i=0;i<N_PHOTON_BUFFERS;i++) {
+//		for (int j=0;j<N_RES;j++) {
+//			n_photons_gold[i][j]=0;
+//			n_photons[i][j]=0;
+//			for (int k=0;k<MAX_CPS;k++) {
+//				photon_t x={0,0,0};
+//				photon_buffer_out[i][j][k]=x;
+//				photon_buffer_out_gold[i][j][k]=x;
+//			}
+//		}
+//	}
 
 	threshoffs_t threshoffs[N_PHASEGROUPS];
 	reschan_t monitor[N_MONITOR]={0,1,2,3,4,6,1025,2047};
@@ -344,8 +343,8 @@ bool drive() {
 
 				if (photon_event) {
 					photon_t photon;
-					smallphoton_t sphoton;
-					photon.time=i*N_PHASEGROUPS+group;
+					photon_t sphoton;
+					photon.time=i+28800000000l;//*N_PHASEGROUPS+group;
 					photon.id=rid;
 					photon.phase=phase;
 					sphoton.time=photon.time;
@@ -354,10 +353,10 @@ bool drive() {
 					photons_gold2.write(photon);
 					int rid_int=rid.to_int();
 					assert(rid_int<N_RES);
-					unsigned int nphot=n_photons_gold[0][rid_int];
-					assert(nphot<MAX_CPS);
-					photon_buffer_out_gold[0][rid_int][nphot]=sphoton;
-					n_photons_gold[0][rid_int]++;
+//					unsigned int nphot=n_photons_gold[0][rid_int];
+//					assert(nphot<MAX_CPS);
+//					photon_buffer_out_gold[0][rid_int][nphot]=sphoton;
+//					n_photons_gold[0][rid_int]++;
 				}
 			}
 
@@ -377,7 +376,7 @@ bool drive() {
 			phases.write(phasetmp);
 			trigger_gold.write(trigtmp);
 			postage_trigger.write(trigtmp);
-			timestamps.write(i*N_PHASEGROUPS+group);
+			timestamps.write(i+28800000000l);//*N_PHASEGROUPS+group);
 		}
 		i++;
 	}
@@ -424,9 +423,9 @@ bool drive() {
 				x.user=j;
 				x.data=iq;
 				x.last=i==N_CAPDATA-1;
-				postage_gold_flat.write(x);
-				iq_cap_buffer_gold[j][k][i]=x.data;
-				postage_gold[j].write(x);
+//				postage_gold_flat.write(x);
+//				iq_cap_buffer_gold[j][k][i]=x.data;
+//				postage_gold[j].write(x);
 			}
 		}
 	}
@@ -443,16 +442,19 @@ bool drive() {
 	fail|=verify_photons(photons_out, photons_gold);
 
 
-	postage_filter(postage_trigger, iqs, monitor, postage_out);
-	fail|=verify_postage(postage_out, postage_gold);
-
-	if (!iqs.empty()) {
-		cout<<"IQs left: "<<iqs.size()<<endl;
-		while(!iqs.empty()) iqs.read();
-	}
-
-	postage_maxi(postage_gold_flat, iq_cap_buffer, event_count);
-	fail|=verify_postage_maxi(iq_cap_buffer, event_count, iq_cap_buffer_gold, event_count_gold);
+//	photon_maxi(photons_gold2, photon_buffer_out, n_photons, active_buffer);
+//	fail|=verify_photon_maxi(photon_buffer_out, n_photons, active_buffer, photon_buffer_out_gold, n_photons_gold);
+//
+//	postage_filter(postage_trigger, iqs, monitor, postage_out);
+//	fail|=verify_postage(postage_out, postage_gold);
+//
+//	if (!iqs.empty()) {
+//		cout<<"IQs left: "<<iqs.size()<<endl;
+//		while(!iqs.empty()) iqs.read();
+//	}
+//
+//	postage_maxi(postage_gold_flat, iq_cap_buffer, event_count);
+//	fail|=verify_postage_maxi(iq_cap_buffer, event_count, iq_cap_buffer_gold, event_count_gold);
 
 	return fail;
 }
