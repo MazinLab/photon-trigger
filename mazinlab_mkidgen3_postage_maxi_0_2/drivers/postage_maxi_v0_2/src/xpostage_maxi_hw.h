@@ -29,13 +29,15 @@
 //        bit 31~0 - iq[63:32] (Read/Write)
 // 0x18 : reserved
 // 0x1c : Data signal of event_count
-//        bit 15~0 - event_count[15:0] (Read/Write)
+//        bit 15~0 - event_count[15:0] (Read)
 //        others   - reserved
-// 0x20 : reserved
-// 0x24 : Data signal of max_events
+// 0x20 : Control signal of event_count
+//        bit 0  - event_count_ap_vld (Read/COR)
+//        others - reserved
+// 0x2c : Data signal of max_events
 //        bit 15~0 - max_events[15:0] (Read/Write)
 //        others   - reserved
-// 0x28 : reserved
+// 0x30 : reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 #define XPOSTAGE_MAXI_CONTROL_ADDR_AP_CTRL          0x00
@@ -46,6 +48,7 @@
 #define XPOSTAGE_MAXI_CONTROL_BITS_IQ_DATA          64
 #define XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_DATA 0x1c
 #define XPOSTAGE_MAXI_CONTROL_BITS_EVENT_COUNT_DATA 16
-#define XPOSTAGE_MAXI_CONTROL_ADDR_MAX_EVENTS_DATA  0x24
+#define XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_CTRL 0x20
+#define XPOSTAGE_MAXI_CONTROL_ADDR_MAX_EVENTS_DATA  0x2c
 #define XPOSTAGE_MAXI_CONTROL_BITS_MAX_EVENTS_DATA  16
 

@@ -31,7 +31,8 @@ module postage_maxi_control_s_axi
     input  wire                          RREADY,
     output wire                          interrupt,
     output wire [63:0]                   iq,
-    output wire [15:0]                   event_count,
+    input  wire [15:0]                   event_count,
+    input  wire                          event_count_ap_vld,
     output wire [15:0]                   max_events,
     output wire                          ap_start,
     input  wire                          ap_done,
@@ -64,13 +65,15 @@ module postage_maxi_control_s_axi
 //        bit 31~0 - iq[63:32] (Read/Write)
 // 0x18 : reserved
 // 0x1c : Data signal of event_count
-//        bit 15~0 - event_count[15:0] (Read/Write)
+//        bit 15~0 - event_count[15:0] (Read)
 //        others   - reserved
-// 0x20 : reserved
-// 0x24 : Data signal of max_events
+// 0x20 : Control signal of event_count
+//        bit 0  - event_count_ap_vld (Read/COR)
+//        others - reserved
+// 0x2c : Data signal of max_events
 //        bit 15~0 - max_events[15:0] (Read/Write)
 //        others   - reserved
-// 0x28 : reserved
+// 0x30 : reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 //------------------------Parameter----------------------
@@ -84,8 +87,8 @@ localparam
     ADDR_IQ_CTRL            = 6'h18,
     ADDR_EVENT_COUNT_DATA_0 = 6'h1c,
     ADDR_EVENT_COUNT_CTRL   = 6'h20,
-    ADDR_MAX_EVENTS_DATA_0  = 6'h24,
-    ADDR_MAX_EVENTS_CTRL    = 6'h28,
+    ADDR_MAX_EVENTS_DATA_0  = 6'h2c,
+    ADDR_MAX_EVENTS_CTRL    = 6'h30,
     WRIDLE                  = 2'd0,
     WRDATA                  = 2'd1,
     WRRESP                  = 2'd2,
@@ -123,6 +126,7 @@ localparam
     reg  [1:0]                    int_ier = 2'b0;
     reg  [1:0]                    int_isr = 2'b0;
     reg  [63:0]                   int_iq = 'b0;
+    reg                           int_event_count_ap_vld;
     reg  [15:0]                   int_event_count = 'b0;
     reg  [15:0]                   int_max_events = 'b0;
 
@@ -243,6 +247,9 @@ always @(posedge ACLK) begin
                 ADDR_EVENT_COUNT_DATA_0: begin
                     rdata <= int_event_count[15:0];
                 end
+                ADDR_EVENT_COUNT_CTRL: begin
+                    rdata[0] <= int_event_count_ap_vld;
+                end
                 ADDR_MAX_EVENTS_DATA_0: begin
                     rdata <= int_max_events[15:0];
                 end
@@ -259,7 +266,6 @@ assign task_ap_done      = (ap_done && !auto_restart_status) || auto_restart_don
 assign task_ap_ready     = ap_ready && !int_auto_restart;
 assign auto_restart_done = auto_restart_status && (ap_idle && !int_ap_idle);
 assign iq                = int_iq;
-assign event_count       = int_event_count;
 assign max_events        = int_max_events;
 // int_interrupt
 always @(posedge ACLK) begin
@@ -413,13 +419,25 @@ always @(posedge ACLK) begin
     end
 end
 
-// int_event_count[15:0]
+// int_event_count
 always @(posedge ACLK) begin
     if (ARESET)
-        int_event_count[15:0] <= 0;
+        int_event_count <= 0;
     else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_EVENT_COUNT_DATA_0)
-            int_event_count[15:0] <= (WDATA[31:0] & wmask) | (int_event_count[15:0] & ~wmask);
+        if (event_count_ap_vld)
+            int_event_count <= event_count;
+    end
+end
+
+// int_event_count_ap_vld
+always @(posedge ACLK) begin
+    if (ARESET)
+        int_event_count_ap_vld <= 1'b0;
+    else if (ACLK_EN) begin
+        if (event_count_ap_vld)
+            int_event_count_ap_vld <= 1'b1;
+        else if (ar_hs && raddr == ADDR_EVENT_COUNT_CTRL)
+            int_event_count_ap_vld <= 1'b0; // clear on read
     end
 end
 

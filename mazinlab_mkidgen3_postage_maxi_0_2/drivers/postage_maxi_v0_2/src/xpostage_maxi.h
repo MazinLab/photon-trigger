@@ -90,8 +90,8 @@ void XPostage_maxi_DisableAutoRestart(XPostage_maxi *InstancePtr);
 
 void XPostage_maxi_Set_iq(XPostage_maxi *InstancePtr, u64 Data);
 u64 XPostage_maxi_Get_iq(XPostage_maxi *InstancePtr);
-void XPostage_maxi_Set_event_count(XPostage_maxi *InstancePtr, u32 Data);
 u32 XPostage_maxi_Get_event_count(XPostage_maxi *InstancePtr);
+u32 XPostage_maxi_Get_event_count_vld(XPostage_maxi *InstancePtr);
 void XPostage_maxi_Set_max_events(XPostage_maxi *InstancePtr, u32 Data);
 u32 XPostage_maxi_Get_max_events(XPostage_maxi *InstancePtr);
 

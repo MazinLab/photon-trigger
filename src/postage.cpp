@@ -101,7 +101,7 @@ void postage_filter(hls::stream<trigstream_t> &postage_stream,
 
 
 void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR*POSTAGE_BUFSIZE][N_CAPDATA_MAXI],
-				  uint16_t event_count, uint16_t max_events){
+				  uint16_t &event_count, uint16_t max_events){
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=postage register
 #pragma HLS INTERFACE mode=s_axilite port=event_count

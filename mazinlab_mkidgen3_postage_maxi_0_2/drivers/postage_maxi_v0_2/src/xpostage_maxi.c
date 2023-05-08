@@ -93,13 +93,6 @@ u64 XPostage_maxi_Get_iq(XPostage_maxi *InstancePtr) {
     return Data;
 }
 
-void XPostage_maxi_Set_event_count(XPostage_maxi *InstancePtr, u32 Data) {
-    Xil_AssertVoid(InstancePtr != NULL);
-    Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
-
-    XPostage_maxi_WriteReg(InstancePtr->Control_BaseAddress, XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_DATA, Data);
-}
-
 u32 XPostage_maxi_Get_event_count(XPostage_maxi *InstancePtr) {
     u32 Data;
 
@@ -108,6 +101,16 @@ u32 XPostage_maxi_Get_event_count(XPostage_maxi *InstancePtr) {
 
     Data = XPostage_maxi_ReadReg(InstancePtr->Control_BaseAddress, XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_DATA);
     return Data;
+}
+
+u32 XPostage_maxi_Get_event_count_vld(XPostage_maxi *InstancePtr) {
+    u32 Data;
+
+    Xil_AssertNonvoid(InstancePtr != NULL);
+    Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
+
+    Data = XPostage_maxi_ReadReg(InstancePtr->Control_BaseAddress, XPOSTAGE_MAXI_CONTROL_ADDR_EVENT_COUNT_CTRL);
+    return Data & 0x1;
 }
 
 void XPostage_maxi_Set_max_events(XPostage_maxi *InstancePtr, u32 Data) {

@@ -34,7 +34,8 @@ port (
     RREADY                :in   STD_LOGIC;
     interrupt             :out  STD_LOGIC;
     iq                    :out  STD_LOGIC_VECTOR(63 downto 0);
-    event_count           :out  STD_LOGIC_VECTOR(15 downto 0);
+    event_count           :in   STD_LOGIC_VECTOR(15 downto 0);
+    event_count_ap_vld    :in   STD_LOGIC;
     max_events            :out  STD_LOGIC_VECTOR(15 downto 0);
     ap_start              :out  STD_LOGIC;
     ap_done               :in   STD_LOGIC;
@@ -69,13 +70,15 @@ end entity postage_maxi_control_s_axi;
 --        bit 31~0 - iq[63:32] (Read/Write)
 -- 0x18 : reserved
 -- 0x1c : Data signal of event_count
---        bit 15~0 - event_count[15:0] (Read/Write)
+--        bit 15~0 - event_count[15:0] (Read)
 --        others   - reserved
--- 0x20 : reserved
--- 0x24 : Data signal of max_events
+-- 0x20 : Control signal of event_count
+--        bit 0  - event_count_ap_vld (Read/COR)
+--        others - reserved
+-- 0x2c : Data signal of max_events
 --        bit 15~0 - max_events[15:0] (Read/Write)
 --        others   - reserved
--- 0x28 : reserved
+-- 0x30 : reserved
 -- (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 architecture behave of postage_maxi_control_s_axi is
@@ -92,8 +95,8 @@ architecture behave of postage_maxi_control_s_axi is
     constant ADDR_IQ_CTRL            : INTEGER := 16#18#;
     constant ADDR_EVENT_COUNT_DATA_0 : INTEGER := 16#1c#;
     constant ADDR_EVENT_COUNT_CTRL   : INTEGER := 16#20#;
-    constant ADDR_MAX_EVENTS_DATA_0  : INTEGER := 16#24#;
-    constant ADDR_MAX_EVENTS_CTRL    : INTEGER := 16#28#;
+    constant ADDR_MAX_EVENTS_DATA_0  : INTEGER := 16#2c#;
+    constant ADDR_MAX_EVENTS_CTRL    : INTEGER := 16#30#;
     constant ADDR_BITS         : INTEGER := 6;
 
     signal waddr               : UNSIGNED(ADDR_BITS-1 downto 0);
@@ -123,6 +126,7 @@ architecture behave of postage_maxi_control_s_axi is
     signal int_ier             : UNSIGNED(1 downto 0) := (others => '0');
     signal int_isr             : UNSIGNED(1 downto 0) := (others => '0');
     signal int_iq              : UNSIGNED(63 downto 0) := (others => '0');
+    signal int_event_count_ap_vld : STD_LOGIC;
     signal int_event_count     : UNSIGNED(15 downto 0) := (others => '0');
     signal int_max_events      : UNSIGNED(15 downto 0) := (others => '0');
 
@@ -259,6 +263,8 @@ begin
                         rdata_data <= RESIZE(int_iq(63 downto 32), 32);
                     when ADDR_EVENT_COUNT_DATA_0 =>
                         rdata_data <= RESIZE(int_event_count(15 downto 0), 32);
+                    when ADDR_EVENT_COUNT_CTRL =>
+                        rdata_data(0) <= int_event_count_ap_vld;
                     when ADDR_MAX_EVENTS_DATA_0 =>
                         rdata_data <= RESIZE(int_max_events(15 downto 0), 32);
                     when others =>
@@ -276,7 +282,6 @@ begin
     task_ap_ready        <= ap_ready and not int_auto_restart;
     auto_restart_done    <= auto_restart_status and (ap_idle and not int_ap_idle);
     iq                   <= STD_LOGIC_VECTOR(int_iq);
-    event_count          <= STD_LOGIC_VECTOR(int_event_count);
     max_events           <= STD_LOGIC_VECTOR(int_max_events);
 
     process (ACLK)
@@ -474,9 +479,26 @@ begin
     process (ACLK)
     begin
         if (ACLK'event and ACLK = '1') then
-            if (ACLK_EN = '1') then
-                if (w_hs = '1' and waddr = ADDR_EVENT_COUNT_DATA_0) then
-                    int_event_count(15 downto 0) <= (UNSIGNED(WDATA(15 downto 0)) and wmask(15 downto 0)) or ((not wmask(15 downto 0)) and int_event_count(15 downto 0));
+            if (ARESET = '1') then
+                int_event_count <= (others => '0');
+            elsif (ACLK_EN = '1') then
+                if (event_count_ap_vld = '1') then
+                    int_event_count <= UNSIGNED(event_count);
+                end if;
+            end if;
+        end if;
+    end process;
+
+    process (ACLK)
+    begin
+        if (ACLK'event and ACLK = '1') then
+            if (ARESET = '1') then
+                int_event_count_ap_vld <= '0';
+            elsif (ACLK_EN = '1') then
+                if (event_count_ap_vld = '1') then
+                    int_event_count_ap_vld <= '1';
+                elsif (ar_hs = '1' and raddr = ADDR_EVENT_COUNT_CTRL) then
+                    int_event_count_ap_vld <= '0'; -- clear on read
                 end if;
             end if;
         end if;

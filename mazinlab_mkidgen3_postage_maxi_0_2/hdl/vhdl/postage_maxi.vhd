@@ -103,7 +103,7 @@ end;
 architecture behav of postage_maxi is 
     attribute CORE_GENERATION_INFO : STRING;
     attribute CORE_GENERATION_INFO of behav : architecture is
-    "postage_maxi_postage_maxi,hls_ip_2022_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=3.906000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.851380,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=4,HLS_SYN_DSP=0,HLS_SYN_FF=1431,HLS_SYN_LUT=3002,HLS_VERSION=2022_1}";
+    "postage_maxi_postage_maxi,hls_ip_2022_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=3.906000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.851380,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=4,HLS_SYN_DSP=0,HLS_SYN_FF=1444,HLS_SYN_LUT=3002,HLS_VERSION=2022_1}";
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_fsm_state1 : STD_LOGIC_VECTOR (16 downto 0) := "00000000000000001";
@@ -145,6 +145,7 @@ architecture behav of postage_maxi is
     constant ap_const_lv5_1 : STD_LOGIC_VECTOR (4 downto 0) := "00001";
     constant ap_const_lv64_0 : STD_LOGIC_VECTOR (63 downto 0) := "0000000000000000000000000000000000000000000000000000000000000000";
     constant ap_const_lv2_0 : STD_LOGIC_VECTOR (1 downto 0) := "00";
+    constant ap_const_lv1_1 : STD_LOGIC_VECTOR (0 downto 0) := "1";
     constant ap_const_lv16_1F40 : STD_LOGIC_VECTOR (15 downto 0) := "0001111101000000";
     constant ap_const_lv13_1F40 : STD_LOGIC_VECTOR (12 downto 0) := "1111101000000";
     constant ap_const_lv32_3F : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000111111";
@@ -152,7 +153,6 @@ architecture behav of postage_maxi is
     constant ap_const_lv13_1 : STD_LOGIC_VECTOR (12 downto 0) := "0000000000001";
     constant ap_const_lv6_1 : STD_LOGIC_VECTOR (5 downto 0) := "000001";
     constant ap_const_lv6_20 : STD_LOGIC_VECTOR (5 downto 0) := "100000";
-    constant ap_const_lv1_1 : STD_LOGIC_VECTOR (0 downto 0) := "1";
     constant ap_const_lv128_lc_1 : STD_LOGIC_VECTOR (127 downto 0) := "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     constant ap_const_lv9_0 : STD_LOGIC_VECTOR (8 downto 0) := "000000000";
 
@@ -167,7 +167,7 @@ architecture behav of postage_maxi is
     attribute fsm_encoding of ap_CS_fsm_state1 : signal is "none";
     signal ap_ready : STD_LOGIC;
     signal iq : STD_LOGIC_VECTOR (63 downto 0);
-    signal event_count : STD_LOGIC_VECTOR (15 downto 0);
+    signal event_count_ap_vld : STD_LOGIC;
     signal max_events : STD_LOGIC_VECTOR (15 downto 0);
     signal gmem_blk_n_AW : STD_LOGIC;
     signal ap_CS_fsm_state3 : STD_LOGIC;
@@ -175,7 +175,7 @@ architecture behav of postage_maxi is
     signal gmem_blk_n_B : STD_LOGIC;
     signal ap_CS_fsm_state17 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state17 : signal is "none";
-    signal icmp_ln121_reg_380 : STD_LOGIC_VECTOR (0 downto 0);
+    signal icmp_ln117_reg_392 : STD_LOGIC_VECTOR (0 downto 0);
     signal postage_TDATA_blk_n : STD_LOGIC;
     signal ap_CS_fsm_state4 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state4 : signal is "none";
@@ -191,29 +191,31 @@ architecture behav of postage_maxi is
     attribute fsm_encoding of ap_CS_fsm_state9 : signal is "none";
     signal ap_CS_fsm_state10 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state10 : signal is "none";
-    signal reg_208 : STD_LOGIC_VECTOR (31 downto 0);
-    signal reg_212 : STD_LOGIC_VECTOR (31 downto 0);
-    signal max_events_read_reg_353 : STD_LOGIC_VECTOR (15 downto 0);
-    signal iq_read_reg_359 : STD_LOGIC_VECTOR (63 downto 0);
-    signal trunc_ln107_fu_216_p1 : STD_LOGIC_VECTOR (12 downto 0);
-    signal trunc_ln107_reg_364 : STD_LOGIC_VECTOR (12 downto 0);
-    signal p_max_events_fu_225_p3 : STD_LOGIC_VECTOR (12 downto 0);
-    signal p_max_events_reg_370 : STD_LOGIC_VECTOR (12 downto 0);
+    signal reg_217 : STD_LOGIC_VECTOR (31 downto 0);
+    signal reg_221 : STD_LOGIC_VECTOR (31 downto 0);
+    signal max_events_read_reg_365 : STD_LOGIC_VECTOR (15 downto 0);
+    signal iq_read_reg_371 : STD_LOGIC_VECTOR (63 downto 0);
+    signal trunc_ln103_fu_225_p1 : STD_LOGIC_VECTOR (12 downto 0);
+    signal trunc_ln103_reg_376 : STD_LOGIC_VECTOR (12 downto 0);
+    signal p_max_events_fu_234_p3 : STD_LOGIC_VECTOR (12 downto 0);
+    signal p_max_events_reg_382 : STD_LOGIC_VECTOR (12 downto 0);
     signal ap_CS_fsm_state2 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state2 : signal is "none";
-    signal icmp_ln121_fu_232_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal trunc_ln1_reg_384 : STD_LOGIC_VECTOR (59 downto 0);
-    signal empty_22_fu_252_p3 : STD_LOGIC_VECTOR (12 downto 0);
-    signal empty_22_reg_390 : STD_LOGIC_VECTOR (12 downto 0);
-    signal icmp_ln121_2_fu_281_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal icmp_ln121_2_reg_401 : STD_LOGIC_VECTOR (0 downto 0);
-    signal tmp_user_V_reg_405 : STD_LOGIC_VECTOR (2 downto 0);
-    signal p_count_fu_306_p2 : STD_LOGIC_VECTOR (12 downto 0);
-    signal p_count_reg_410 : STD_LOGIC_VECTOR (12 downto 0);
-    signal tmp_data_V_5_reg_416 : STD_LOGIC_VECTOR (31 downto 0);
-    signal trunc_ln140_fu_339_p1 : STD_LOGIC_VECTOR (4 downto 0);
-    signal icmp_ln121_1_fu_349_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal icmp_ln121_1_reg_429 : STD_LOGIC_VECTOR (0 downto 0);
+    signal icmp_ln117_fu_241_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal trunc_ln1_reg_396 : STD_LOGIC_VECTOR (59 downto 0);
+    signal p_count_fu_261_p3 : STD_LOGIC_VECTOR (12 downto 0);
+    signal p_count_reg_402 : STD_LOGIC_VECTOR (12 downto 0);
+    signal zext_ln113_fu_290_p1 : STD_LOGIC_VECTOR (15 downto 0);
+    signal zext_ln113_reg_414 : STD_LOGIC_VECTOR (15 downto 0);
+    signal icmp_ln117_2_fu_293_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal icmp_ln117_2_reg_419 : STD_LOGIC_VECTOR (0 downto 0);
+    signal tmp_user_V_reg_423 : STD_LOGIC_VECTOR (2 downto 0);
+    signal p_count_2_fu_318_p2 : STD_LOGIC_VECTOR (12 downto 0);
+    signal p_count_2_reg_428 : STD_LOGIC_VECTOR (12 downto 0);
+    signal tmp_data_V_5_reg_434 : STD_LOGIC_VECTOR (31 downto 0);
+    signal trunc_ln136_fu_351_p1 : STD_LOGIC_VECTOR (4 downto 0);
+    signal icmp_ln117_1_fu_361_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal icmp_ln117_1_reg_447 : STD_LOGIC_VECTOR (0 downto 0);
     signal ap_CS_fsm_state11 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state11 : signal is "none";
     signal buf_V_address0 : STD_LOGIC_VECTOR (4 downto 0);
@@ -221,44 +223,44 @@ architecture behav of postage_maxi is
     signal buf_V_we0 : STD_LOGIC;
     signal buf_V_d0 : STD_LOGIC_VECTOR (127 downto 0);
     signal buf_V_q0 : STD_LOGIC_VECTOR (127 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_ap_start : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_ap_done : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_ap_idle : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_ap_ready : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWVALID : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWADDR : STD_LOGIC_VECTOR (63 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWID : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWLEN : STD_LOGIC_VECTOR (31 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWSIZE : STD_LOGIC_VECTOR (2 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWBURST : STD_LOGIC_VECTOR (1 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWLOCK : STD_LOGIC_VECTOR (1 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWCACHE : STD_LOGIC_VECTOR (3 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWPROT : STD_LOGIC_VECTOR (2 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWQOS : STD_LOGIC_VECTOR (3 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWREGION : STD_LOGIC_VECTOR (3 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWUSER : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WVALID : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WDATA : STD_LOGIC_VECTOR (127 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WSTRB : STD_LOGIC_VECTOR (15 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WLAST : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WID : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WUSER : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARVALID : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARADDR : STD_LOGIC_VECTOR (63 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARID : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARLEN : STD_LOGIC_VECTOR (31 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARSIZE : STD_LOGIC_VECTOR (2 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARBURST : STD_LOGIC_VECTOR (1 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARLOCK : STD_LOGIC_VECTOR (1 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARCACHE : STD_LOGIC_VECTOR (3 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARPROT : STD_LOGIC_VECTOR (2 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARQOS : STD_LOGIC_VECTOR (3 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARREGION : STD_LOGIC_VECTOR (3 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARUSER : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_RREADY : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_BREADY : STD_LOGIC;
-    signal grp_postage_maxi_Pipeline_burst_fu_196_buf_V_address0 : STD_LOGIC_VECTOR (4 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_buf_V_ce0 : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_ap_start : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_ap_done : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_ap_idle : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_ap_ready : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWVALID : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWADDR : STD_LOGIC_VECTOR (63 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWID : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWLEN : STD_LOGIC_VECTOR (31 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWSIZE : STD_LOGIC_VECTOR (2 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWBURST : STD_LOGIC_VECTOR (1 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWLOCK : STD_LOGIC_VECTOR (1 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWCACHE : STD_LOGIC_VECTOR (3 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWPROT : STD_LOGIC_VECTOR (2 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWQOS : STD_LOGIC_VECTOR (3 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWREGION : STD_LOGIC_VECTOR (3 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWUSER : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WVALID : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WDATA : STD_LOGIC_VECTOR (127 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WSTRB : STD_LOGIC_VECTOR (15 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WLAST : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WID : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WUSER : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARVALID : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARADDR : STD_LOGIC_VECTOR (63 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARID : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARLEN : STD_LOGIC_VECTOR (31 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARSIZE : STD_LOGIC_VECTOR (2 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARBURST : STD_LOGIC_VECTOR (1 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARLOCK : STD_LOGIC_VECTOR (1 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARCACHE : STD_LOGIC_VECTOR (3 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARPROT : STD_LOGIC_VECTOR (2 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARQOS : STD_LOGIC_VECTOR (3 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARREGION : STD_LOGIC_VECTOR (3 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARUSER : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_RREADY : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_BREADY : STD_LOGIC;
+    signal grp_postage_maxi_Pipeline_burst_fu_205_buf_V_address0 : STD_LOGIC_VECTOR (4 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_buf_V_ce0 : STD_LOGIC;
     signal gmem_AWVALID : STD_LOGIC;
     signal gmem_AWREADY : STD_LOGIC;
     signal gmem_AWADDR : STD_LOGIC_VECTOR (63 downto 0);
@@ -271,25 +273,25 @@ architecture behav of postage_maxi is
     signal gmem_RFIFONUM : STD_LOGIC_VECTOR (8 downto 0);
     signal gmem_BVALID : STD_LOGIC;
     signal gmem_BREADY : STD_LOGIC;
-    signal p_count3_reg_174 : STD_LOGIC_VECTOR (12 downto 0);
+    signal p_count_13_reg_183 : STD_LOGIC_VECTOR (12 downto 0);
     signal ap_CS_fsm_state12 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state12 : signal is "none";
     signal ap_block_state12_on_subcall_done : BOOLEAN;
-    signal i1_reg_185 : STD_LOGIC_VECTOR (4 downto 0);
-    signal icmp_ln138_fu_343_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal grp_postage_maxi_Pipeline_burst_fu_196_ap_start_reg : STD_LOGIC := '0';
-    signal zext_ln138_fu_316_p1 : STD_LOGIC_VECTOR (63 downto 0);
-    signal sext_ln121_fu_271_p1 : STD_LOGIC_VECTOR (63 downto 0);
-    signal zext_ln121_fu_266_p1 : STD_LOGIC_VECTOR (31 downto 0);
+    signal i1_reg_194 : STD_LOGIC_VECTOR (4 downto 0);
+    signal icmp_ln134_fu_355_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal grp_postage_maxi_Pipeline_burst_fu_205_ap_start_reg : STD_LOGIC := '0';
+    signal zext_ln134_fu_328_p1 : STD_LOGIC_VECTOR (63 downto 0);
+    signal sext_ln117_fu_280_p1 : STD_LOGIC_VECTOR (63 downto 0);
+    signal zext_ln117_fu_275_p1 : STD_LOGIC_VECTOR (31 downto 0);
     signal ap_block_state17 : BOOLEAN;
-    signal p_Result_s_fu_293_p5 : STD_LOGIC_VECTOR (127 downto 0);
-    signal x_V_2_fu_321_p5 : STD_LOGIC_VECTOR (127 downto 0);
-    signal icmp_ln119_fu_220_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal empty_21_fu_247_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal shl_ln_fu_259_p3 : STD_LOGIC_VECTOR (17 downto 0);
-    signal zext_ln388_fu_290_p1 : STD_LOGIC_VECTOR (31 downto 0);
-    signal i1_cast_fu_312_p1 : STD_LOGIC_VECTOR (5 downto 0);
-    signal i_fu_333_p2 : STD_LOGIC_VECTOR (5 downto 0);
+    signal p_Result_s_fu_305_p5 : STD_LOGIC_VECTOR (127 downto 0);
+    signal x_V_2_fu_333_p5 : STD_LOGIC_VECTOR (127 downto 0);
+    signal icmp_ln115_fu_229_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal empty_21_fu_256_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal shl_ln_fu_268_p3 : STD_LOGIC_VECTOR (17 downto 0);
+    signal zext_ln388_fu_302_p1 : STD_LOGIC_VECTOR (31 downto 0);
+    signal i1_cast_fu_324_p1 : STD_LOGIC_VECTOR (5 downto 0);
+    signal i_fu_345_p2 : STD_LOGIC_VECTOR (5 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (16 downto 0);
     signal ap_ST_fsm_state1_blk : STD_LOGIC;
     signal ap_ST_fsm_state2_blk : STD_LOGIC;
@@ -385,7 +387,7 @@ architecture behav of postage_maxi is
         m_axi_gmem_BRESP : IN STD_LOGIC_VECTOR (1 downto 0);
         m_axi_gmem_BID : IN STD_LOGIC_VECTOR (0 downto 0);
         m_axi_gmem_BUSER : IN STD_LOGIC_VECTOR (0 downto 0);
-        sext_ln121 : IN STD_LOGIC_VECTOR (59 downto 0);
+        sext_ln117 : IN STD_LOGIC_VECTOR (59 downto 0);
         buf_V_address0 : OUT STD_LOGIC_VECTOR (4 downto 0);
         buf_V_ce0 : OUT STD_LOGIC;
         buf_V_q0 : IN STD_LOGIC_VECTOR (127 downto 0) );
@@ -434,7 +436,8 @@ architecture behav of postage_maxi is
         ARESET : IN STD_LOGIC;
         ACLK_EN : IN STD_LOGIC;
         iq : OUT STD_LOGIC_VECTOR (63 downto 0);
-        event_count : OUT STD_LOGIC_VECTOR (15 downto 0);
+        event_count : IN STD_LOGIC_VECTOR (15 downto 0);
+        event_count_ap_vld : IN STD_LOGIC;
         max_events : OUT STD_LOGIC_VECTOR (15 downto 0);
         ap_start : OUT STD_LOGIC;
         interrupt : OUT STD_LOGIC;
@@ -568,49 +571,49 @@ begin
         d0 => buf_V_d0,
         q0 => buf_V_q0);
 
-    grp_postage_maxi_Pipeline_burst_fu_196 : component postage_maxi_postage_maxi_Pipeline_burst
+    grp_postage_maxi_Pipeline_burst_fu_205 : component postage_maxi_postage_maxi_Pipeline_burst
     port map (
         ap_clk => ap_clk,
         ap_rst => ap_rst_n_inv,
-        ap_start => grp_postage_maxi_Pipeline_burst_fu_196_ap_start,
-        ap_done => grp_postage_maxi_Pipeline_burst_fu_196_ap_done,
-        ap_idle => grp_postage_maxi_Pipeline_burst_fu_196_ap_idle,
-        ap_ready => grp_postage_maxi_Pipeline_burst_fu_196_ap_ready,
-        m_axi_gmem_AWVALID => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWVALID,
+        ap_start => grp_postage_maxi_Pipeline_burst_fu_205_ap_start,
+        ap_done => grp_postage_maxi_Pipeline_burst_fu_205_ap_done,
+        ap_idle => grp_postage_maxi_Pipeline_burst_fu_205_ap_idle,
+        ap_ready => grp_postage_maxi_Pipeline_burst_fu_205_ap_ready,
+        m_axi_gmem_AWVALID => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWVALID,
         m_axi_gmem_AWREADY => gmem_AWREADY,
-        m_axi_gmem_AWADDR => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWADDR,
-        m_axi_gmem_AWID => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWID,
-        m_axi_gmem_AWLEN => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWLEN,
-        m_axi_gmem_AWSIZE => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWSIZE,
-        m_axi_gmem_AWBURST => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWBURST,
-        m_axi_gmem_AWLOCK => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWLOCK,
-        m_axi_gmem_AWCACHE => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWCACHE,
-        m_axi_gmem_AWPROT => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWPROT,
-        m_axi_gmem_AWQOS => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWQOS,
-        m_axi_gmem_AWREGION => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWREGION,
-        m_axi_gmem_AWUSER => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWUSER,
-        m_axi_gmem_WVALID => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WVALID,
+        m_axi_gmem_AWADDR => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWADDR,
+        m_axi_gmem_AWID => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWID,
+        m_axi_gmem_AWLEN => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWLEN,
+        m_axi_gmem_AWSIZE => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWSIZE,
+        m_axi_gmem_AWBURST => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWBURST,
+        m_axi_gmem_AWLOCK => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWLOCK,
+        m_axi_gmem_AWCACHE => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWCACHE,
+        m_axi_gmem_AWPROT => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWPROT,
+        m_axi_gmem_AWQOS => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWQOS,
+        m_axi_gmem_AWREGION => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWREGION,
+        m_axi_gmem_AWUSER => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWUSER,
+        m_axi_gmem_WVALID => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WVALID,
         m_axi_gmem_WREADY => gmem_WREADY,
-        m_axi_gmem_WDATA => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WDATA,
-        m_axi_gmem_WSTRB => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WSTRB,
-        m_axi_gmem_WLAST => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WLAST,
-        m_axi_gmem_WID => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WID,
-        m_axi_gmem_WUSER => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WUSER,
-        m_axi_gmem_ARVALID => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARVALID,
+        m_axi_gmem_WDATA => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WDATA,
+        m_axi_gmem_WSTRB => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WSTRB,
+        m_axi_gmem_WLAST => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WLAST,
+        m_axi_gmem_WID => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WID,
+        m_axi_gmem_WUSER => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WUSER,
+        m_axi_gmem_ARVALID => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARVALID,
         m_axi_gmem_ARREADY => ap_const_logic_0,
-        m_axi_gmem_ARADDR => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARADDR,
-        m_axi_gmem_ARID => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARID,
-        m_axi_gmem_ARLEN => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARLEN,
-        m_axi_gmem_ARSIZE => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARSIZE,
-        m_axi_gmem_ARBURST => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARBURST,
-        m_axi_gmem_ARLOCK => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARLOCK,
-        m_axi_gmem_ARCACHE => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARCACHE,
-        m_axi_gmem_ARPROT => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARPROT,
-        m_axi_gmem_ARQOS => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARQOS,
-        m_axi_gmem_ARREGION => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARREGION,
-        m_axi_gmem_ARUSER => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_ARUSER,
+        m_axi_gmem_ARADDR => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARADDR,
+        m_axi_gmem_ARID => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARID,
+        m_axi_gmem_ARLEN => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARLEN,
+        m_axi_gmem_ARSIZE => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARSIZE,
+        m_axi_gmem_ARBURST => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARBURST,
+        m_axi_gmem_ARLOCK => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARLOCK,
+        m_axi_gmem_ARCACHE => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARCACHE,
+        m_axi_gmem_ARPROT => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARPROT,
+        m_axi_gmem_ARQOS => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARQOS,
+        m_axi_gmem_ARREGION => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARREGION,
+        m_axi_gmem_ARUSER => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_ARUSER,
         m_axi_gmem_RVALID => ap_const_logic_0,
-        m_axi_gmem_RREADY => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_RREADY,
+        m_axi_gmem_RREADY => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_RREADY,
         m_axi_gmem_RDATA => ap_const_lv128_lc_1,
         m_axi_gmem_RLAST => ap_const_logic_0,
         m_axi_gmem_RID => ap_const_lv1_0,
@@ -618,13 +621,13 @@ begin
         m_axi_gmem_RUSER => ap_const_lv1_0,
         m_axi_gmem_RRESP => ap_const_lv2_0,
         m_axi_gmem_BVALID => gmem_BVALID,
-        m_axi_gmem_BREADY => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_BREADY,
+        m_axi_gmem_BREADY => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_BREADY,
         m_axi_gmem_BRESP => ap_const_lv2_0,
         m_axi_gmem_BID => ap_const_lv1_0,
         m_axi_gmem_BUSER => ap_const_lv1_0,
-        sext_ln121 => trunc_ln1_reg_384,
-        buf_V_address0 => grp_postage_maxi_Pipeline_burst_fu_196_buf_V_address0,
-        buf_V_ce0 => grp_postage_maxi_Pipeline_burst_fu_196_buf_V_ce0,
+        sext_ln117 => trunc_ln1_reg_396,
+        buf_V_address0 => grp_postage_maxi_Pipeline_burst_fu_205_buf_V_address0,
+        buf_V_ce0 => grp_postage_maxi_Pipeline_burst_fu_205_buf_V_ce0,
         buf_V_q0 => buf_V_q0);
 
     control_s_axi_U : component postage_maxi_control_s_axi
@@ -653,7 +656,8 @@ begin
         ARESET => ap_rst_n_inv,
         ACLK_EN => ap_const_logic_1,
         iq => iq,
-        event_count => event_count,
+        event_count => zext_ln113_reg_414,
+        event_count_ap_vld => event_count_ap_vld,
         max_events => max_events,
         ap_start => ap_start,
         interrupt => interrupt,
@@ -746,8 +750,8 @@ begin
         I_AWLEN => gmem_AWLEN,
         I_WVALID => gmem_WVALID,
         I_WREADY => gmem_WREADY,
-        I_WDATA => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WDATA,
-        I_WSTRB => grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WSTRB,
+        I_WDATA => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WDATA,
+        I_WSTRB => grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WSTRB,
         I_BVALID => gmem_BVALID,
         I_BREADY => gmem_BREADY);
 
@@ -837,59 +841,50 @@ begin
     end process;
 
 
-    grp_postage_maxi_Pipeline_burst_fu_196_ap_start_reg_assign_proc : process(ap_clk)
+    grp_postage_maxi_Pipeline_burst_fu_205_ap_start_reg_assign_proc : process(ap_clk)
     begin
         if (ap_clk'event and ap_clk =  '1') then
             if (ap_rst_n_inv = '1') then
-                grp_postage_maxi_Pipeline_burst_fu_196_ap_start_reg <= ap_const_logic_0;
+                grp_postage_maxi_Pipeline_burst_fu_205_ap_start_reg <= ap_const_logic_0;
             else
                 if ((ap_const_logic_1 = ap_CS_fsm_state11)) then 
-                    grp_postage_maxi_Pipeline_burst_fu_196_ap_start_reg <= ap_const_logic_1;
-                elsif ((grp_postage_maxi_Pipeline_burst_fu_196_ap_ready = ap_const_logic_1)) then 
-                    grp_postage_maxi_Pipeline_burst_fu_196_ap_start_reg <= ap_const_logic_0;
+                    grp_postage_maxi_Pipeline_burst_fu_205_ap_start_reg <= ap_const_logic_1;
+                elsif ((grp_postage_maxi_Pipeline_burst_fu_205_ap_ready = ap_const_logic_1)) then 
+                    grp_postage_maxi_Pipeline_burst_fu_205_ap_start_reg <= ap_const_logic_0;
                 end if; 
             end if;
         end if;
     end process;
 
 
-    i1_reg_185_assign_proc : process (ap_clk)
+    i1_reg_194_assign_proc : process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((postage_TVALID_int_regslice = ap_const_logic_1)) then
-                if (((icmp_ln138_fu_343_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state10))) then 
-                    i1_reg_185 <= trunc_ln140_fu_339_p1;
+                if (((icmp_ln134_fu_355_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state10))) then 
+                    i1_reg_194 <= trunc_ln136_fu_351_p1;
                 elsif ((ap_const_logic_1 = ap_CS_fsm_state6)) then 
-                    i1_reg_185 <= ap_const_lv5_1;
+                    i1_reg_194 <= ap_const_lv5_1;
                 end if;
             end if; 
         end if;
     end process;
 
-    p_count3_reg_174_assign_proc : process (ap_clk)
+    p_count_13_reg_183_assign_proc : process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3) and (icmp_ln121_2_fu_281_p2 = ap_const_lv1_0))) then 
-                p_count3_reg_174 <= ap_const_lv13_0;
-            elsif (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (icmp_ln121_1_reg_429 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0))) then 
-                p_count3_reg_174 <= p_count_reg_410;
+            if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3) and (icmp_ln117_2_fu_293_p2 = ap_const_lv1_0))) then 
+                p_count_13_reg_183 <= ap_const_lv13_0;
+            elsif (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (icmp_ln117_1_reg_447 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0))) then 
+                p_count_13_reg_183 <= p_count_2_reg_428;
             end if; 
-        end if;
-    end process;
-    process (ap_clk)
-    begin
-        if (ap_clk'event and ap_clk = '1') then
-            if (((ap_const_logic_1 = ap_CS_fsm_state2) and (icmp_ln121_fu_232_p2 = ap_const_lv1_0))) then
-                empty_22_reg_390 <= empty_22_fu_252_p3;
-                trunc_ln1_reg_384 <= iq_read_reg_359(63 downto 4);
-            end if;
         end if;
     end process;
     process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state11)) then
-                icmp_ln121_1_reg_429 <= icmp_ln121_1_fu_349_p2;
+                icmp_ln117_1_reg_447 <= icmp_ln117_1_fu_361_p2;
             end if;
         end if;
     end process;
@@ -897,7 +892,8 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state3)) then
-                icmp_ln121_2_reg_401 <= icmp_ln121_2_fu_281_p2;
+                icmp_ln117_2_reg_419 <= icmp_ln117_2_fu_293_p2;
+                    zext_ln113_reg_414(12 downto 0) <= zext_ln113_fu_290_p1(12 downto 0);
             end if;
         end if;
     end process;
@@ -905,8 +901,8 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state2)) then
-                icmp_ln121_reg_380 <= icmp_ln121_fu_232_p2;
-                p_max_events_reg_370 <= p_max_events_fu_225_p3;
+                icmp_ln117_reg_392 <= icmp_ln117_fu_241_p2;
+                p_max_events_reg_382 <= p_max_events_fu_234_p3;
             end if;
         end if;
     end process;
@@ -914,9 +910,9 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state1)) then
-                iq_read_reg_359 <= iq;
-                max_events_read_reg_353 <= max_events;
-                trunc_ln107_reg_364 <= trunc_ln107_fu_216_p1;
+                iq_read_reg_371 <= iq;
+                max_events_read_reg_365 <= max_events;
+                trunc_ln103_reg_376 <= trunc_ln103_fu_225_p1;
             end if;
         end if;
     end process;
@@ -924,7 +920,16 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if (((postage_TVALID_int_regslice = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state6))) then
-                p_count_reg_410 <= p_count_fu_306_p2;
+                p_count_2_reg_428 <= p_count_2_fu_318_p2;
+            end if;
+        end if;
+    end process;
+    process (ap_clk)
+    begin
+        if (ap_clk'event and ap_clk = '1') then
+            if (((ap_const_logic_1 = ap_CS_fsm_state2) and (icmp_ln117_fu_241_p2 = ap_const_lv1_0))) then
+                p_count_reg_402 <= p_count_fu_261_p3;
+                trunc_ln1_reg_396 <= iq_read_reg_371(63 downto 4);
             end if;
         end if;
     end process;
@@ -932,7 +937,7 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if (((ap_const_logic_1 = ap_CS_fsm_state7) or (ap_const_logic_1 = ap_CS_fsm_state4))) then
-                reg_208 <= postage_TDATA_int_regslice;
+                reg_217 <= postage_TDATA_int_regslice;
             end if;
         end if;
     end process;
@@ -940,7 +945,7 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if (((ap_const_logic_1 = ap_CS_fsm_state8) or (ap_const_logic_1 = ap_CS_fsm_state5))) then
-                reg_212 <= postage_TDATA_int_regslice;
+                reg_221 <= postage_TDATA_int_regslice;
             end if;
         end if;
     end process;
@@ -948,7 +953,7 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state9)) then
-                tmp_data_V_5_reg_416 <= postage_TDATA_int_regslice;
+                tmp_data_V_5_reg_434 <= postage_TDATA_int_regslice;
             end if;
         end if;
     end process;
@@ -956,12 +961,13 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if ((ap_const_logic_1 = ap_CS_fsm_state4)) then
-                tmp_user_V_reg_405 <= postage_TUSER_int_regslice;
+                tmp_user_V_reg_423 <= postage_TUSER_int_regslice;
             end if;
         end if;
     end process;
+    zext_ln113_reg_414(15 downto 13) <= "000";
 
-    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, ap_CS_fsm_state1, ap_CS_fsm_state3, ap_CS_fsm_state17, icmp_ln121_reg_380, ap_CS_fsm_state4, ap_CS_fsm_state5, ap_CS_fsm_state6, ap_CS_fsm_state7, ap_CS_fsm_state8, ap_CS_fsm_state9, ap_CS_fsm_state10, ap_CS_fsm_state2, icmp_ln121_fu_232_p2, icmp_ln121_2_fu_281_p2, icmp_ln121_2_reg_401, icmp_ln121_1_reg_429, gmem_AWREADY, gmem_BVALID, ap_CS_fsm_state12, ap_block_state12_on_subcall_done, icmp_ln138_fu_343_p2, postage_TVALID_int_regslice)
+    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, ap_CS_fsm_state1, ap_CS_fsm_state3, ap_CS_fsm_state17, icmp_ln117_reg_392, ap_CS_fsm_state4, ap_CS_fsm_state5, ap_CS_fsm_state6, ap_CS_fsm_state7, ap_CS_fsm_state8, ap_CS_fsm_state9, ap_CS_fsm_state10, ap_CS_fsm_state2, icmp_ln117_fu_241_p2, icmp_ln117_2_fu_293_p2, icmp_ln117_2_reg_419, icmp_ln117_1_reg_447, gmem_AWREADY, gmem_BVALID, ap_CS_fsm_state12, ap_block_state12_on_subcall_done, icmp_ln134_fu_355_p2, postage_TVALID_int_regslice)
     begin
         case ap_CS_fsm is
             when ap_ST_fsm_state1 => 
@@ -971,15 +977,15 @@ begin
                     ap_NS_fsm <= ap_ST_fsm_state1;
                 end if;
             when ap_ST_fsm_state2 => 
-                if (((ap_const_logic_1 = ap_CS_fsm_state2) and (icmp_ln121_fu_232_p2 = ap_const_lv1_1))) then
+                if (((ap_const_logic_1 = ap_CS_fsm_state2) and (icmp_ln117_fu_241_p2 = ap_const_lv1_1))) then
                     ap_NS_fsm <= ap_ST_fsm_state17;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state3;
                 end if;
             when ap_ST_fsm_state3 => 
-                if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3) and (icmp_ln121_2_fu_281_p2 = ap_const_lv1_0))) then
+                if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3) and (icmp_ln117_2_fu_293_p2 = ap_const_lv1_0))) then
                     ap_NS_fsm <= ap_ST_fsm_state4;
-                elsif (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3) and (icmp_ln121_2_fu_281_p2 = ap_const_lv1_1))) then
+                elsif (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3) and (icmp_ln117_2_fu_293_p2 = ap_const_lv1_1))) then
                     ap_NS_fsm <= ap_ST_fsm_state12;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state3;
@@ -1021,9 +1027,9 @@ begin
                     ap_NS_fsm <= ap_ST_fsm_state9;
                 end if;
             when ap_ST_fsm_state10 => 
-                if (((postage_TVALID_int_regslice = ap_const_logic_1) and (icmp_ln138_fu_343_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state10))) then
+                if (((postage_TVALID_int_regslice = ap_const_logic_1) and (icmp_ln134_fu_355_p2 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state10))) then
                     ap_NS_fsm <= ap_ST_fsm_state7;
-                elsif (((postage_TVALID_int_regslice = ap_const_logic_1) and (icmp_ln138_fu_343_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state10))) then
+                elsif (((postage_TVALID_int_regslice = ap_const_logic_1) and (icmp_ln134_fu_355_p2 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state10))) then
                     ap_NS_fsm <= ap_ST_fsm_state11;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state10;
@@ -1031,9 +1037,9 @@ begin
             when ap_ST_fsm_state11 => 
                 ap_NS_fsm <= ap_ST_fsm_state12;
             when ap_ST_fsm_state12 => 
-                if (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (ap_const_logic_1 = ap_CS_fsm_state12) and ((icmp_ln121_1_reg_429 = ap_const_lv1_1) or (icmp_ln121_2_reg_401 = ap_const_lv1_1)))) then
+                if (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (ap_const_logic_1 = ap_CS_fsm_state12) and ((icmp_ln117_1_reg_447 = ap_const_lv1_1) or (icmp_ln117_2_reg_419 = ap_const_lv1_1)))) then
                     ap_NS_fsm <= ap_ST_fsm_state13;
-                elsif (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (icmp_ln121_1_reg_429 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0))) then
+                elsif (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (icmp_ln117_1_reg_447 = ap_const_lv1_0) and (ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0))) then
                     ap_NS_fsm <= ap_ST_fsm_state4;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state12;
@@ -1047,7 +1053,7 @@ begin
             when ap_ST_fsm_state16 => 
                 ap_NS_fsm <= ap_ST_fsm_state17;
             when ap_ST_fsm_state17 => 
-                if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln121_reg_380 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17))) then
+                if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln117_reg_392 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17))) then
                     ap_NS_fsm <= ap_ST_fsm_state1;
                 else
                     ap_NS_fsm <= ap_ST_fsm_state17;
@@ -1095,9 +1101,9 @@ begin
     ap_ST_fsm_state15_blk <= ap_const_logic_0;
     ap_ST_fsm_state16_blk <= ap_const_logic_0;
 
-    ap_ST_fsm_state17_blk_assign_proc : process(icmp_ln121_reg_380, gmem_BVALID)
+    ap_ST_fsm_state17_blk_assign_proc : process(icmp_ln117_reg_392, gmem_BVALID)
     begin
-        if (((gmem_BVALID = ap_const_logic_0) and (icmp_ln121_reg_380 = ap_const_lv1_0))) then 
+        if (((gmem_BVALID = ap_const_logic_0) and (icmp_ln117_reg_392 = ap_const_lv1_0))) then 
             ap_ST_fsm_state17_blk <= ap_const_logic_1;
         else 
             ap_ST_fsm_state17_blk <= ap_const_logic_0;
@@ -1186,21 +1192,21 @@ begin
     end process;
 
 
-    ap_block_state12_on_subcall_done_assign_proc : process(icmp_ln121_2_reg_401, grp_postage_maxi_Pipeline_burst_fu_196_ap_done)
+    ap_block_state12_on_subcall_done_assign_proc : process(icmp_ln117_2_reg_419, grp_postage_maxi_Pipeline_burst_fu_205_ap_done)
     begin
-                ap_block_state12_on_subcall_done <= ((grp_postage_maxi_Pipeline_burst_fu_196_ap_done = ap_const_logic_0) and (icmp_ln121_2_reg_401 = ap_const_lv1_0));
+                ap_block_state12_on_subcall_done <= ((grp_postage_maxi_Pipeline_burst_fu_205_ap_done = ap_const_logic_0) and (icmp_ln117_2_reg_419 = ap_const_lv1_0));
     end process;
 
 
-    ap_block_state17_assign_proc : process(icmp_ln121_reg_380, gmem_BVALID)
+    ap_block_state17_assign_proc : process(icmp_ln117_reg_392, gmem_BVALID)
     begin
-                ap_block_state17 <= ((gmem_BVALID = ap_const_logic_0) and (icmp_ln121_reg_380 = ap_const_lv1_0));
+                ap_block_state17 <= ((gmem_BVALID = ap_const_logic_0) and (icmp_ln117_reg_392 = ap_const_lv1_0));
     end process;
 
 
-    ap_done_assign_proc : process(ap_CS_fsm_state17, icmp_ln121_reg_380, gmem_BVALID)
+    ap_done_assign_proc : process(ap_CS_fsm_state17, icmp_ln117_reg_392, gmem_BVALID)
     begin
-        if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln121_reg_380 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17))) then 
+        if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln117_reg_392 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17))) then 
             ap_done <= ap_const_logic_1;
         else 
             ap_done <= ap_const_logic_0;
@@ -1218,9 +1224,9 @@ begin
     end process;
 
 
-    ap_ready_assign_proc : process(ap_CS_fsm_state17, icmp_ln121_reg_380, gmem_BVALID)
+    ap_ready_assign_proc : process(ap_CS_fsm_state17, icmp_ln117_reg_392, gmem_BVALID)
     begin
-        if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln121_reg_380 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17))) then 
+        if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln117_reg_392 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17))) then 
             ap_ready <= ap_const_logic_1;
         else 
             ap_ready <= ap_const_logic_0;
@@ -1234,38 +1240,38 @@ begin
     end process;
 
 
-    buf_V_address0_assign_proc : process(ap_CS_fsm_state6, ap_CS_fsm_state10, icmp_ln121_2_reg_401, grp_postage_maxi_Pipeline_burst_fu_196_buf_V_address0, ap_CS_fsm_state12, zext_ln138_fu_316_p1)
+    buf_V_address0_assign_proc : process(ap_CS_fsm_state6, ap_CS_fsm_state10, icmp_ln117_2_reg_419, grp_postage_maxi_Pipeline_burst_fu_205_buf_V_address0, ap_CS_fsm_state12, zext_ln134_fu_328_p1)
     begin
         if ((ap_const_logic_1 = ap_CS_fsm_state10)) then 
-            buf_V_address0 <= zext_ln138_fu_316_p1(5 - 1 downto 0);
+            buf_V_address0 <= zext_ln134_fu_328_p1(5 - 1 downto 0);
         elsif ((ap_const_logic_1 = ap_CS_fsm_state6)) then 
             buf_V_address0 <= ap_const_lv64_0(5 - 1 downto 0);
-        elsif (((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0))) then 
-            buf_V_address0 <= grp_postage_maxi_Pipeline_burst_fu_196_buf_V_address0;
+        elsif (((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0))) then 
+            buf_V_address0 <= grp_postage_maxi_Pipeline_burst_fu_205_buf_V_address0;
         else 
             buf_V_address0 <= "XXXXX";
         end if; 
     end process;
 
 
-    buf_V_ce0_assign_proc : process(ap_CS_fsm_state6, ap_CS_fsm_state10, icmp_ln121_2_reg_401, grp_postage_maxi_Pipeline_burst_fu_196_buf_V_ce0, ap_CS_fsm_state12, postage_TVALID_int_regslice)
+    buf_V_ce0_assign_proc : process(ap_CS_fsm_state6, ap_CS_fsm_state10, icmp_ln117_2_reg_419, grp_postage_maxi_Pipeline_burst_fu_205_buf_V_ce0, ap_CS_fsm_state12, postage_TVALID_int_regslice)
     begin
         if ((((postage_TVALID_int_regslice = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state10)) or ((postage_TVALID_int_regslice = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state6)))) then 
             buf_V_ce0 <= ap_const_logic_1;
-        elsif (((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0))) then 
-            buf_V_ce0 <= grp_postage_maxi_Pipeline_burst_fu_196_buf_V_ce0;
+        elsif (((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0))) then 
+            buf_V_ce0 <= grp_postage_maxi_Pipeline_burst_fu_205_buf_V_ce0;
         else 
             buf_V_ce0 <= ap_const_logic_0;
         end if; 
     end process;
 
 
-    buf_V_d0_assign_proc : process(ap_CS_fsm_state6, ap_CS_fsm_state10, p_Result_s_fu_293_p5, x_V_2_fu_321_p5)
+    buf_V_d0_assign_proc : process(ap_CS_fsm_state6, ap_CS_fsm_state10, p_Result_s_fu_305_p5, x_V_2_fu_333_p5)
     begin
         if ((ap_const_logic_1 = ap_CS_fsm_state10)) then 
-            buf_V_d0 <= x_V_2_fu_321_p5;
+            buf_V_d0 <= x_V_2_fu_333_p5;
         elsif ((ap_const_logic_1 = ap_CS_fsm_state6)) then 
-            buf_V_d0 <= p_Result_s_fu_293_p5;
+            buf_V_d0 <= p_Result_s_fu_305_p5;
         else 
             buf_V_d0 <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
         end if; 
@@ -1281,63 +1287,70 @@ begin
         end if; 
     end process;
 
-    empty_21_fu_247_p2 <= "1" when (unsigned(max_events_read_reg_353) < unsigned(ap_const_lv16_1F40)) else "0";
-    empty_22_fu_252_p3 <= 
-        trunc_ln107_reg_364 when (empty_21_fu_247_p2(0) = '1') else 
-        ap_const_lv13_1F40;
+    empty_21_fu_256_p2 <= "1" when (unsigned(max_events_read_reg_365) < unsigned(ap_const_lv16_1F40)) else "0";
 
-    gmem_AWADDR_assign_proc : process(ap_CS_fsm_state3, icmp_ln121_2_reg_401, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWADDR, gmem_AWREADY, ap_CS_fsm_state12, sext_ln121_fu_271_p1)
+    event_count_ap_vld_assign_proc : process(icmp_ln117_2_reg_419, icmp_ln117_1_reg_447, ap_CS_fsm_state12, ap_block_state12_on_subcall_done)
+    begin
+        if (((ap_const_boolean_0 = ap_block_state12_on_subcall_done) and (ap_const_logic_1 = ap_CS_fsm_state12) and ((icmp_ln117_1_reg_447 = ap_const_lv1_1) or (icmp_ln117_2_reg_419 = ap_const_lv1_1)))) then 
+            event_count_ap_vld <= ap_const_logic_1;
+        else 
+            event_count_ap_vld <= ap_const_logic_0;
+        end if; 
+    end process;
+
+
+    gmem_AWADDR_assign_proc : process(ap_CS_fsm_state3, icmp_ln117_2_reg_419, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWADDR, gmem_AWREADY, ap_CS_fsm_state12, sext_ln117_fu_280_p1)
     begin
         if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3))) then 
-            gmem_AWADDR <= sext_ln121_fu_271_p1;
-        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0)))) then 
-            gmem_AWADDR <= grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWADDR;
+            gmem_AWADDR <= sext_ln117_fu_280_p1;
+        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0)))) then 
+            gmem_AWADDR <= grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWADDR;
         else 
             gmem_AWADDR <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
         end if; 
     end process;
 
 
-    gmem_AWLEN_assign_proc : process(ap_CS_fsm_state3, icmp_ln121_2_reg_401, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWLEN, gmem_AWREADY, ap_CS_fsm_state12, zext_ln121_fu_266_p1)
+    gmem_AWLEN_assign_proc : process(ap_CS_fsm_state3, icmp_ln117_2_reg_419, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWLEN, gmem_AWREADY, ap_CS_fsm_state12, zext_ln117_fu_275_p1)
     begin
         if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3))) then 
-            gmem_AWLEN <= zext_ln121_fu_266_p1;
-        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0)))) then 
-            gmem_AWLEN <= grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWLEN;
+            gmem_AWLEN <= zext_ln117_fu_275_p1;
+        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0)))) then 
+            gmem_AWLEN <= grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWLEN;
         else 
             gmem_AWLEN <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
         end if; 
     end process;
 
 
-    gmem_AWVALID_assign_proc : process(ap_CS_fsm_state3, icmp_ln121_2_reg_401, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWVALID, gmem_AWREADY, ap_CS_fsm_state12)
+    gmem_AWVALID_assign_proc : process(ap_CS_fsm_state3, icmp_ln117_2_reg_419, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWVALID, gmem_AWREADY, ap_CS_fsm_state12)
     begin
         if (((gmem_AWREADY = ap_const_logic_1) and (ap_const_logic_1 = ap_CS_fsm_state3))) then 
             gmem_AWVALID <= ap_const_logic_1;
-        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0)))) then 
-            gmem_AWVALID <= grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_AWVALID;
+        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0)))) then 
+            gmem_AWVALID <= grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_AWVALID;
         else 
             gmem_AWVALID <= ap_const_logic_0;
         end if; 
     end process;
 
 
-    gmem_BREADY_assign_proc : process(ap_CS_fsm_state17, icmp_ln121_reg_380, icmp_ln121_2_reg_401, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_BREADY, gmem_BVALID, ap_CS_fsm_state12)
+    gmem_BREADY_assign_proc : process(ap_CS_fsm_state17, icmp_ln117_reg_392, icmp_ln117_2_reg_419, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_BREADY, gmem_BVALID, ap_CS_fsm_state12)
     begin
-        if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln121_reg_380 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17) and (icmp_ln121_reg_380 = ap_const_lv1_0))) then 
+        if ((not(((gmem_BVALID = ap_const_logic_0) and (icmp_ln117_reg_392 = ap_const_lv1_0))) and (ap_const_logic_1 = ap_CS_fsm_state17) and (icmp_ln117_reg_392 = ap_const_lv1_0))) then 
             gmem_BREADY <= ap_const_logic_1;
-        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0)))) then 
-            gmem_BREADY <= grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_BREADY;
+        elsif (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0)))) then 
+            gmem_BREADY <= grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_BREADY;
         else 
             gmem_BREADY <= ap_const_logic_0;
         end if; 
     end process;
 
 
-    gmem_WVALID_assign_proc : process(icmp_ln121_2_reg_401, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WVALID, ap_CS_fsm_state12)
+    gmem_WVALID_assign_proc : process(icmp_ln117_2_reg_419, ap_CS_fsm_state11, grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WVALID, ap_CS_fsm_state12)
     begin
-        if (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln121_2_reg_401 = ap_const_lv1_0)))) then 
-            gmem_WVALID <= grp_postage_maxi_Pipeline_burst_fu_196_m_axi_gmem_WVALID;
+        if (((ap_const_logic_1 = ap_CS_fsm_state11) or ((ap_const_logic_1 = ap_CS_fsm_state12) and (icmp_ln117_2_reg_419 = ap_const_lv1_0)))) then 
+            gmem_WVALID <= grp_postage_maxi_Pipeline_burst_fu_205_m_axi_gmem_WVALID;
         else 
             gmem_WVALID <= ap_const_logic_0;
         end if; 
@@ -1354,28 +1367,31 @@ begin
     end process;
 
 
-    gmem_blk_n_B_assign_proc : process(m_axi_gmem_BVALID, ap_CS_fsm_state17, icmp_ln121_reg_380)
+    gmem_blk_n_B_assign_proc : process(m_axi_gmem_BVALID, ap_CS_fsm_state17, icmp_ln117_reg_392)
     begin
-        if (((ap_const_logic_1 = ap_CS_fsm_state17) and (icmp_ln121_reg_380 = ap_const_lv1_0))) then 
+        if (((ap_const_logic_1 = ap_CS_fsm_state17) and (icmp_ln117_reg_392 = ap_const_lv1_0))) then 
             gmem_blk_n_B <= m_axi_gmem_BVALID;
         else 
             gmem_blk_n_B <= ap_const_logic_1;
         end if; 
     end process;
 
-    grp_postage_maxi_Pipeline_burst_fu_196_ap_start <= grp_postage_maxi_Pipeline_burst_fu_196_ap_start_reg;
-    i1_cast_fu_312_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i1_reg_185),6));
-    i_fu_333_p2 <= std_logic_vector(unsigned(i1_cast_fu_312_p1) + unsigned(ap_const_lv6_1));
-    icmp_ln119_fu_220_p2 <= "1" when (unsigned(max_events_read_reg_353) > unsigned(ap_const_lv16_1F40)) else "0";
-    icmp_ln121_1_fu_349_p2 <= "1" when (p_count_reg_410 = empty_22_reg_390) else "0";
-    icmp_ln121_2_fu_281_p2 <= "1" when (empty_22_reg_390 = ap_const_lv13_0) else "0";
-    icmp_ln121_fu_232_p2 <= "1" when (p_max_events_fu_225_p3 = ap_const_lv13_0) else "0";
-    icmp_ln138_fu_343_p2 <= "1" when (i_fu_333_p2 = ap_const_lv6_20) else "0";
-    p_Result_s_fu_293_p5 <= (((postage_TDATA_int_regslice & reg_212) & reg_208) & zext_ln388_fu_290_p1);
-    p_count_fu_306_p2 <= std_logic_vector(unsigned(p_count3_reg_174) + unsigned(ap_const_lv13_1));
-    p_max_events_fu_225_p3 <= 
-        ap_const_lv13_1F40 when (icmp_ln119_fu_220_p2(0) = '1') else 
-        trunc_ln107_reg_364;
+    grp_postage_maxi_Pipeline_burst_fu_205_ap_start <= grp_postage_maxi_Pipeline_burst_fu_205_ap_start_reg;
+    i1_cast_fu_324_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i1_reg_194),6));
+    i_fu_345_p2 <= std_logic_vector(unsigned(i1_cast_fu_324_p1) + unsigned(ap_const_lv6_1));
+    icmp_ln115_fu_229_p2 <= "1" when (unsigned(max_events_read_reg_365) > unsigned(ap_const_lv16_1F40)) else "0";
+    icmp_ln117_1_fu_361_p2 <= "1" when (p_count_2_reg_428 = p_count_reg_402) else "0";
+    icmp_ln117_2_fu_293_p2 <= "1" when (p_count_reg_402 = ap_const_lv13_0) else "0";
+    icmp_ln117_fu_241_p2 <= "1" when (p_max_events_fu_234_p3 = ap_const_lv13_0) else "0";
+    icmp_ln134_fu_355_p2 <= "1" when (i_fu_345_p2 = ap_const_lv6_20) else "0";
+    p_Result_s_fu_305_p5 <= (((postage_TDATA_int_regslice & reg_221) & reg_217) & zext_ln388_fu_302_p1);
+    p_count_2_fu_318_p2 <= std_logic_vector(unsigned(p_count_13_reg_183) + unsigned(ap_const_lv13_1));
+    p_count_fu_261_p3 <= 
+        trunc_ln103_reg_376 when (empty_21_fu_256_p2(0) = '1') else 
+        ap_const_lv13_1F40;
+    p_max_events_fu_234_p3 <= 
+        ap_const_lv13_1F40 when (icmp_ln115_fu_229_p2(0) = '1') else 
+        trunc_ln103_reg_376;
 
     postage_TDATA_blk_n_assign_proc : process(ap_CS_fsm_state4, ap_CS_fsm_state5, ap_CS_fsm_state6, ap_CS_fsm_state7, ap_CS_fsm_state8, ap_CS_fsm_state9, ap_CS_fsm_state10, postage_TVALID_int_regslice)
     begin
@@ -1397,13 +1413,14 @@ begin
         end if; 
     end process;
 
-        sext_ln121_fu_271_p1 <= std_logic_vector(IEEE.numeric_std.resize(signed(trunc_ln1_reg_384),64));
+        sext_ln117_fu_280_p1 <= std_logic_vector(IEEE.numeric_std.resize(signed(trunc_ln1_reg_396),64));
 
-    shl_ln_fu_259_p3 <= (p_max_events_reg_370 & ap_const_lv5_0);
-    trunc_ln107_fu_216_p1 <= max_events(13 - 1 downto 0);
-    trunc_ln140_fu_339_p1 <= i_fu_333_p2(5 - 1 downto 0);
-    x_V_2_fu_321_p5 <= (((postage_TDATA_int_regslice & tmp_data_V_5_reg_416) & reg_212) & reg_208);
-    zext_ln121_fu_266_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(shl_ln_fu_259_p3),32));
-    zext_ln138_fu_316_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i1_reg_185),64));
-    zext_ln388_fu_290_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(tmp_user_V_reg_405),32));
+    shl_ln_fu_268_p3 <= (p_max_events_reg_382 & ap_const_lv5_0);
+    trunc_ln103_fu_225_p1 <= max_events(13 - 1 downto 0);
+    trunc_ln136_fu_351_p1 <= i_fu_345_p2(5 - 1 downto 0);
+    x_V_2_fu_333_p5 <= (((postage_TDATA_int_regslice & tmp_data_V_5_reg_434) & reg_221) & reg_217);
+    zext_ln113_fu_290_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(p_count_reg_402),16));
+    zext_ln117_fu_275_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(shl_ln_fu_268_p3),32));
+    zext_ln134_fu_328_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(i1_reg_194),64));
+    zext_ln388_fu_302_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(tmp_user_V_reg_423),32));
 end behav;
