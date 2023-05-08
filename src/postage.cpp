@@ -66,7 +66,7 @@ void postage_filter(hls::stream<trigstream_t> &postage_stream,
 		iq_t x[N_PHASE];
 		#pragma HLS ARRAY_PARTITION variable=x type=complete
 		for (int i=0;i<N_PHASE;i++)
-			x[i]=in.data.range(IQ_BITS*(i+1)-1, i*IQ_BITS+N_PHASE*PHASE_BITS);
+			x[i]=in.data.range(IQ_BITS*(i+1)-1+N_PHASE*PHASE_BITS, i*IQ_BITS+N_PHASE*PHASE_BITS);
 
 		for (int i=0;i<N_MONITOR;i++) {
 		#pragma HLS UNROLL

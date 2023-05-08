@@ -127,13 +127,13 @@ architecture behav of postage_filter is
     constant ap_const_lv32_9 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000001001";
     constant ap_const_lv32_C : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000001100";
     constant ap_const_lv32_40 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000001000000";
-    constant ap_const_lv32_21 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000100001";
+    constant ap_const_lv32_5F : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000001011111";
     constant ap_const_lv32_60 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000001100000";
-    constant ap_const_lv32_41 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000001000001";
+    constant ap_const_lv32_7F : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000001111111";
     constant ap_const_lv32_80 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000010000000";
-    constant ap_const_lv32_61 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000001100001";
+    constant ap_const_lv32_9F : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000010011111";
     constant ap_const_lv32_A0 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000010100000";
-    constant ap_const_lv32_81 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000010000001";
+    constant ap_const_lv32_BF : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000010111111";
     constant ap_const_lv32_2 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000010";
     constant ap_const_lv32_A : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000001010";
     constant ap_const_lv8_FF : STD_LOGIC_VECTOR (7 downto 0) := "11111111";
@@ -264,16 +264,12 @@ architecture behav of postage_filter is
     signal ap_block_state4_io : BOOLEAN;
     signal ap_block_pp0_stage0_11001 : BOOLEAN;
     signal trigger_V_reg_1314 : STD_LOGIC_VECTOR (3 downto 0);
-    signal x_fu_534_p4 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_reg_1326 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_reg_1326_pp0_iter1_reg : STD_LOGIC_VECTOR (31 downto 0);
-    signal x_1_fu_544_p4 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_1_reg_1338 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_1_reg_1338_pp0_iter1_reg : STD_LOGIC_VECTOR (31 downto 0);
-    signal x_2_fu_554_p4 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_2_reg_1350 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_2_reg_1350_pp0_iter1_reg : STD_LOGIC_VECTOR (31 downto 0);
-    signal x_3_fu_564_p4 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_3_reg_1362 : STD_LOGIC_VECTOR (31 downto 0);
     signal x_3_reg_1362_pp0_iter1_reg : STD_LOGIC_VECTOR (31 downto 0);
     signal lane_V_fu_574_p1 : STD_LOGIC_VECTOR (1 downto 0);
@@ -1763,13 +1759,13 @@ begin
                 tmp_last_V_7_reg_1586 <= tmp_last_V_7_fu_1106_p2;
                 tmp_last_V_reg_1467 <= tmp_last_V_fu_700_p2;
                 trigger_V_reg_1314 <= postage_stream_TUSER_int_regslice(12 downto 9);
-                x_1_reg_1338 <= x_1_fu_544_p4;
+                x_1_reg_1338 <= postage_stream_TDATA_int_regslice(127 downto 96);
                 x_1_reg_1338_pp0_iter1_reg <= x_1_reg_1338;
-                x_2_reg_1350 <= x_2_fu_554_p4;
+                x_2_reg_1350 <= postage_stream_TDATA_int_regslice(159 downto 128);
                 x_2_reg_1350_pp0_iter1_reg <= x_2_reg_1350;
-                x_3_reg_1362 <= x_3_fu_564_p4;
+                x_3_reg_1362 <= postage_stream_TDATA_int_regslice(191 downto 160);
                 x_3_reg_1362_pp0_iter1_reg <= x_3_reg_1362;
-                x_reg_1326 <= x_fu_534_p4;
+                x_reg_1326 <= postage_stream_TDATA_int_regslice(95 downto 64);
                 x_reg_1326_pp0_iter1_reg <= x_reg_1326;
             end if;
         end if;
@@ -2498,138 +2494,6 @@ begin
     tmp_last_V_6_fu_1048_p2 <= "1" when (postage_filter_stream_ap_uint_stream_axis_0_tocapture_3 = ap_const_lv8_1) else "0";
     tmp_last_V_7_fu_1106_p2 <= "1" when (postage_filter_stream_ap_uint_stream_axis_0_tocapture_2 = ap_const_lv8_1) else "0";
     tmp_last_V_fu_700_p2 <= "1" when (postage_filter_stream_ap_uint_stream_axis_0_tocapture_7 = ap_const_lv8_1) else "0";
-    
-    x_1_fu_544_p4_proc : process(postage_stream_TDATA_int_regslice)
-    variable vlo_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable vhi_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable v0_cpy : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable x_1_fu_544_p4_i : integer;
-    variable section : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable tmp_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable resvalue, res_value, res_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    begin
-        vlo_cpy := (others => '0');
-        vlo_cpy(8 - 1 downto 0) := ap_const_lv32_60(8 - 1 downto 0);
-        vhi_cpy := (others => '0');
-        vhi_cpy(8 - 1 downto 0) := ap_const_lv32_41(8 - 1 downto 0);
-        v0_cpy := postage_stream_TDATA_int_regslice;
-        if (vlo_cpy(8 - 1 downto 0) > vhi_cpy(8 - 1 downto 0)) then
-            vhi_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_41(8-1 downto 0)));
-            vlo_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_60(8-1 downto 0)));
-            for x_1_fu_544_p4_i in 0 to 192-1 loop
-                v0_cpy(x_1_fu_544_p4_i) := postage_stream_TDATA_int_regslice(192-1-x_1_fu_544_p4_i);
-            end loop;
-        end if;
-        res_value := std_logic_vector(shift_right(unsigned(v0_cpy), to_integer(unsigned('0' & vlo_cpy(8-1 downto 0)))));
-
-        section := (others=>'0');
-        section(8-1 downto 0) := std_logic_vector(unsigned(vhi_cpy(8-1 downto 0)) - unsigned(vlo_cpy(8-1 downto 0)));
-        tmp_mask := (others => '1');
-        res_mask := std_logic_vector(shift_left(unsigned(tmp_mask),to_integer(unsigned('0' & section(31-1 downto 0)))));
-        res_mask := res_mask(192-2 downto 0) & '0';
-        resvalue := res_value and not res_mask;
-        x_1_fu_544_p4 <= resvalue(32-1 downto 0);
-    end process;
-
-    
-    x_2_fu_554_p4_proc : process(postage_stream_TDATA_int_regslice)
-    variable vlo_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable vhi_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable v0_cpy : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable x_2_fu_554_p4_i : integer;
-    variable section : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable tmp_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable resvalue, res_value, res_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    begin
-        vlo_cpy := (others => '0');
-        vlo_cpy(8 - 1 downto 0) := ap_const_lv32_80(8 - 1 downto 0);
-        vhi_cpy := (others => '0');
-        vhi_cpy(8 - 1 downto 0) := ap_const_lv32_61(8 - 1 downto 0);
-        v0_cpy := postage_stream_TDATA_int_regslice;
-        if (vlo_cpy(8 - 1 downto 0) > vhi_cpy(8 - 1 downto 0)) then
-            vhi_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_61(8-1 downto 0)));
-            vlo_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_80(8-1 downto 0)));
-            for x_2_fu_554_p4_i in 0 to 192-1 loop
-                v0_cpy(x_2_fu_554_p4_i) := postage_stream_TDATA_int_regslice(192-1-x_2_fu_554_p4_i);
-            end loop;
-        end if;
-        res_value := std_logic_vector(shift_right(unsigned(v0_cpy), to_integer(unsigned('0' & vlo_cpy(8-1 downto 0)))));
-
-        section := (others=>'0');
-        section(8-1 downto 0) := std_logic_vector(unsigned(vhi_cpy(8-1 downto 0)) - unsigned(vlo_cpy(8-1 downto 0)));
-        tmp_mask := (others => '1');
-        res_mask := std_logic_vector(shift_left(unsigned(tmp_mask),to_integer(unsigned('0' & section(31-1 downto 0)))));
-        res_mask := res_mask(192-2 downto 0) & '0';
-        resvalue := res_value and not res_mask;
-        x_2_fu_554_p4 <= resvalue(32-1 downto 0);
-    end process;
-
-    
-    x_3_fu_564_p4_proc : process(postage_stream_TDATA_int_regslice)
-    variable vlo_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable vhi_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable v0_cpy : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable x_3_fu_564_p4_i : integer;
-    variable section : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable tmp_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable resvalue, res_value, res_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    begin
-        vlo_cpy := (others => '0');
-        vlo_cpy(8 - 1 downto 0) := ap_const_lv32_A0(8 - 1 downto 0);
-        vhi_cpy := (others => '0');
-        vhi_cpy(8 - 1 downto 0) := ap_const_lv32_81(8 - 1 downto 0);
-        v0_cpy := postage_stream_TDATA_int_regslice;
-        if (vlo_cpy(8 - 1 downto 0) > vhi_cpy(8 - 1 downto 0)) then
-            vhi_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_81(8-1 downto 0)));
-            vlo_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_A0(8-1 downto 0)));
-            for x_3_fu_564_p4_i in 0 to 192-1 loop
-                v0_cpy(x_3_fu_564_p4_i) := postage_stream_TDATA_int_regslice(192-1-x_3_fu_564_p4_i);
-            end loop;
-        end if;
-        res_value := std_logic_vector(shift_right(unsigned(v0_cpy), to_integer(unsigned('0' & vlo_cpy(8-1 downto 0)))));
-
-        section := (others=>'0');
-        section(8-1 downto 0) := std_logic_vector(unsigned(vhi_cpy(8-1 downto 0)) - unsigned(vlo_cpy(8-1 downto 0)));
-        tmp_mask := (others => '1');
-        res_mask := std_logic_vector(shift_left(unsigned(tmp_mask),to_integer(unsigned('0' & section(31-1 downto 0)))));
-        res_mask := res_mask(192-2 downto 0) & '0';
-        resvalue := res_value and not res_mask;
-        x_3_fu_564_p4 <= resvalue(32-1 downto 0);
-    end process;
-
-    
-    x_fu_534_p4_proc : process(postage_stream_TDATA_int_regslice)
-    variable vlo_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable vhi_cpy : STD_LOGIC_VECTOR(192+32 - 1 downto 0);
-    variable v0_cpy : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable x_fu_534_p4_i : integer;
-    variable section : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable tmp_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    variable resvalue, res_value, res_mask : STD_LOGIC_VECTOR(192 - 1 downto 0);
-    begin
-        vlo_cpy := (others => '0');
-        vlo_cpy(8 - 1 downto 0) := ap_const_lv32_40(8 - 1 downto 0);
-        vhi_cpy := (others => '0');
-        vhi_cpy(8 - 1 downto 0) := ap_const_lv32_21(8 - 1 downto 0);
-        v0_cpy := postage_stream_TDATA_int_regslice;
-        if (vlo_cpy(8 - 1 downto 0) > vhi_cpy(8 - 1 downto 0)) then
-            vhi_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_21(8-1 downto 0)));
-            vlo_cpy(8-1 downto 0) := std_logic_vector(192-1-unsigned(ap_const_lv32_40(8-1 downto 0)));
-            for x_fu_534_p4_i in 0 to 192-1 loop
-                v0_cpy(x_fu_534_p4_i) := postage_stream_TDATA_int_regslice(192-1-x_fu_534_p4_i);
-            end loop;
-        end if;
-        res_value := std_logic_vector(shift_right(unsigned(v0_cpy), to_integer(unsigned('0' & vlo_cpy(8-1 downto 0)))));
-
-        section := (others=>'0');
-        section(8-1 downto 0) := std_logic_vector(unsigned(vhi_cpy(8-1 downto 0)) - unsigned(vlo_cpy(8-1 downto 0)));
-        tmp_mask := (others => '1');
-        res_mask := std_logic_vector(shift_left(unsigned(tmp_mask),to_integer(unsigned('0' & section(31-1 downto 0)))));
-        res_mask := res_mask(192-2 downto 0) & '0';
-        resvalue := res_value and not res_mask;
-        x_fu_534_p4 <= resvalue(32-1 downto 0);
-    end process;
-
     zext_ln825_1_fu_776_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(lane_V_1_reg_1385),4));
     zext_ln825_2_fu_834_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(lane_V_2_reg_1396),4));
     zext_ln825_3_fu_892_p1 <= std_logic_vector(IEEE.numeric_std.resize(unsigned(lane_V_3_reg_1407),4));

@@ -306,16 +306,12 @@ reg    ap_block_state4_pp0_stage0_iter3;
 reg    ap_block_state4_io;
 reg    ap_block_pp0_stage0_11001;
 reg   [3:0] trigger_V_reg_1314;
-reg   [31:0] x_fu_534_p4;
 reg   [31:0] x_reg_1326;
 reg   [31:0] x_reg_1326_pp0_iter1_reg;
-reg   [31:0] x_1_fu_544_p4;
 reg   [31:0] x_1_reg_1338;
 reg   [31:0] x_1_reg_1338_pp0_iter1_reg;
-reg   [31:0] x_2_fu_554_p4;
 reg   [31:0] x_2_reg_1350;
 reg   [31:0] x_2_reg_1350_pp0_iter1_reg;
-reg   [31:0] x_3_fu_564_p4;
 reg   [31:0] x_3_reg_1362;
 reg   [31:0] x_3_reg_1362_pp0_iter1_reg;
 wire   [1:0] lane_V_fu_574_p1;
@@ -1686,13 +1682,13 @@ always @ (posedge ap_clk) begin
         tmp_last_V_7_reg_1586 <= tmp_last_V_7_fu_1106_p2;
         tmp_last_V_reg_1467 <= tmp_last_V_fu_700_p2;
         trigger_V_reg_1314 <= {{postage_stream_TUSER_int_regslice[12:9]}};
-        x_1_reg_1338 <= x_1_fu_544_p4;
+        x_1_reg_1338 <= {{postage_stream_TDATA_int_regslice[127:96]}};
         x_1_reg_1338_pp0_iter1_reg <= x_1_reg_1338;
-        x_2_reg_1350 <= x_2_fu_554_p4;
+        x_2_reg_1350 <= {{postage_stream_TDATA_int_regslice[159:128]}};
         x_2_reg_1350_pp0_iter1_reg <= x_2_reg_1350;
-        x_3_reg_1362 <= x_3_fu_564_p4;
+        x_3_reg_1362 <= {{postage_stream_TDATA_int_regslice[191:160]}};
         x_3_reg_1362_pp0_iter1_reg <= x_3_reg_1362;
-        x_reg_1326 <= x_fu_534_p4;
+        x_reg_1326 <= {{postage_stream_TDATA_int_regslice[95:64]}};
         x_reg_1326_pp0_iter1_reg <= x_reg_1326;
     end
 end
@@ -2346,54 +2342,6 @@ assign tmp_last_V_6_fu_1048_p2 = ((postage_filter_stream_ap_uint_stream_axis_0_t
 assign tmp_last_V_7_fu_1106_p2 = ((postage_filter_stream_ap_uint_stream_axis_0_tocapture_2 == 8'd1) ? 1'b1 : 1'b0);
 
 assign tmp_last_V_fu_700_p2 = ((postage_filter_stream_ap_uint_stream_axis_0_tocapture_7 == 8'd1) ? 1'b1 : 1'b0);
-
-integer ap_tvar_int_0;
-
-always @ (postage_stream_TDATA_int_regslice) begin
-    for (ap_tvar_int_0 = 32 - 1; ap_tvar_int_0 >= 0; ap_tvar_int_0 = ap_tvar_int_0 - 1) begin
-        if (ap_tvar_int_0 > 96 - 65) begin
-            x_1_fu_544_p4[ap_tvar_int_0] = 1'b0;
-        end else begin
-            x_1_fu_544_p4[ap_tvar_int_0] = postage_stream_TDATA_int_regslice[96 - ap_tvar_int_0];
-        end
-    end
-end
-
-integer ap_tvar_int_1;
-
-always @ (postage_stream_TDATA_int_regslice) begin
-    for (ap_tvar_int_1 = 32 - 1; ap_tvar_int_1 >= 0; ap_tvar_int_1 = ap_tvar_int_1 - 1) begin
-        if (ap_tvar_int_1 > 128 - 97) begin
-            x_2_fu_554_p4[ap_tvar_int_1] = 1'b0;
-        end else begin
-            x_2_fu_554_p4[ap_tvar_int_1] = postage_stream_TDATA_int_regslice[128 - ap_tvar_int_1];
-        end
-    end
-end
-
-integer ap_tvar_int_2;
-
-always @ (postage_stream_TDATA_int_regslice) begin
-    for (ap_tvar_int_2 = 32 - 1; ap_tvar_int_2 >= 0; ap_tvar_int_2 = ap_tvar_int_2 - 1) begin
-        if (ap_tvar_int_2 > 160 - 129) begin
-            x_3_fu_564_p4[ap_tvar_int_2] = 1'b0;
-        end else begin
-            x_3_fu_564_p4[ap_tvar_int_2] = postage_stream_TDATA_int_regslice[160 - ap_tvar_int_2];
-        end
-    end
-end
-
-integer ap_tvar_int_3;
-
-always @ (postage_stream_TDATA_int_regslice) begin
-    for (ap_tvar_int_3 = 32 - 1; ap_tvar_int_3 >= 0; ap_tvar_int_3 = ap_tvar_int_3 - 1) begin
-        if (ap_tvar_int_3 > 64 - 33) begin
-            x_fu_534_p4[ap_tvar_int_3] = 1'b0;
-        end else begin
-            x_fu_534_p4[ap_tvar_int_3] = postage_stream_TDATA_int_regslice[64 - ap_tvar_int_3];
-        end
-    end
-end
 
 assign zext_ln825_1_fu_776_p1 = lane_V_1_reg_1385;
 
