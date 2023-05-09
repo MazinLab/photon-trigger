@@ -1201,7 +1201,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>e8c594e6</spirit:value>
+            <spirit:value>8e68dcfc</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1217,7 +1217,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>a34d73b4</spirit:value>
+            <spirit:value>2c46f80d</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1233,7 +1233,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>c3478729</spirit:value>
+            <spirit:value>a17078db</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1249,7 +1249,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>5a1959e7</spirit:value>
+            <spirit:value>9ff57e94</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -2766,7 +2766,7 @@
       <spirit:file>
         <spirit:name>hdl/vhdl/postage_maxi.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_4fe1d1ce</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_f44ef66a</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -3003,7 +3003,7 @@
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>latency</spirit:name>
-      <spirit:value spirit:id="PARAM_VALUE.latency" spirit:order="17">2</spirit:value>
+      <spirit:value spirit:id="PARAM_VALUE.latency" spirit:order="17">7</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>II</spirit:name>
@@ -3020,8 +3020,8 @@
       </xilinx:taxonomies>
       <xilinx:displayName>Postage MAXI</xilinx:displayName>
       <xilinx:definitionSource>HLS</xilinx:definitionSource>
-      <xilinx:coreRevision>2113021809</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2023-05-08T23:10:03Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>2113022978</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2023-05-09T18:38:15Z</xilinx:coreCreationDateTime>
       <xilinx:sdxKernelAttributes>
         <xilinx:sdx_kernel>true</xilinx:sdx_kernel>
         <xilinx:sdx_kernel_type>hls</xilinx:sdx_kernel_type>
@@ -3032,10 +3032,10 @@
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="a054d27b"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="2c1df7e3"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="7a687344"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="c8acf838"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="ed3c8ecb"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="5302df20"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="56128e89"/>
-      <xilinx:checksum xilinx:scope="parameters" xilinx:value="2225a84a"/>
+      <xilinx:checksum xilinx:scope="parameters" xilinx:value="bf4669dc"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>
 </spirit:component>

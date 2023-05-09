@@ -30,7 +30,7 @@ using namespace std;
 #define IQ_BITS 32
 #define ID_BITS 12
 #define N_MONITOR_LOG2 3
-#define POSTAGE_BUFSIZE 1000
+#define POSTAGE_BUFSIZE 8000
 #define FLAT_PHOTON_BUFSIZE 102400
 #define TIMESTAMP_BITS 36
 #define N_PHOTON_BITS 64

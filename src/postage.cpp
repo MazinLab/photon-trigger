@@ -100,7 +100,7 @@ void postage_filter(hls::stream<trigstream_t> &postage_stream,
 
 
 
-void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR*POSTAGE_BUFSIZE][N_CAPDATA_MAXI],
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[POSTAGE_BUFSIZE][N_CAPDATA_MAXI],
 				  uint16_t &event_count, uint16_t max_events){
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=postage register
@@ -110,11 +110,18 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[N_MONITOR*P
 
 
 	iq_4x_t buf[N_CAPDATA/4];
-	uint16_t _max_events, _count=0;
+	uint16_t _max_events, _count;
+	_count=0;
 	_max_events = max_events;
-	_max_events = _max_events > (N_MONITOR*POSTAGE_BUFSIZE) ? N_MONITOR*POSTAGE_BUFSIZE:_max_events;
+//	_max_events = _max_events ==0 ? 1 :_max_events;
+//	_max_events = _max_events > POSTAGE_BUFSIZE ? POSTAGE_BUFSIZE:_max_events;
+	assert(_max_events<=POSTAGE_BUFSIZE);
+	assert(_max_events>0);
 
+const int _maxtripcount=POSTAGE_BUFSIZE;
 	capture: while(_count<_max_events) {
+#pragma HLS LOOP_TRIPCOUNT max=_maxtripcount min=1
+
 
 		singleiqstream_t tmp;
 		bool have_burst;
