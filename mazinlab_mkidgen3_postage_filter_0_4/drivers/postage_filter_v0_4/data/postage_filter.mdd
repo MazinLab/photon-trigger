@@ -7,11 +7,11 @@ OPTION psf_version = 2.1;
 
 BEGIN driver postage_filter
 
- OPTION supported_peripherals = (postage_filter_v0_3 );
+ OPTION supported_peripherals = (postage_filter_v0_4 );
  OPTION driver_state = ACTIVE;
  OPTION copyfiles = all;
  OPTION name = postage_filter;
- OPTION version = 0.3;
+ OPTION version = 0.4;
 
 END driver
 

@@ -41,7 +41,7 @@ void postage_filter(hls::stream<trigstream_t> &postage_stream,
 
 #pragma HLS INTERFACE ap_ctrl_none port=return // bundle=control
 #pragma HLS INTERFACE mode=axis port=postage_stream  depth=74752 register
-#pragma HLS INTERFACE mode=axis port=iq_out depth=200 register
+#pragma HLS INTERFACE mode=axis register_mode=off depth=200 port=iq_out
 #pragma HLS ARRAY_PARTITION variable=iq_out type=complete
 #pragma HLS INTERFACE mode=s_axilite port=monitor bundle=control
 #pragma HLS ARRAY_PARTITION variable=monitor type=complete
@@ -68,6 +68,12 @@ void postage_filter(hls::stream<trigstream_t> &postage_stream,
 		for (int i=0;i<N_PHASE;i++)
 			x[i]=in.data.range(IQ_BITS*(i+1)-1+N_PHASE*PHASE_BITS, i*IQ_BITS+N_PHASE*PHASE_BITS);
 
+
+		singleiqstream_t tmp_out[N_MONITOR];
+#pragma HLS ARRAY_PARTITION variable=tmp_out type=complete
+		bool tmp_out_write[N_MONITOR];
+#pragma HLS ARRAY_PARTITION variable=tmp_out_write type=complete
+
 		for (int i=0;i<N_MONITOR;i++) {
 		#pragma HLS UNROLL
 			lane_t lane;
@@ -85,15 +91,23 @@ void postage_filter(hls::stream<trigstream_t> &postage_stream,
 			tmp.last=tocapture[i]==1;
 			tmp.data=laneiq;
 
+			tmp_out_write[i]=false;
 			if (gid==group) {
 				if (tocapture[i]>0) {
-					iq_out[i].write(tmp);
+//					iq_out[i].write(tmp);
+					tmp_out[i]=tmp;
+					tmp_out_write[i]=true;
 					tocapture[i] = nexttocap;
 				}
 				else if (trigger[lane]) {
 					tocapture[i]=N_CAPDATA-1;
 				}
 			}
+		}
+
+		for (int i=0;i<N_MONITOR;i++) {
+		#pragma HLS UNROLL
+			if (tmp_out_write[i]) iq_out[i].write(tmp_out[i]);
 		}
 //	}
 }
