@@ -11,13 +11,13 @@ inline void unpack_thresholds(threshoffs_t toffs, threshold_t threshs[N_PHASE], 
 	}
 }
 
-void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream4x_t> &iq4x_in, threshoffs_t threshoffs[N_PHASEGROUPS],
+void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq8x_in, threshoffs_t threshoffs[N_PHASEGROUPS],
 		hls::stream<trigstream_t> &postage_stream,
 		hls::stream<timestamp_t> &timestamp, bool &desync, hls::stream<photon_t> photons_lane[N_PHASE]) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=postage_stream depth=32000 register
 #pragma HLS INTERFACE mode=axis port=phase4x_in depth=32000 register
-#pragma HLS INTERFACE mode=axis port=iq4x_in depth=32000 register
+#pragma HLS INTERFACE mode=axis port=iq8x_in depth=16000 register
 #pragma HLS INTERFACE mode=axis port=timestamp depth=32000 register
 #pragma HLS INTERFACE mode=axis depth=4 port=photons_lane register
 #pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
@@ -50,13 +50,30 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream4x_t> &
 	interval_t hoffs[N_PHASE];
 	ap_uint<N_PHASE> overflow;
 	iqstream4x_t iq4x;
+	iqstream_t iq8x;
 
+	static bool iq_buffer_empty;
+	static iqstream4x_t iq4x_buffer;
 
 	in = phase4x_in.read();
-	iq4x = iq4x_in.read();
+	if (iq_buffer_empty) {
+		iq8x = iq8x_in.read();
+
+		iq4x.data=iq8x.data.range(0,127);
+		iq4x.user=iq8x.user*2;
+		iq4x.last=false;
+
+		iq4x_buffer.data=iq8x.data.range(128,255);
+		iq4x_buffer.user=iq8x.user*2+1;
+		iq4x_buffer.last=iq8x.last;
+		iq_buffer_empty=false;
+	} else {
+		iq4x=iq4x_buffer;
+		iq_buffer_empty=true;
+	}
+
 	time = timestamp.read();
-	if (in.last!=iq4x.last) desync=true;
-	else if (in.last) desync=false;
+	desync=in.user!=iq4x.user;
 
 	group_t group=in.user;
 	group_t last_group=group_t(in.user-1);
