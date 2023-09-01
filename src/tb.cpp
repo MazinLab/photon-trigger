@@ -227,7 +227,7 @@ bool drive() {
 
 	bool fail=false;
 	hls::stream<phasestream_t> phases("Phase data");
-	hls::stream<iqstreamnarrow_t> iqs("IQ data");
+	hls::stream<iqstream4x_t> iqs("IQ data");
 	hls::stream<timestamp_t> timestamps("Timestamps");
 
 	hls::stream<trigstream_t> trigger_out("Trig out"), trigger_gold("Trig gold"), trigger_gold2("Trig gold2"), postage_trigger("postage Trig input");
@@ -363,7 +363,7 @@ bool drive() {
 			// Load phase stream, trigger gold stream
 
 			trigstream_t trigtmp;
-			iqstreamnarrow_t iqstmp;
+			iqstream4x_t iqstmp;
 			phasetmp.data=phaseset2phases(x);
 			phasetmp.last=group==(N_PHASEGROUPS-1);
 			phasetmp.user=group;
@@ -384,7 +384,7 @@ bool drive() {
 
 	unsigned int N_SAMP=i;
 	//Load IQs
-	iqstreamnarrow_t iqtmp;
+	iqstream4x_t iqtmp;
 	iqtmp.data=0;
 	for (int i=0;i<(N_SAMP+N_CAPDATA+N_CAPPRE)*N_PHASEGROUPS*N_PHASE;i++) { //-1 because the trigger stream has 1 cycle of windup and we won't bother testing that
 
@@ -431,12 +431,14 @@ bool drive() {
 	}
 
 
-
+	bool desync=false;
 	i=0;
 	while(!phases.empty()) {
-		trigger(phases, threshoffs,  trigger_out, timestamps, photon_output_fifos);
+		trigger(phases, iqs, threshoffs,  trigger_out, timestamps, desync, photon_output_fifos);
 		photon_fifo_merger(photon_output_fifos, photons_out);
 		i++;
+		fail|=desync;
+		if (desync) cout<<"Desync at "<<i<<endl;
 	}
 	fail|=verify_trigger(trigger_out, trigger_gold);
 	fail|=verify_photons(photons_out, photons_gold);

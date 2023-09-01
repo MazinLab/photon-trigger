@@ -160,9 +160,11 @@ typedef ap_axiu<N_PHOTON_BITS,0,0,0> photonstream_t;
 void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet,// timestamp_t packet_duration,
 		hls::stream<photonstream_t> &photon_packets, ap_uint<5> time_shift);
 
-void trigger(hls::stream<phasestream_t> &instream, threshoffs_t threshoffs[N_PHASEGROUPS],
-		hls::stream<trigstream_t> &outstream,
-		hls::stream<timestamp_t> &timestamp, hls::stream<photon_t> photon_fifos[N_PHASE]);
+
+void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream4x_t> &iq4x_in, threshoffs_t threshoffs[N_PHASEGROUPS],
+		hls::stream<trigstream_t> &postage_stream,
+		hls::stream<timestamp_t> &timestamp, bool &desync, hls::stream<photon_t> photons_lane[N_PHASE]);
+
 
 void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
