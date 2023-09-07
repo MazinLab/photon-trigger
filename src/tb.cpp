@@ -73,7 +73,18 @@ bool verify_trigger(hls::stream<trigstream_t> &out, hls::stream<trigstream_t> &e
 			cout<<"Sample "<<samp<<" group: "<<group<<": phase0 expected="<<expect.data.range(15,0)<<", got "<<got.data.range(15,0)<<endl;
 
 		if (expect.data!=got.data ) {
-			cout<<" data mismatch "<<got.data<<" is not "<<expect.data<<endl;
+			cout<<" data mismatch "<<endl;
+			for (int i=0;i<N_PHASE;i++) {
+				uint16_t gp,ep;
+				uint32_t giq,eiq;
+				gp=got.data.range((i+1)*PHASE_BITS-1,i*PHASE_BITS);
+				ep=expect.data.range((i+1)*PHASE_BITS-1,i*PHASE_BITS);
+
+				giq=got.data.range(N_PHASE*PHASE_BITS+IQ_BITS*(i+1)-1, N_PHASE*PHASE_BITS+i*IQ_BITS);
+				eiq=expect.data.range(N_PHASE*PHASE_BITS+IQ_BITS*(i+1)-1, N_PHASE*PHASE_BITS+i*IQ_BITS);
+				if (gp!=ep) cout<<" phase data mismatch"<<i<<" "<<gp<<" is not "<<ep<<endl;
+				if (giq!=eiq) cout<<" iq data mismatch"<<i<<" "<<giq<<" is not "<<eiq<<endl;
+			}
 			fail=true;
 		}
 
@@ -227,7 +238,8 @@ bool drive() {
 
 	bool fail=false;
 	hls::stream<phasestream_t> phases("Phase data");
-	hls::stream<iqstream4x_t> iqs("IQ data");
+	//hls::stream<iqstream4x_t> iqs("IQ data");
+	hls::stream<iqstream_t> iqs("IQ data");
 	hls::stream<timestamp_t> timestamps("Timestamps");
 
 	hls::stream<trigstream_t> trigger_out("Trig out"), trigger_gold("Trig gold"), trigger_gold2("Trig gold2"), postage_trigger("postage Trig input");
@@ -300,7 +312,7 @@ bool drive() {
 	}
 
 	// Load times, phase input, and trigger and photon gold output
-	int i=0;
+	int i=0; //this is a sample from the gold file
 	phasestream_t phasetmp;
 	for (;;){
 		bool trig_event, photon_event;
@@ -361,14 +373,18 @@ bool drive() {
 			}
 
 			// Load phase stream, trigger gold stream
-
 			trigstream_t trigtmp;
-			iqstream4x_t iqstmp;
 			phasetmp.data=phaseset2phases(x);
 			phasetmp.last=group==(N_PHASEGROUPS-1);
 			phasetmp.user=group;
 
-			trigtmp.data=phasetmp.data;
+			trigtmp.data.range(N_PHASE*PHASE_BITS-1,0)=phasetmp.data;
+			uint32_t iqval;
+			for (int lane=0;lane<N_PHASE;lane++) {
+				//iq vals start at 0 (in the next section) and just count up 1 per lane and per sample
+				trigtmp.data.range(N_PHASE*PHASE_BITS+IQ_BITS*(lane+1)-1, N_PHASE*PHASE_BITS+IQ_BITS*lane)=lane+group*N_PHASE+i*2048;//-2048;
+			}
+//			cout<<"iq4x (trigtmp) "<<trigtmp.data.range(N_PHASE*(PHASE_BITS+IQ_BITS)-1,N_PHASE*PHASE_BITS)<<endl;
 			trigtmp.last=phasetmp.last;
 			trigtmp.user.range(N_PHASEGROUPS_LOG2-1, 0)=phasetmp.user;
 			trigtmp.user.range(N_PHASEGROUPS_LOG2+N_PHASE-1, N_PHASEGROUPS_LOG2) = trigger;
@@ -384,57 +400,71 @@ bool drive() {
 
 	unsigned int N_SAMP=i;
 	//Load IQs
-	iqstream4x_t iqtmp;
+	//iqstream4x_t iqtmp;  //4x iq
+	iqstream_t iqtmp;
 	iqtmp.data=0;
 	for (int i=0;i<(N_SAMP+N_CAPDATA+N_CAPPRE)*N_PHASEGROUPS*N_PHASE;i++) { //-1 because the trigger stream has 1 cycle of windup and we won't bother testing that
 
-		int group, lane, samp;
+		int iqgroup, pgroup, plane, iqlane, samp;
 		samp=i/2048 - N_CAPPRE;
-		group=(i/N_PHASE)%N_PHASEGROUPS;
-		lane=i%N_PHASE;
-		iqtmp.data.range(IQ_BITS*(lane+1)-1,IQ_BITS*lane)=i;
-		iqtmp.last=group==N_PHASEGROUPS-1;
+		pgroup=(i/N_PHASE)%N_PHASEGROUPS;
+		iqgroup=(i/N_IQ)%N_GROUPS;
+		plane=i%N_PHASE;
+		iqlane=i%N_IQ;
 
-		if (lane==N_PHASE-1)
+		//4x iq
+//		iqtmp.data.range(IQ_BITS*(plane+1)-1,IQ_BITS*plane)=i;
+//		iqtmp.last=pgroup==N_PHASEGROUPS-1;
+//		if (plane==N_PHASE-1)
+//			iqs.write(iqtmp);
+
+		//8x iq
+		iqtmp.data.range(IQ_BITS*(iqlane+1)-1,IQ_BITS*iqlane)=i;
+		iqtmp.last=iqgroup==N_GROUPS-1;
+		iqtmp.user=iqgroup;
+		if (iqlane==N_IQ-1) {
+			if (i<100) cout<<"iq "<<iqtmp.data.range(127,0)<<" "<<iqtmp.data.range(255,128)<<endl;
 			iqs.write(iqtmp);
+		}
 	}
 
 	for (int i=0;i<N_MONITOR;i++){
 		event_count_gold[i]=n_photon_triggers;
 	}
 
-	for (int k=0; k<n_photon_triggers;k++) {
-		if (k>0 && (photon_trigger_sample_ndx[k]-photon_trigger_sample_ndx[k-1]<N_CAPDATA)) {
-			for (int i=0;i<N_MONITOR;i++) event_count_gold[i]--;
-			cout<<"Skipping trigger "<<k<<" at "<<photon_trigger_sample_ndx[k]<<" diff ";
-			cout<<photon_trigger_sample_ndx[k]-photon_trigger_sample_ndx[k-1]<<endl;
-			continue;
-		}
-		for (int j=0;j<N_MONITOR;j++) {
-			for (int i=0; i<N_CAPDATA; i++) {
-
-				iq_t iq;
-				singleiqstream_t x;
-				int samp;
-				samp=photon_trigger_sample_ndx[k]-N_CAPPRE+i;
-				iq=samp*2048+monitor[j];
-
-
-				x.user=j;
-				x.data=iq;
-				x.last=i==N_CAPDATA-1;
+//	for (int k=0; k<n_photon_triggers;k++) {
+//		if (k>0 && (photon_trigger_sample_ndx[k]-photon_trigger_sample_ndx[k-1]<N_CAPDATA)) {
+//			for (int i=0;i<N_MONITOR;i++) event_count_gold[i]--;
+//			cout<<"Skipping trigger "<<k<<" at "<<photon_trigger_sample_ndx[k]<<" diff ";
+//			cout<<photon_trigger_sample_ndx[k]-photon_trigger_sample_ndx[k-1]<<endl;
+//			continue;
+//		}
+//		for (int j=0;j<N_MONITOR;j++) {
+//			for (int i=0; i<N_CAPDATA; i++) {
+//
+//				iq_t iq;
+//				singleiqstream_t x;
+//				int samp;
+//				samp=photon_trigger_sample_ndx[k]-N_CAPPRE+i;
+//				iq=samp*2048+monitor[j];
+//
+//
+//				x.user=j;
+//				x.data=iq;
+//				x.last=i==N_CAPDATA-1;
 //				postage_gold_flat.write(x);
 //				iq_cap_buffer_gold[j][k][i]=x.data;
 //				postage_gold[j].write(x);
-			}
-		}
-	}
+//			}
+//		}
+//	}
 
 
-	bool desync=false;
 	i=0;
 	while(!phases.empty()) {
-		trigger(phases, iqs, threshoffs,  trigger_out, timestamps, desync, photon_output_fifos);
+		bool desync;
+		desync=false;
+		trigger(phases, iqs, threshoffs,  timestamps, trigger_out, desync, photon_output_fifos);
 		photon_fifo_merger(photon_output_fifos, photons_out);
 		i++;
 		fail|=desync;

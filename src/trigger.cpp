@@ -12,8 +12,8 @@ inline void unpack_thresholds(threshoffs_t toffs, threshold_t threshs[N_PHASE], 
 }
 
 void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq8x_in, threshoffs_t threshoffs[N_PHASEGROUPS],
-		hls::stream<trigstream_t> &postage_stream,
-		hls::stream<timestamp_t> &timestamp, bool &desync, hls::stream<photon_t> photons_lane[N_PHASE]) {
+		hls::stream<timestamp_t> &timestamp,
+		hls::stream<trigstream_t> &postage_stream, bool &desync, hls::stream<photon_t> photons_lane[N_PHASE]) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS INTERFACE mode=axis port=postage_stream depth=32000 register
 #pragma HLS INTERFACE mode=axis port=phase4x_in depth=32000 register
@@ -52,24 +52,28 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq
 	iqstream4x_t iq4x;
 	iqstream_t iq8x;
 
-	static bool iq_buffer_empty;
+	static bool iq_buffered;
 	static iqstream4x_t iq4x_buffer;
 
 	in = phase4x_in.read();
-	if (iq_buffer_empty) {
+	if (!iq_buffered) {
 		iq8x = iq8x_in.read();
 
-		iq4x.data=iq8x.data.range(0,127);
+		iq4x.data=iq8x.data.range(127,0);
 		iq4x.user=iq8x.user*2;
 		iq4x.last=false;
 
-		iq4x_buffer.data=iq8x.data.range(128,255);
+		iq4x_buffer.data=iq8x.data.range(255,128);
 		iq4x_buffer.user=iq8x.user*2+1;
 		iq4x_buffer.last=iq8x.last;
-		iq_buffer_empty=false;
+		iq_buffered=true;
+//		cout<<"readiq "<<in.user<<" "<<iq8x.user<<" 4x:"<<iq4x.user<<endl;
+//		cout<<iq4x.data<<", "<<iq4x_buffer.data<<endl;
+
 	} else {
 		iq4x=iq4x_buffer;
-		iq_buffer_empty=true;
+		iq_buffered=false;
+//		cout<<"buffiq "<<in.user<<" "<<iq4x.user<<endl;
 	}
 
 	time = timestamp.read();
@@ -150,7 +154,7 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq
 	out.last=in.last;
 	out.data.range(N_PHASE*PHASE_BITS-1,0)=in.data;
 	out.data.range(N_PHASE*(PHASE_BITS+IQ_BITS)-1,N_PHASE*PHASE_BITS)=iq4x.data;
-
+//	cout<<"core: "<<out.data.range(N_PHASE*(PHASE_BITS+IQ_BITS)-1,N_PHASE*PHASE_BITS)<<endl;
 	postage_stream.write(out);
 //}
 }

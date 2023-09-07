@@ -10,8 +10,8 @@ wire kernel_block;
 
 assign axis_block_sigs[0] = ~phase4x_in_TDATA_blk_n;
 assign axis_block_sigs[1] = ~iq8x_in_TDATA_blk_n;
-assign axis_block_sigs[2] = ~postage_stream_TDATA_blk_n;
-assign axis_block_sigs[3] = ~timestamp_TDATA_blk_n;
+assign axis_block_sigs[2] = ~timestamp_TDATA_blk_n;
+assign axis_block_sigs[3] = ~postage_stream_TDATA_blk_n;
 assign axis_block_sigs[4] = ~photons_lane_0_TDATA_blk_n;
 assign axis_block_sigs[5] = ~photons_lane_1_TDATA_blk_n;
 assign axis_block_sigs[6] = ~photons_lane_2_TDATA_blk_n;
