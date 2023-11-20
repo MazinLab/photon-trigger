@@ -233,6 +233,8 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 	photoncount_t _photons_per_buf=photons_per_buf;
 	bool seen_a_photon=false;
 
+	_n_photons=0;
+	cache_i=0;
 	buffer: while (!rotate_buffer) {
 
 		photon_t photon;
@@ -255,7 +257,6 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 		} else
 			cache_i++;
 
-
 		ap_uint<5> shft;
 		shft = time_shift;
 		shft = shft < 9 ? ap_uint<5>(9): shft;
@@ -269,7 +270,10 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 		n_photons[_ab]=_n_photons;
 	}
 
-	burstvar: for (int i=0;i<cache_i/2;i++) {
+	//cache_i will be at most 511
+	//if cache_i==0 then we will write two old photos to the next buffer location,
+	// but there is space in the buffer and the user-space count won't change so its not an actual issue
+	burstvar: for (int i=0;i<=cache_i/2;i++) {
 		photon_uint_2x_t x;
 		x.range(N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2]);
 		x.range(2*N_PHOTON_BITS-1,N_PHOTON_BITS)=photon2uint(burstcache[i*2+1]);
@@ -278,6 +282,7 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 	_n_photons+=cache_i;
 	n_photons[_ab]=_n_photons;
 	cache_i=0;
+	_n_photons=0;
 	_ab++;
 	n_photons[_ab]=0;
 
