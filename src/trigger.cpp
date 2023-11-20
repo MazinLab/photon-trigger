@@ -222,17 +222,19 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 #pragma HLS DEPENDENCE direction=RAW type=inter variable=photons_out false
 #pragma HLS AGGREGATE compact=auto variable=photons
 
-	static ap_uint<N_PHOTON_BUFFERS_LOG2> _ab;
+	static ap_uint<N_PHOTON_BUFFERS_LOG2> _ab=0;
 	photoncount_t _n_photons;
 
 	photon_t burstcache[512];
 #pragma HLS AGGREGATE compact=auto variable=burstcache
 	uint16_t cache_i;
 	timestamp_t _last_time;
-	bool rotate_buffer=false;
-	photoncount_t _photons_per_buf=photons_per_buf;
-	bool seen_a_photon=false;
+	bool rotate_buffer;
+	photoncount_t _photons_per_buf;
+	static ap_uint<4> seen_holdoff=15;
 
+	_photons_per_buf=photons_per_buf;
+	rotate_buffer=false;
 	_n_photons=0;
 	cache_i=0;
 	buffer: while (!rotate_buffer) {
@@ -263,10 +265,12 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 		shft = shft > 20 ? ap_uint<5>(20): shft;
 		tmp_time=photon.time>>shft;
 
-		rotate_buffer=(_n_photons>=_photons_per_buf || tmp_time!=_last_time) && seen_a_photon;
+
+
+		rotate_buffer=(_n_photons>=_photons_per_buf || tmp_time!=_last_time) && seen_holdoff==0;
 
 		_last_time=tmp_time;
-		seen_a_photon=true;
+		seen_holdoff = seen_holdoff == 0 ? ap_uint<4>(0): ap_uint<4>(seen_holdoff-1);
 		n_photons[_ab]=_n_photons;
 	}
 
