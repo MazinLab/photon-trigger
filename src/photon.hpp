@@ -156,6 +156,12 @@ typedef ap_axiu<IQ_BITS,N_MONITOR_LOG2,0,0> singleiqstream_t;
 typedef ap_axiu<N_PHASE*(PHASE_BITS+IQ_BITS),N_PHASEGROUPS_LOG2+N_PHASE,0,0> trigstream_t;
 typedef ap_axiu<N_PHOTON_BITS,0,0,0> photonstream_t;
 
+typedef struct singleiqstreaminternal_t {
+	uint32_t data;
+	ap_uint<N_MONITOR_LOG2> user;
+	bool last;
+} singleiqstreaminternal_t;
+
 
 void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet,// timestamp_t packet_duration,
 		hls::stream<photonstream_t> &photon_packets, ap_uint<5> time_shift);
@@ -169,10 +175,17 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq
 void postage_filter(hls::stream<trigstream_t> &instream, hls::stream<iqstreamnarrow_t> &iniq,
 		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> iq_out[N_MONITOR]);
 
-void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_t iq[N_MONITOR][POSTAGE_BUFSIZE][N_CAPDATA],
-				  uint16_t event_count[N_MONITOR]);
+void postage_interconnect(hls::stream<singleiqstream_t> postage_iq[N_MONITOR],
+					hls::stream<singleiqstream_t> &postage);
+
+void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
+		reschan_t monitor[N_MONITOR], hls::stream<singleiqstream_t> &out, bool &overflow);
+
+void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[POSTAGE_BUFSIZE][N_CAPDATA/4],
+				  uint16_t &event_count, uint16_t max_events);
 
 void photon_maxi(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer);
 
 void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons);
+
