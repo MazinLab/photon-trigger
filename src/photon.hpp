@@ -184,6 +184,7 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[POSTAGE_BUFSIZE][N_CAPDATA/4],
 				  uint16_t &event_count, uint16_t max_events);
 
+
 void photon_maxi(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer);
 
