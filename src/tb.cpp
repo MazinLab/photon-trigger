@@ -15,29 +15,16 @@ inline phaseset_t phases2phaseset(phases_t p) {
 	return r;
 }
 
+inline void iq4x2uint32(iq_4x_t iq4x, uint32_t x[N_PHASE]) {
+	for (int j=0;j<N_PHASE;j++)
+		x[j]=iq4x.range(IQ_BITS*(j+1)-1, IQ_BITS*j);
+}
+
 inline phases_t phaseset2phases(phaseset_t p) {
 	phases_t r;
 	for (int j=0;j<N_PHASE;j++)
 		r.range(PHASE_BITS*(j+1)-1, PHASE_BITS*j)=p.phase[j];
 	return r;
-}
-
-void flatten_postage_streams(hls::stream<singleiqstream_t> multi[N_MONITOR], hls::stream<singleiqstream_t> &flat) {
-	int i=0;
-	while (true) {
-		int done=0;
-		for (int i=0;i<N_MONITOR;i++)
-			done+=multi[i].empty();
-		if (done==N_MONITOR)
-			break;
-		while (not multi[i].empty()) {
-			singleiqstream_t x;
-			x=multi[i].read();
-			flat.write(x);
-			if (x.last) break;
-		}
-		i = i<N_MONITOR-1 ? i+1:0;
-	}
 }
 
 
@@ -187,6 +174,10 @@ bool verify_postage(hls::stream<singleiqstream_t> &out, hls::stream<singleiqstre
 			stamps[expect.user]++;
 		} else if (i==0) {
 			cout<<"Expect start of stamp "<<stamps[expect.user]<<" on mon "<<expect.user<<" with iq "<<expect.data<<" (sample "<<expect.data/2048<<")"<<endl;
+		} else if (expect.user==0) {
+			cout<<"Expect samp "<<i<<" of stamp "<<stamps[expect.user]<<" on mon "<<expect.user;
+			cout<<" with iq "<<expect.data<<" (sample "<<expect.data/2048<<") got "<<got.data;
+			cout<<" (user="<<got.user<<" last="<<got.last<<")"<<endl;
 		}
 
 		if (expect.last!=got.last || expect.data!=got.data || expect.user!=got.user) {
@@ -219,18 +210,30 @@ bool verify_postage(hls::stream<singleiqstream_t> &out, hls::stream<singleiqstre
 
 bool verify_postage_maxi(iq_4x_t iq_cap_buffer[POSTAGE_BUFSIZE][N_CAPDATA/4], uint16_t event_count,
 		iq_4x_t iq_cap_buffer_gold[POSTAGE_BUFSIZE][N_CAPDATA/4], uint16_t event_count_gold) {
-	bool fail=false;
+	bool fail=false, failthis=false;
 
 	cout<<"Expected "<<event_count_gold<<" postage stamps, got "<<event_count<<endl;
 	fail|=event_count_gold!=event_count;
+
 
 	for (int j=0;j<POSTAGE_BUFSIZE;j++){
 		for (int k=0;k<N_CAPDATA/4;k++) {
 			if (iq_cap_buffer[j][k]!=iq_cap_buffer_gold[j][k]){
 				fail|=true;
-				cout<<"mismatch "<<","<<j<<","<<k<<": "<<iq_cap_buffer[j][k]<<" should be "<<iq_cap_buffer_gold[j][k]<<endl;
+				failthis=true;
 			}
 		}
+		if (failthis) {
+			uint32_t iqs_gold[N_PHASE], iqs[N_PHASE], iqs_last_gold[N_PHASE], iqs_last[N_PHASE];
+			iq4x2uint32(iq_cap_buffer[j][0], iqs);
+			iq4x2uint32(iq_cap_buffer_gold[j][0], iqs_gold);
+			iq4x2uint32(iq_cap_buffer[j][N_CAPDATA/4-1], iqs_last);
+			iq4x2uint32(iq_cap_buffer_gold[j][N_CAPDATA/4-1], iqs_last_gold);
+			cout<<"Fail postage "<<j<<" mon "<<iqs_gold[0]<<"?="<<iqs[0]<<endl;
+			cout<<" IQs expected from "<<iqs_gold[1]<<" to "<<iqs_last_gold[N_PHASE-1]<<endl;
+			cout<<" IQs were     from "<<iqs[1]<<" to "<<iqs_last[N_PHASE-1]<<endl;
+		}
+		failthis=false;
 	}
 	if (!fail) cout<<"POSTAGE MAXI PASSED!"<<endl;
 	return fail;
@@ -313,30 +316,34 @@ void load_postage_testvec(hls::stream<trigstream_t> &postage_trigger, reschan_t 
 						triggered = true;
 						cout<<"Inserting a trigger on channel "<<chan<<" ("<<group<<", "<<lane<<") sample "<<samp<<" ";
 						if (samp-_last_event[mon]>N_CAPDATA) { //we will capture this so go ahead and compute all the samples and spew them
-							cout<<"and capture data from mon "<<mon<<", iqs from "<<((int64_t)iq)-(N_CAPPRE+1)*N_PHASE*N_PHASEGROUPS<<" to ";
+							cout<<"and capture data from mon "<<mon<<", iqs from "<<((int64_t)iq)-(N_CAPPRE)*N_PHASE*N_PHASEGROUPS<<" to ";
 							_last_event[mon]=samp; ///record when it happened
 
 							iq_4x_t iq4x;
-							for (uint32_t future_samp=0;future_samp<N_CAPDATA;future_samp++) {
+							for (uint32_t future_samp=0;future_samp<N_CAPDATA;future_samp++) { // maxi logs the first 127 of the 128
 								singleiqstream_t x;
 								x.user=mon;
-								//x.data=iq+future_samp*N_PHASE*N_PHASEGROUPS;
-								if (N_CAPPRE*N_PHASE*N_PHASEGROUPS>(iq+future_samp*N_PHASE*N_PHASEGROUPS)) {
-									x.data=0;
-//									if (mon==0) {
-//										cout<<"mon=0 sample "<<samp<<" cap_sample "<<future_samp<<" iq "<<iq<<endl;
-//									}
+
+								if (N_CAPPRE>(samp+future_samp)) {
+									x.data=1337;
 								} else {
 									x.data=iq+future_samp*N_PHASE*N_PHASEGROUPS-(N_CAPPRE)*N_PHASE*N_PHASEGROUPS;
 								}
+								//if (mon==0 && samp==0) {
+								//			cout<<"postage gold mon=0 trig0 sample"<<future_samp<<" postage iq "<<x.data<<" /2048 "<<x.data/2048<<endl;
+								//}
 								x.last=future_samp==N_CAPDATA-1;
 								postage_gold.write(x);
 
-								if (future_samp==0) iq4x.range(IQ_BITS-1,0)=mon;
-								else iq4x.range(IQ_BITS*(future_samp%4+1)-1, IQ_BITS*(future_samp%4))=x.data;
+								if (future_samp==0) {
+									iq4x.range(IQ_BITS-1,0)=mon;
+									iq4x.range(IQ_BITS*2-1,IQ_BITS)=x.data;
+								} else {
+									iq4x.range(IQ_BITS*((future_samp+1)%4+1)-1, IQ_BITS*((future_samp+1)%4))=x.data;
+								}
 
-								if (future_samp%4==3) {
-									iq_cap_gold[event_count_gold][future_samp/4]=iq4x;
+								if ((future_samp+1)%4==3) { //last samp not saved!!!
+									iq_cap_gold[event_count_gold][(future_samp+1)/4]=iq4x;
 									iq4x=0;
 								} // store the packed iq value
 
@@ -562,15 +569,12 @@ bool drive() {
 		plane=i%N_PHASE;
 		iqlane=i%N_IQ;
 
-
 		//8x iq
 		iqtmp.data.range(IQ_BITS*(iqlane+1)-1,IQ_BITS*iqlane)=i;
 		iqtmp.last=iqgroup==N_GROUPS-1;
 		iqtmp.user=iqgroup;
-		if (iqlane==N_IQ-1) {
-			if (i<100) cout<<"iq "<<iqtmp.data.range(127,0)<<" "<<iqtmp.data.range(255,128)<<endl;
+		if (iqlane==N_IQ-1)
 			iqs.write(iqtmp);
-		}
 	}
 
 
@@ -603,11 +607,11 @@ bool drive() {
 
 	bool overflow;
 
-//	load_postage_testvec(postage_trigger, monitor, postage_gold_flat, iq_cap_buffer_gold, event_count_gold);
-//	postage_filter_w_interconn(postage_trigger, monitor, postage_out, overflow);
-//	fail|=verify_postage(postage_out, postage_gold_flat);
-//	fail|=overflow;
-//	if (overflow) cout<<"Got an overflow from postage"<<endl;
+	load_postage_testvec(postage_trigger, monitor, postage_gold_flat, iq_cap_buffer_gold, event_count_gold);
+	postage_filter_w_interconn(postage_trigger, monitor, postage_out, overflow);
+	fail|=verify_postage(postage_out, postage_gold_flat);
+	fail|=overflow;
+	if (overflow) cout<<"Got an overflow from postage"<<endl;
 
 
 	if (!postage_trigger.empty()) {

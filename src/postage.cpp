@@ -197,7 +197,7 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 #ifndef __SYNTHESIS__
 		 for (int foo=0;foo<N_MONITOR;foo++)
 			 for (int i=0;i<N_CAPPRE+1;i++)
-				 iqprereg[foo].shift(0, N_CAPPRE, 1);
+				 iqprereg[foo].shift(1337, N_CAPPRE, 1);
 
 		 int samp[N_MONITOR];
 		 for (int i=0;i<N_MONITOR;i++)samp[i]=0;
@@ -225,13 +225,13 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 		for (int i=0;i<N_PHASE;i++)
 			x[i]=in.data.range(IQ_BITS*(i+1)-1+N_PHASE*PHASE_BITS, i*IQ_BITS+N_PHASE*PHASE_BITS);
 
-#ifndef __SYNTHESIS__
-		if (trigger>0){
-			cout<<"Trigger on group "<<group<<", sample "<<x[0]/2048<<": ";for (int i=0;i<N_PHASE;i++) cout<<trigger[i]<<" ";
-			cout<<"IQs: ";for (int i=0;i<N_PHASE;i++) cout<<x[i]<<" ";
-			cout<<endl;
-		}
-#endif
+//#ifndef __SYNTHESIS__
+//		if (trigger>0){
+//			cout<<"Trigger on group "<<group<<", sample "<<x[0]/2048<<": ";for (int i=0;i<N_PHASE;i++) cout<<trigger[i]<<" ";
+//			cout<<"IQs: ";for (int i=0;i<N_PHASE;i++) cout<<x[i]<<" ";
+//			cout<<endl;
+//		}
+//#endif
 
 
 		for (int i=0;i<N_MONITOR;i++) {
@@ -254,21 +254,24 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 			if (gid==group) {
 				if (tocapture[i]>0) {
 #ifndef __SYNTHESIS__
-					if(tocapture[i]==N_CAPDATA){
-						cout<<"Buffer first iq "<<laneiq<<" for mon "<<i<<" channel "<<monitor[i]<<" occupancy is "<<buff[i].size()<<endl;
-					}
+//					if (i==0) {
+//						cout<<"Buffer iq "<<laneiq<<" for mon "<<i<<" channel "<<monitor[i]<<" occupancy is "<<buff[i].size()<<endl;
+//					}
+//				    else if(tocapture[i]==N_CAPDATA){
+//						cout<<"Buffer first iq "<<laneiq<<" for mon "<<i<<" channel "<<monitor[i]<<" occupancy is "<<buff[i].size()<<endl;
+//					}
 #endif
 					_overflow|=!buff[i].write_nb(tmp);
 					tocapture[i] = nexttocap;
 				}
 				else if (trigger[lane]) {
+					tocapture[i]=N_CAPDATA;
 #ifndef __SYNTHESIS__
 					cout<<"Begin stamp (cap next sample) on channel "<<monitor[i]<<"=="<<group*N_PHASE+lane<<" (";
 					cout<<group<<", "<<lane<<") sample "<<laneiq/2048<<" iq is "<<laneiq;
 					cout<<". Current sample/iq is "<<x[i]/2048<<"/"<<x[i]<<", mon "<<i<<" samp is "<<samp[i]<<endl;
 					samp[i]=0;
 #endif
-					tocapture[i]=N_CAPDATA;
 				}
 			}
 		}
@@ -276,6 +279,7 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 
 
 		 overflow=_overflow;
+
 #ifndef __SYNTHESIS__
 		 if (_overflow) {
 			 cout<<"Overflow with "<<postage_stream.size()<<" samples left. Occupancy:";
@@ -283,6 +287,8 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 			 cout<<endl;
 		 }
 #endif
+
+		 // Send along from a buffer
 		 singleiqstreaminternal_t foo;
 
 		 sending_plus1 = sending_i>=N_MONITOR-1 ? 0:sending_i+1;
@@ -292,20 +298,20 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 			 x.last=foo.last;
 			 x.data=foo.data;
 			 x.user=foo.user;
+#ifndef __SYNTHESIS__
+			 if (sending_i==0) {
+			 	cout<<"Transmit iq "<<x.data<<" last/user "<<x.last<<"/"<<x.user<<" for mon "<<(uint16_t)sending_i<<" channel "<<monitor[sending_i]<<" occupancy is "<<buff[sending_i].size()<<endl;
+			 }
+#endif
 			 out.write(x);
 
-			 packet_in_flight=x.last;
-			 if (x.last) sending_i = sending_plus1;
-//			 if (foo.last) {
-				 //cout<<"Finished sending "<<(uint32_t)sending_i<<endl;
-//				 sending_i = sending_plus1;
-				 //packet_in_flight=false;
-			 //}
-			 //else packet_in_flight=true;
-		 } else {
-			 if (!packet_in_flight) {
+			 packet_in_flight=!x.last;
+			 if (x.last) {
+				 cout<<"moving to next xmit buffer"<<endl;
 				 sending_i = sending_plus1;
 			 }
+		 } else if (!packet_in_flight) {
+			 sending_i = sending_plus1;
 		 }
 
 #ifndef __SYNTHESIS__
@@ -319,44 +325,44 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 	 cout<<endl;
 	 cout<<"Sending_i "<<(uint32_t)sending_i<<" in flight: "<<packet_in_flight<<endl;
 
-	bool __done=true;
-	for (int i=0;i<N_MONITOR;i++) __done&=buff[i].empty();
-	int p_i=0;
-	while (!__done) {
-
-
-	 singleiqstreaminternal_t foo;
-
-	 sending_plus1 = sending_i>=N_MONITOR-1 ? 0:sending_i+1;
-
-	 if (buff[sending_i].read_nb(foo)) {
-		 singleiqstream_t x;
-		 x.last=foo.last;
-		 x.data=foo.data;
-		 x.user=foo.user;
-		 out.write(x);
-		 if (foo.last) {
-			 sending_i = sending_plus1;
-			 cout<<"Sending "<<sending_i<<endl;
-			 p_i=0;
-		 }
-		 else {
-			 cout<<" sample"<<p_i<<endl;
-			 packet_in_flight=true;
-		 }
-	 } else {
-		 if (!packet_in_flight) {
-			 sending_i = sending_plus1;
-			 cout<<"Sending "<<sending_i<<endl;
-			 p_i=0;
-		 } else {
-			 cout<<"insufficient phase data sent to properly test the core!!!";
-			 break;
-		 }
-	 }
-	 __done=true;
-	 for (int i=0;i<N_MONITOR;i++) __done&=buff[i].empty();
-	}
+//	bool __done=true;
+//	for (int i=0;i<N_MONITOR;i++) __done&=buff[i].empty();
+//	int p_i=0;
+//	while (!__done) {
+//
+//
+//	 singleiqstreaminternal_t foo;
+//
+//	 sending_plus1 = sending_i>=N_MONITOR-1 ? 0:sending_i+1;
+//
+//	 if (buff[sending_i].read_nb(foo)) {
+//		 singleiqstream_t x;
+//		 x.last=foo.last;
+//		 x.data=foo.data;
+//		 x.user=foo.user;
+//		 out.write(x);
+//		 if (foo.last) {
+//			 sending_i = sending_plus1;
+//			 cout<<"Sending "<<sending_i<<endl;
+//			 p_i=0;
+//		 }
+//		 else {
+//			 cout<<" sample"<<p_i<<endl;
+//			 packet_in_flight=true;
+//		 }
+//	 } else {
+//		 if (!packet_in_flight) {
+//			 sending_i = sending_plus1;
+//			 cout<<"Sending "<<sending_i<<endl;
+//			 p_i=0;
+//		 } else {
+//			 cout<<"insufficient phase data sent to properly test the core!!!";
+//			 break;
+//		 }
+//	 }
+//	 __done=true;
+//	 for (int i=0;i<N_MONITOR;i++) __done&=buff[i].empty();
+//	}
 	cout<<endl;
 #endif
 }
@@ -429,12 +435,14 @@ const int _maxtripcount=POSTAGE_BUFSIZE;
 			x.range(IQ_BITS*3-1,IQ_BITS*2)=tmp.data;
 
 			tmp=postage.read();
-			desync|=(tmp.last && i!=N_CAPDATA/4-1);
+			desync|=tmp.last;
 			x.range(IQ_BITS*4-1,IQ_BITS*3)=tmp.data;
 
 			buf[i]=x;
 		}
 
+		desync|=!postage.read().last;
+		//3+31*4+1=128 reads on the stream
 
 		burst: for (int i=0; i<N_CAPDATA_MAXI;i++) {
 			iq[_count][i]=buf[i];
