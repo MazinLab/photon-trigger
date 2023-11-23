@@ -9,12 +9,12 @@ wire [0:0] inst_block_sigs;
 wire kernel_block;
 
 assign axis_block_sigs[0] = ~postage_TDATA_blk_n;
-assign axis_block_sigs[1] = ~grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235.postage_TDATA_blk_n;
+assign axis_block_sigs[1] = ~grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253.postage_TDATA_blk_n;
 
 assign inst_block_sigs[0] = 1'b0;
 
 assign inst_idle_sigs[0] = 1'b0;
-assign inst_idle_sigs[1] = grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235.ap_idle;
+assign inst_idle_sigs[1] = grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253.ap_idle;
 
 postage_maxi_hls_deadlock_idx0_monitor postage_maxi_hls_deadlock_idx0_monitor_U (
     .clock(kernel_monitor_clock),

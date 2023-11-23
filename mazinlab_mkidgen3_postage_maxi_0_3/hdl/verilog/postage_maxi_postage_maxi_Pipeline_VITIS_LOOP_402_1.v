@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-module postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_247_1 (
+module postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 (
         ap_clk,
         ap_rst,
         ap_start,
@@ -177,4 +177,4 @@ assign ap_loop_exit_ready = ap_condition_exit_pp0_iter0_stage0;
 
 assign tmp_last_V_fu_48_p1 = postage_TLAST;
 
-endmodule //postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_247_1
+endmodule //postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1

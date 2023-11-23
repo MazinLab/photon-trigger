@@ -186,7 +186,11 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 #pragma HLS ARRAY_PARTITION variable=iqprereg type=complete
 
 
-		static hls::stream<singleiqstreaminternal_t, N_CAPDATA+4> buff[N_MONITOR];
+	 //can go up to 7 times for free, only need 1
+	 // but since the output write needs to be blocking it doesn't actually help as the fifo between this core and
+	 // the maxi is where any slowdown due to axi needs to be handled. Fixing that would require restructure to
+	 // dataflow
+		static hls::stream<singleiqstreaminternal_t, (N_CAPDATA+4)> buff[N_MONITOR];
 #pragma HLS AGGREGATE compact=bit variable=buff
 #pragma HLS ARRAY_PARTITION type=complete variable=buff
 		 static unsigned char sending_i=0, next_sending;
@@ -225,14 +229,6 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 		for (int i=0;i<N_PHASE;i++)
 			x[i]=in.data.range(IQ_BITS*(i+1)-1+N_PHASE*PHASE_BITS, i*IQ_BITS+N_PHASE*PHASE_BITS);
 
-//#ifndef __SYNTHESIS__
-//		if (trigger>0){
-//			cout<<"Trigger on group "<<group<<", sample "<<x[0]/2048<<": ";for (int i=0;i<N_PHASE;i++) cout<<trigger[i]<<" ";
-//			cout<<"IQs: ";for (int i=0;i<N_PHASE;i++) cout<<x[i]<<" ";
-//			cout<<endl;
-//		}
-//#endif
-
 
 		for (int i=0;i<N_MONITOR;i++) {
 		#pragma HLS UNROLL
@@ -254,12 +250,9 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 			if (gid==group) {
 				if (tocapture[i]>0) {
 #ifndef __SYNTHESIS__
-//					if (i==0) {
-//						cout<<"Buffer iq "<<laneiq<<" for mon "<<i<<" channel "<<monitor[i]<<" occupancy is "<<buff[i].size()<<endl;
-//					}
-//				    else if(tocapture[i]==N_CAPDATA){
-//						cout<<"Buffer first iq "<<laneiq<<" for mon "<<i<<" channel "<<monitor[i]<<" occupancy is "<<buff[i].size()<<endl;
-//					}
+				    if(tocapture[i]==N_CAPDATA){
+						cout<<"Buffer first iq "<<laneiq<<" for mon "<<i<<" channel "<<monitor[i]<<" occupancy is "<<buff[i].size()<<endl;
+					}
 #endif
 					_overflow|=!buff[i].write_nb(tmp);
 					tocapture[i] = nexttocap;
@@ -298,6 +291,7 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 			 x.last=foo.last;
 			 x.data=foo.data;
 			 x.user=foo.user;
+
 #ifndef __SYNTHESIS__
 			 if (sending_i==0) {
 			 	cout<<"Transmit iq "<<x.data<<" last/user "<<x.last<<"/"<<x.user<<" for mon "<<(uint16_t)sending_i<<" channel "<<monitor[sending_i]<<" occupancy is "<<buff[sending_i].size()<<endl;
@@ -305,19 +299,17 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 #endif
 			 out.write(x);
 
-			 packet_in_flight=!x.last;
-			 if (x.last) {
-				 cout<<"moving to next xmit buffer"<<endl;
+			 packet_in_flight=!foo.last;
+			 if (foo.last) {
 				 sending_i = sending_plus1;
 			 }
 		 } else if (!packet_in_flight) {
 			 sending_i = sending_plus1;
 		 }
 
+
 #ifndef __SYNTHESIS__
 	}
-
-
 	 cout<<"Emptied input stream. Occupancy: ";
 	 for (int foo=0;foo<N_MONITOR;foo++) cout<<buff[foo].size()<<" ";
 	 cout<<endl<<" To capture: ";
@@ -325,44 +317,6 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 	 cout<<endl;
 	 cout<<"Sending_i "<<(uint32_t)sending_i<<" in flight: "<<packet_in_flight<<endl;
 
-//	bool __done=true;
-//	for (int i=0;i<N_MONITOR;i++) __done&=buff[i].empty();
-//	int p_i=0;
-//	while (!__done) {
-//
-//
-//	 singleiqstreaminternal_t foo;
-//
-//	 sending_plus1 = sending_i>=N_MONITOR-1 ? 0:sending_i+1;
-//
-//	 if (buff[sending_i].read_nb(foo)) {
-//		 singleiqstream_t x;
-//		 x.last=foo.last;
-//		 x.data=foo.data;
-//		 x.user=foo.user;
-//		 out.write(x);
-//		 if (foo.last) {
-//			 sending_i = sending_plus1;
-//			 cout<<"Sending "<<sending_i<<endl;
-//			 p_i=0;
-//		 }
-//		 else {
-//			 cout<<" sample"<<p_i<<endl;
-//			 packet_in_flight=true;
-//		 }
-//	 } else {
-//		 if (!packet_in_flight) {
-//			 sending_i = sending_plus1;
-//			 cout<<"Sending "<<sending_i<<endl;
-//			 p_i=0;
-//		 } else {
-//			 cout<<"insufficient phase data sent to properly test the core!!!";
-//			 break;
-//		 }
-//	 }
-//	 __done=true;
-//	 for (int i=0;i<N_MONITOR;i++) __done&=buff[i].empty();
-//	}
 	cout<<endl;
 #endif
 }

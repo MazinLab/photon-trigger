@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-(* CORE_GENERATION_INFO="postage_maxi_postage_maxi,hls_ip_2022_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=3.906000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.851380,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=4,HLS_SYN_DSP=0,HLS_SYN_FF=1404,HLS_SYN_LUT=3079,HLS_VERSION=2022_1}" *)
+(* CORE_GENERATION_INFO="postage_maxi_postage_maxi,hls_ip_2022_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xczu28dr-ffvg1517-2-e,HLS_INPUT_CLOCK=3.906000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.851380,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=4,HLS_SYN_DSP=0,HLS_SYN_FF=1407,HLS_SYN_LUT=3082,HLS_VERSION=2022_1}" *)
 
 module postage_maxi (
         ap_clk,
@@ -84,24 +84,26 @@ module postage_maxi (
         interrupt
 );
 
-parameter    ap_ST_fsm_state1 = 18'd1;
-parameter    ap_ST_fsm_state2 = 18'd2;
-parameter    ap_ST_fsm_state3 = 18'd4;
-parameter    ap_ST_fsm_state4 = 18'd8;
-parameter    ap_ST_fsm_state5 = 18'd16;
-parameter    ap_ST_fsm_state6 = 18'd32;
-parameter    ap_ST_fsm_state7 = 18'd64;
-parameter    ap_ST_fsm_state8 = 18'd128;
-parameter    ap_ST_fsm_state9 = 18'd256;
-parameter    ap_ST_fsm_state10 = 18'd512;
-parameter    ap_ST_fsm_state11 = 18'd1024;
-parameter    ap_ST_fsm_state12 = 18'd2048;
-parameter    ap_ST_fsm_state13 = 18'd4096;
-parameter    ap_ST_fsm_state14 = 18'd8192;
-parameter    ap_ST_fsm_state15 = 18'd16384;
-parameter    ap_ST_fsm_state16 = 18'd32768;
-parameter    ap_ST_fsm_state17 = 18'd65536;
-parameter    ap_ST_fsm_state18 = 18'd131072;
+parameter    ap_ST_fsm_state1 = 20'd1;
+parameter    ap_ST_fsm_state2 = 20'd2;
+parameter    ap_ST_fsm_state3 = 20'd4;
+parameter    ap_ST_fsm_state4 = 20'd8;
+parameter    ap_ST_fsm_state5 = 20'd16;
+parameter    ap_ST_fsm_state6 = 20'd32;
+parameter    ap_ST_fsm_state7 = 20'd64;
+parameter    ap_ST_fsm_state8 = 20'd128;
+parameter    ap_ST_fsm_state9 = 20'd256;
+parameter    ap_ST_fsm_state10 = 20'd512;
+parameter    ap_ST_fsm_state11 = 20'd1024;
+parameter    ap_ST_fsm_state12 = 20'd2048;
+parameter    ap_ST_fsm_state13 = 20'd4096;
+parameter    ap_ST_fsm_state14 = 20'd8192;
+parameter    ap_ST_fsm_state15 = 20'd16384;
+parameter    ap_ST_fsm_state16 = 20'd32768;
+parameter    ap_ST_fsm_state17 = 20'd65536;
+parameter    ap_ST_fsm_state18 = 20'd131072;
+parameter    ap_ST_fsm_state19 = 20'd262144;
+parameter    ap_ST_fsm_state20 = 20'd524288;
 parameter    C_S_AXI_CONTROL_DATA_WIDTH = 32;
 parameter    C_S_AXI_CONTROL_ADDR_WIDTH = 6;
 parameter    C_S_AXI_DATA_WIDTH = 32;
@@ -200,7 +202,7 @@ output   interrupt;
 wire    ap_start;
 reg    ap_done;
 reg    ap_idle;
-(* fsm_encoding = "none" *) reg   [17:0] ap_CS_fsm;
+(* fsm_encoding = "none" *) reg   [19:0] ap_CS_fsm;
 wire    ap_CS_fsm_state1;
 reg    ap_ready;
 wire   [63:0] iq;
@@ -212,77 +214,79 @@ reg    gmem_blk_n_B;
 wire    ap_CS_fsm_state17;
 reg    postage_TDATA_blk_n;
 wire    ap_CS_fsm_state2;
+wire   [0:0] icmp_ln341_fu_283_p2;
 wire    ap_CS_fsm_state3;
 wire    ap_CS_fsm_state4;
 wire    ap_CS_fsm_state5;
 wire    ap_CS_fsm_state6;
 wire    ap_CS_fsm_state7;
 wire    ap_CS_fsm_state8;
-reg   [31:0] reg_257;
-reg   [31:0] reg_261;
-reg   [15:0] max_events_read_reg_393;
-reg   [63:0] iq_read_reg_398;
-wire   [0:0] icmp_ln188_1_fu_269_p2;
-reg   [0:0] icmp_ln188_1_reg_408;
-reg   [2:0] tmp_user_V_reg_412;
-reg   [0:0] tmp_last_V_2_reg_417;
-reg   [0:0] tmp_last_V_reg_422;
-reg   [31:0] tmp_data_V_5_reg_427;
-reg   [0:0] tmp_last_V_1_reg_432;
-wire   [4:0] trunc_ln219_fu_322_p1;
-reg   [59:0] trunc_ln_reg_445;
 wire    ap_CS_fsm_state9;
-wire   [0:0] or_ln231_fu_367_p2;
-reg   [0:0] or_ln231_reg_451;
-wire   [15:0] p_count_1_fu_382_p2;
+reg   [31:0] reg_275;
+reg   [31:0] reg_279;
+reg   [15:0] max_events_read_reg_422;
+reg   [63:0] iq_read_reg_427;
+reg   [0:0] icmp_ln341_reg_437;
+reg   [2:0] tmp_user_V_reg_441;
+reg   [0:0] tmp_last_V_4_reg_446;
+reg   [0:0] tmp_last_V_reg_451;
+reg   [31:0] tmp_data_V_5_reg_456;
+reg   [0:0] tmp_last_V_1_reg_461;
+reg   [0:0] tmp_last_V_2_reg_466;
+wire   [4:0] trunc_ln372_fu_335_p1;
+reg   [59:0] trunc_ln_reg_479;
+wire   [0:0] desync_fu_400_p2;
+reg   [0:0] desync_reg_485;
+wire   [15:0] p_count_2_fu_416_p2;
+wire    ap_CS_fsm_state18;
 reg   [4:0] buf_V_address0;
 reg    buf_V_ce0;
 reg    buf_V_we0;
 reg   [127:0] buf_V_d0;
 wire   [127:0] buf_V_q0;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_ap_start;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_ap_done;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_ap_idle;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_ap_ready;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWVALID;
-wire   [63:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWADDR;
-wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWID;
-wire   [31:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWLEN;
-wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWSIZE;
-wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWBURST;
-wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWLOCK;
-wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWCACHE;
-wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWPROT;
-wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWQOS;
-wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWREGION;
-wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWUSER;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WVALID;
-wire   [127:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WDATA;
-wire   [15:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WSTRB;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WLAST;
-wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WID;
-wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WUSER;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARVALID;
-wire   [63:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARADDR;
-wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARID;
-wire   [31:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARLEN;
-wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARSIZE;
-wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARBURST;
-wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARLOCK;
-wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARCACHE;
-wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARPROT;
-wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARQOS;
-wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARREGION;
-wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARUSER;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_RREADY;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_BREADY;
-wire   [4:0] grp_postage_maxi_Pipeline_burst_fu_227_buf_V_address0;
-wire    grp_postage_maxi_Pipeline_burst_fu_227_buf_V_ce0;
-wire    grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start;
-wire    grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_done;
-wire    grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_idle;
-wire    grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_ready;
-wire    grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_postage_TREADY;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_ap_start;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_ap_done;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_ap_idle;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_ap_ready;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWVALID;
+wire   [63:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWADDR;
+wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWID;
+wire   [31:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWLEN;
+wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWSIZE;
+wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWBURST;
+wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWLOCK;
+wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWCACHE;
+wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWPROT;
+wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWQOS;
+wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWREGION;
+wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWUSER;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WVALID;
+wire   [127:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WDATA;
+wire   [15:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WSTRB;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WLAST;
+wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WID;
+wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WUSER;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARVALID;
+wire   [63:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARADDR;
+wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARID;
+wire   [31:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARLEN;
+wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARSIZE;
+wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARBURST;
+wire   [1:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARLOCK;
+wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARCACHE;
+wire   [2:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARPROT;
+wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARQOS;
+wire   [3:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARREGION;
+wire   [0:0] grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARUSER;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_RREADY;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_BREADY;
+wire   [4:0] grp_postage_maxi_Pipeline_burst_fu_245_buf_V_address0;
+wire    grp_postage_maxi_Pipeline_burst_fu_245_buf_V_ce0;
+wire    grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start;
+wire    grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_done;
+wire    grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_idle;
+wire    grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_ready;
+wire    grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_postage_TREADY;
 reg    gmem_AWVALID;
 wire    gmem_AWREADY;
 reg   [63:0] gmem_AWADDR;
@@ -295,33 +299,35 @@ wire   [127:0] gmem_RDATA;
 wire   [8:0] gmem_RFIFONUM;
 wire    gmem_BVALID;
 reg    gmem_BREADY;
-reg   [15:0] ap_phi_mux_p_count_phi_fu_218_p4;
-reg   [15:0] p_count6_reg_191;
-wire    ap_CS_fsm_state18;
-reg    ap_predicate_op105_call_state18;
-reg    ap_block_state18_on_subcall_done;
-wire   [0:0] icmp_ln188_fu_388_p2;
-reg   [4:0] i1_reg_203;
-wire   [0:0] icmp_ln217_fu_326_p2;
-reg   [15:0] p_count_reg_214;
-reg    grp_postage_maxi_Pipeline_burst_fu_227_ap_start_reg;
+reg   [15:0] p_count_reg_209;
+reg   [15:0] ap_phi_mux_p_count_1_phi_fu_236_p4;
+wire    ap_CS_fsm_state20;
+wire   [0:0] tmp_nbreadreq_fu_173_p7;
+reg   [4:0] i1_reg_221;
+wire   [0:0] icmp_ln370_fu_339_p2;
+reg   [15:0] p_count_1_reg_232;
+reg    grp_postage_maxi_Pipeline_burst_fu_245_ap_start_reg;
 wire    ap_CS_fsm_state11;
 wire    ap_CS_fsm_state12;
-reg    grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start_reg;
-wire   [63:0] zext_ln217_fu_299_p1;
-wire  signed [63:0] sext_ln242_fu_372_p1;
-wire   [127:0] p_Result_s_fu_282_p5;
-wire   [127:0] p_Result_1_fu_304_p5;
-wire   [12:0] empty_fu_265_p1;
-wire   [31:0] zext_ln388_fu_279_p1;
-wire   [5:0] i1_cast_fu_295_p1;
-wire   [5:0] i_fu_316_p2;
-wire   [12:0] trunc_ln242_fu_332_p1;
-wire   [21:0] shl_ln_fu_336_p3;
-wire   [63:0] zext_ln242_fu_344_p1;
-wire   [63:0] add_ln242_fu_348_p2;
-wire   [0:0] or_ln231_1_fu_363_p2;
-reg   [17:0] ap_NS_fsm;
+reg    grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start_reg;
+wire    ap_CS_fsm_state19;
+wire   [63:0] zext_ln370_fu_312_p1;
+wire  signed [63:0] sext_ln397_fu_406_p1;
+reg    ap_block_state2;
+wire   [127:0] p_Result_s_fu_295_p5;
+wire   [127:0] p_Result_1_fu_317_p5;
+wire   [31:0] zext_ln388_fu_292_p1;
+wire   [5:0] i1_cast_fu_308_p1;
+wire   [5:0] i_fu_329_p2;
+wire   [12:0] trunc_ln397_fu_349_p1;
+wire   [21:0] shl_ln_fu_353_p3;
+wire   [63:0] zext_ln397_fu_361_p1;
+wire   [63:0] add_ln397_fu_365_p2;
+wire   [0:0] xor_ln947_fu_380_p2;
+wire   [0:0] or_ln394_1_fu_390_p2;
+wire   [0:0] or_ln394_2_fu_395_p2;
+wire   [0:0] or_ln394_fu_386_p2;
+reg   [19:0] ap_NS_fsm;
 reg    ap_ST_fsm_state1_blk;
 reg    ap_ST_fsm_state2_blk;
 reg    ap_ST_fsm_state3_blk;
@@ -330,7 +336,7 @@ reg    ap_ST_fsm_state5_blk;
 reg    ap_ST_fsm_state6_blk;
 reg    ap_ST_fsm_state7_blk;
 reg    ap_ST_fsm_state8_blk;
-wire    ap_ST_fsm_state9_blk;
+reg    ap_ST_fsm_state9_blk;
 reg    ap_ST_fsm_state10_blk;
 wire    ap_ST_fsm_state11_blk;
 reg    ap_ST_fsm_state12_blk;
@@ -339,7 +345,9 @@ wire    ap_ST_fsm_state14_blk;
 wire    ap_ST_fsm_state15_blk;
 wire    ap_ST_fsm_state16_blk;
 reg    ap_ST_fsm_state17_blk;
-reg    ap_ST_fsm_state18_blk;
+wire    ap_ST_fsm_state18_blk;
+reg    ap_ST_fsm_state19_blk;
+wire    ap_ST_fsm_state20_blk;
 wire    regslice_both_postage_V_data_V_U_apdone_blk;
 wire   [31:0] postage_TDATA_int_regslice;
 wire    postage_TVALID_int_regslice;
@@ -365,9 +373,9 @@ wire    ap_ce_reg;
 
 // power-on initialization
 initial begin
-#0 ap_CS_fsm = 18'd1;
-#0 grp_postage_maxi_Pipeline_burst_fu_227_ap_start_reg = 1'b0;
-#0 grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start_reg = 1'b0;
+#0 ap_CS_fsm = 20'd1;
+#0 grp_postage_maxi_Pipeline_burst_fu_245_ap_start_reg = 1'b0;
+#0 grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start_reg = 1'b0;
 end
 
 postage_maxi_buf_V_RAM_AUTO_1R1W #(
@@ -384,48 +392,48 @@ buf_V_U(
     .q0(buf_V_q0)
 );
 
-postage_maxi_postage_maxi_Pipeline_burst grp_postage_maxi_Pipeline_burst_fu_227(
+postage_maxi_postage_maxi_Pipeline_burst grp_postage_maxi_Pipeline_burst_fu_245(
     .ap_clk(ap_clk),
     .ap_rst(ap_rst_n_inv),
-    .ap_start(grp_postage_maxi_Pipeline_burst_fu_227_ap_start),
-    .ap_done(grp_postage_maxi_Pipeline_burst_fu_227_ap_done),
-    .ap_idle(grp_postage_maxi_Pipeline_burst_fu_227_ap_idle),
-    .ap_ready(grp_postage_maxi_Pipeline_burst_fu_227_ap_ready),
-    .m_axi_gmem_AWVALID(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWVALID),
+    .ap_start(grp_postage_maxi_Pipeline_burst_fu_245_ap_start),
+    .ap_done(grp_postage_maxi_Pipeline_burst_fu_245_ap_done),
+    .ap_idle(grp_postage_maxi_Pipeline_burst_fu_245_ap_idle),
+    .ap_ready(grp_postage_maxi_Pipeline_burst_fu_245_ap_ready),
+    .m_axi_gmem_AWVALID(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWVALID),
     .m_axi_gmem_AWREADY(gmem_AWREADY),
-    .m_axi_gmem_AWADDR(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWADDR),
-    .m_axi_gmem_AWID(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWID),
-    .m_axi_gmem_AWLEN(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWLEN),
-    .m_axi_gmem_AWSIZE(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWSIZE),
-    .m_axi_gmem_AWBURST(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWBURST),
-    .m_axi_gmem_AWLOCK(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWLOCK),
-    .m_axi_gmem_AWCACHE(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWCACHE),
-    .m_axi_gmem_AWPROT(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWPROT),
-    .m_axi_gmem_AWQOS(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWQOS),
-    .m_axi_gmem_AWREGION(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWREGION),
-    .m_axi_gmem_AWUSER(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWUSER),
-    .m_axi_gmem_WVALID(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WVALID),
+    .m_axi_gmem_AWADDR(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWADDR),
+    .m_axi_gmem_AWID(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWID),
+    .m_axi_gmem_AWLEN(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWLEN),
+    .m_axi_gmem_AWSIZE(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWSIZE),
+    .m_axi_gmem_AWBURST(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWBURST),
+    .m_axi_gmem_AWLOCK(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWLOCK),
+    .m_axi_gmem_AWCACHE(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWCACHE),
+    .m_axi_gmem_AWPROT(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWPROT),
+    .m_axi_gmem_AWQOS(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWQOS),
+    .m_axi_gmem_AWREGION(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWREGION),
+    .m_axi_gmem_AWUSER(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWUSER),
+    .m_axi_gmem_WVALID(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WVALID),
     .m_axi_gmem_WREADY(gmem_WREADY),
-    .m_axi_gmem_WDATA(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WDATA),
-    .m_axi_gmem_WSTRB(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WSTRB),
-    .m_axi_gmem_WLAST(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WLAST),
-    .m_axi_gmem_WID(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WID),
-    .m_axi_gmem_WUSER(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WUSER),
-    .m_axi_gmem_ARVALID(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARVALID),
+    .m_axi_gmem_WDATA(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WDATA),
+    .m_axi_gmem_WSTRB(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WSTRB),
+    .m_axi_gmem_WLAST(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WLAST),
+    .m_axi_gmem_WID(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WID),
+    .m_axi_gmem_WUSER(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WUSER),
+    .m_axi_gmem_ARVALID(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARVALID),
     .m_axi_gmem_ARREADY(1'b0),
-    .m_axi_gmem_ARADDR(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARADDR),
-    .m_axi_gmem_ARID(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARID),
-    .m_axi_gmem_ARLEN(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARLEN),
-    .m_axi_gmem_ARSIZE(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARSIZE),
-    .m_axi_gmem_ARBURST(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARBURST),
-    .m_axi_gmem_ARLOCK(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARLOCK),
-    .m_axi_gmem_ARCACHE(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARCACHE),
-    .m_axi_gmem_ARPROT(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARPROT),
-    .m_axi_gmem_ARQOS(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARQOS),
-    .m_axi_gmem_ARREGION(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARREGION),
-    .m_axi_gmem_ARUSER(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_ARUSER),
+    .m_axi_gmem_ARADDR(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARADDR),
+    .m_axi_gmem_ARID(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARID),
+    .m_axi_gmem_ARLEN(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARLEN),
+    .m_axi_gmem_ARSIZE(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARSIZE),
+    .m_axi_gmem_ARBURST(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARBURST),
+    .m_axi_gmem_ARLOCK(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARLOCK),
+    .m_axi_gmem_ARCACHE(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARCACHE),
+    .m_axi_gmem_ARPROT(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARPROT),
+    .m_axi_gmem_ARQOS(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARQOS),
+    .m_axi_gmem_ARREGION(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARREGION),
+    .m_axi_gmem_ARUSER(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_ARUSER),
     .m_axi_gmem_RVALID(1'b0),
-    .m_axi_gmem_RREADY(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_RREADY),
+    .m_axi_gmem_RREADY(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_RREADY),
     .m_axi_gmem_RDATA(128'd0),
     .m_axi_gmem_RLAST(1'b0),
     .m_axi_gmem_RID(1'd0),
@@ -433,26 +441,26 @@ postage_maxi_postage_maxi_Pipeline_burst grp_postage_maxi_Pipeline_burst_fu_227(
     .m_axi_gmem_RUSER(1'd0),
     .m_axi_gmem_RRESP(2'd0),
     .m_axi_gmem_BVALID(gmem_BVALID),
-    .m_axi_gmem_BREADY(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_BREADY),
+    .m_axi_gmem_BREADY(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_BREADY),
     .m_axi_gmem_BRESP(2'd0),
     .m_axi_gmem_BID(1'd0),
     .m_axi_gmem_BUSER(1'd0),
-    .sext_ln242(trunc_ln_reg_445),
-    .buf_V_address0(grp_postage_maxi_Pipeline_burst_fu_227_buf_V_address0),
-    .buf_V_ce0(grp_postage_maxi_Pipeline_burst_fu_227_buf_V_ce0),
+    .sext_ln397(trunc_ln_reg_479),
+    .buf_V_address0(grp_postage_maxi_Pipeline_burst_fu_245_buf_V_address0),
+    .buf_V_ce0(grp_postage_maxi_Pipeline_burst_fu_245_buf_V_ce0),
     .buf_V_q0(buf_V_q0)
 );
 
-postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_247_1 grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235(
+postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253(
     .ap_clk(ap_clk),
     .ap_rst(ap_rst_n_inv),
-    .ap_start(grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start),
-    .ap_done(grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_done),
-    .ap_idle(grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_idle),
-    .ap_ready(grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_ready),
+    .ap_start(grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start),
+    .ap_done(grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_done),
+    .ap_idle(grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_idle),
+    .ap_ready(grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_ready),
     .postage_TVALID(postage_TVALID_int_regslice),
     .postage_TDATA(postage_TDATA_int_regslice),
-    .postage_TREADY(grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_postage_TREADY),
+    .postage_TREADY(grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_postage_TREADY),
     .postage_TKEEP(postage_TKEEP_int_regslice),
     .postage_TSTRB(postage_TSTRB_int_regslice),
     .postage_TUSER(postage_TUSER_int_regslice),
@@ -484,7 +492,7 @@ control_s_axi_U(
     .ARESET(ap_rst_n_inv),
     .ACLK_EN(1'b1),
     .iq(iq),
-    .event_count(ap_phi_mux_p_count_phi_fu_218_p4),
+    .event_count(ap_phi_mux_p_count_1_phi_fu_236_p4),
     .event_count_ap_vld(event_count_ap_vld),
     .max_events(max_events),
     .ap_start(ap_start),
@@ -578,8 +586,8 @@ gmem_m_axi_U(
     .I_AWLEN(gmem_AWLEN),
     .I_WVALID(gmem_WVALID),
     .I_WREADY(gmem_WREADY),
-    .I_WDATA(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WDATA),
-    .I_WSTRB(grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WSTRB),
+    .I_WDATA(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WDATA),
+    .I_WSTRB(grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WSTRB),
     .I_BVALID(gmem_BVALID),
     .I_BREADY(gmem_BREADY)
 );
@@ -664,103 +672,114 @@ end
 
 always @ (posedge ap_clk) begin
     if (ap_rst_n_inv == 1'b1) begin
-        grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start_reg <= 1'b0;
+        grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start_reg <= 1'b0;
     end else begin
-        if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17) & (or_ln231_reg_451 == 1'd1))) begin
-            grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start_reg <= 1'b1;
-        end else if ((grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_ready == 1'b1)) begin
-            grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start_reg <= 1'b0;
+        if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17) & (desync_reg_485 == 1'd1))) begin
+            grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start_reg <= 1'b1;
+        end else if ((grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_ready == 1'b1)) begin
+            grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start_reg <= 1'b0;
         end
     end
 end
 
 always @ (posedge ap_clk) begin
     if (ap_rst_n_inv == 1'b1) begin
-        grp_postage_maxi_Pipeline_burst_fu_227_ap_start_reg <= 1'b0;
+        grp_postage_maxi_Pipeline_burst_fu_245_ap_start_reg <= 1'b0;
     end else begin
         if ((1'b1 == ap_CS_fsm_state11)) begin
-            grp_postage_maxi_Pipeline_burst_fu_227_ap_start_reg <= 1'b1;
-        end else if ((grp_postage_maxi_Pipeline_burst_fu_227_ap_ready == 1'b1)) begin
-            grp_postage_maxi_Pipeline_burst_fu_227_ap_start_reg <= 1'b0;
+            grp_postage_maxi_Pipeline_burst_fu_245_ap_start_reg <= 1'b1;
+        end else if ((grp_postage_maxi_Pipeline_burst_fu_245_ap_ready == 1'b1)) begin
+            grp_postage_maxi_Pipeline_burst_fu_245_ap_start_reg <= 1'b0;
         end
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((postage_TVALID_int_regslice == 1'b1)) begin
-        if (((icmp_ln217_fu_326_p2 == 1'd0) & (1'b1 == ap_CS_fsm_state8))) begin
-            i1_reg_203 <= trunc_ln219_fu_322_p1;
+        if (((icmp_ln370_fu_339_p2 == 1'd0) & (1'b1 == ap_CS_fsm_state8))) begin
+            i1_reg_221 <= trunc_ln372_fu_335_p1;
         end else if ((1'b1 == ap_CS_fsm_state4)) begin
-            i1_reg_203 <= 5'd1;
+            i1_reg_221 <= 5'd1;
         end
     end
 end
 
 always @ (posedge ap_clk) begin
-    if (((ap_start == 1'b1) & (1'b1 == ap_CS_fsm_state1) & (icmp_ln188_1_fu_269_p2 == 1'd0))) begin
-        p_count6_reg_191 <= 16'd0;
-    end else if (((icmp_ln188_fu_388_p2 == 1'd1) & (1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & (icmp_ln188_1_reg_408 == 1'd0))) begin
-        p_count6_reg_191 <= ap_phi_mux_p_count_phi_fu_218_p4;
+    if (((1'b1 == ap_CS_fsm_state20) & (desync_reg_485 == 1'd1) & (icmp_ln341_reg_437 == 1'd1))) begin
+        p_count_1_reg_232 <= p_count_reg_209;
+    end else if ((1'b1 == ap_CS_fsm_state18)) begin
+        p_count_1_reg_232 <= p_count_2_fu_416_p2;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & (or_ln231_reg_451 == 1'd1) & (icmp_ln188_1_reg_408 == 1'd0))) begin
-        p_count_reg_214 <= p_count6_reg_191;
-    end else if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17) & (or_ln231_reg_451 == 1'd0))) begin
-        p_count_reg_214 <= p_count_1_fu_382_p2;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_CS_fsm_state1)) begin
-        icmp_ln188_1_reg_408 <= icmp_ln188_1_fu_269_p2;
-        iq_read_reg_398 <= iq;
-        max_events_read_reg_393 <= max_events;
+    if (((tmp_nbreadreq_fu_173_p7 == 1'd1) & (1'b1 == ap_CS_fsm_state20) & (icmp_ln341_reg_437 == 1'd1))) begin
+        p_count_reg_209 <= ap_phi_mux_p_count_1_phi_fu_236_p4;
+    end else if (((ap_start == 1'b1) & (1'b1 == ap_CS_fsm_state1))) begin
+        p_count_reg_209 <= 16'd0;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((1'b1 == ap_CS_fsm_state9)) begin
-        or_ln231_reg_451 <= or_ln231_fu_367_p2;
-        trunc_ln_reg_445 <= {{add_ln242_fu_348_p2[63:4]}};
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state5) | (1'b1 == ap_CS_fsm_state2))) begin
-        reg_257 <= postage_TDATA_int_regslice;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state6) | (1'b1 == ap_CS_fsm_state3))) begin
-        reg_261 <= postage_TDATA_int_regslice;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_CS_fsm_state7)) begin
-        tmp_data_V_5_reg_427 <= postage_TDATA_int_regslice;
-        tmp_last_V_1_reg_432 <= postage_TLAST_int_regslice;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_CS_fsm_state5)) begin
-        tmp_last_V_2_reg_417 <= postage_TLAST_int_regslice;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if ((1'b1 == ap_CS_fsm_state6)) begin
-        tmp_last_V_reg_422 <= postage_TLAST_int_regslice;
+        desync_reg_485 <= desync_fu_400_p2;
+        trunc_ln_reg_479 <= {{add_ln397_fu_365_p2[63:4]}};
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((1'b1 == ap_CS_fsm_state2)) begin
-        tmp_user_V_reg_412 <= postage_TUSER_int_regslice;
+        icmp_ln341_reg_437 <= icmp_ln341_fu_283_p2;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_CS_fsm_state1)) begin
+        iq_read_reg_427 <= iq;
+        max_events_read_reg_422 <= max_events;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b1 == ap_CS_fsm_state5) | ((1'b1 == ap_CS_fsm_state2) & (icmp_ln341_fu_283_p2 == 1'd1)))) begin
+        reg_275 <= postage_TDATA_int_regslice;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b1 == ap_CS_fsm_state6) | (1'b1 == ap_CS_fsm_state3))) begin
+        reg_279 <= postage_TDATA_int_regslice;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_CS_fsm_state7)) begin
+        tmp_data_V_5_reg_456 <= postage_TDATA_int_regslice;
+        tmp_last_V_1_reg_461 <= postage_TLAST_int_regslice;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_CS_fsm_state8)) begin
+        tmp_last_V_2_reg_466 <= postage_TLAST_int_regslice;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_CS_fsm_state5)) begin
+        tmp_last_V_4_reg_446 <= postage_TLAST_int_regslice;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_CS_fsm_state6)) begin
+        tmp_last_V_reg_451 <= postage_TLAST_int_regslice;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b1 == ap_CS_fsm_state2) & (icmp_ln341_fu_283_p2 == 1'd1))) begin
+        tmp_user_V_reg_441 <= postage_TUSER_int_regslice;
     end
 end
 
@@ -775,7 +794,7 @@ end
 assign ap_ST_fsm_state11_blk = 1'b0;
 
 always @ (*) begin
-    if ((grp_postage_maxi_Pipeline_burst_fu_227_ap_done == 1'b0)) begin
+    if ((grp_postage_maxi_Pipeline_burst_fu_245_ap_done == 1'b0)) begin
         ap_ST_fsm_state12_blk = 1'b1;
     end else begin
         ap_ST_fsm_state12_blk = 1'b0;
@@ -798,11 +817,13 @@ always @ (*) begin
     end
 end
 
+assign ap_ST_fsm_state18_blk = 1'b0;
+
 always @ (*) begin
-    if ((1'b1 == ap_block_state18_on_subcall_done)) begin
-        ap_ST_fsm_state18_blk = 1'b1;
+    if ((grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_done == 1'b0)) begin
+        ap_ST_fsm_state19_blk = 1'b1;
     end else begin
-        ap_ST_fsm_state18_blk = 1'b0;
+        ap_ST_fsm_state19_blk = 1'b0;
     end
 end
 
@@ -814,8 +835,10 @@ always @ (*) begin
     end
 end
 
+assign ap_ST_fsm_state20_blk = 1'b0;
+
 always @ (*) begin
-    if ((postage_TVALID_int_regslice == 1'b0)) begin
+    if (((postage_TVALID_int_regslice == 1'b0) & (icmp_ln341_fu_283_p2 == 1'd1))) begin
         ap_ST_fsm_state2_blk = 1'b1;
     end else begin
         ap_ST_fsm_state2_blk = 1'b0;
@@ -870,10 +893,16 @@ always @ (*) begin
     end
 end
 
-assign ap_ST_fsm_state9_blk = 1'b0;
+always @ (*) begin
+    if ((postage_TVALID_int_regslice == 1'b0)) begin
+        ap_ST_fsm_state9_blk = 1'b1;
+    end else begin
+        ap_ST_fsm_state9_blk = 1'b0;
+    end
+end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & ((icmp_ln188_fu_388_p2 == 1'd0) | (icmp_ln188_1_reg_408 == 1'd1)))) begin
+    if (((1'b1 == ap_CS_fsm_state20) & ((tmp_nbreadreq_fu_173_p7 == 1'd0) | (icmp_ln341_reg_437 == 1'd0)))) begin
         ap_done = 1'b1;
     end else begin
         ap_done = 1'b0;
@@ -889,15 +918,15 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b1 == ap_CS_fsm_state18) & (or_ln231_reg_451 == 1'd1) & (icmp_ln188_1_reg_408 == 1'd0))) begin
-        ap_phi_mux_p_count_phi_fu_218_p4 = p_count6_reg_191;
+    if (((1'b1 == ap_CS_fsm_state20) & (desync_reg_485 == 1'd1) & (icmp_ln341_reg_437 == 1'd1))) begin
+        ap_phi_mux_p_count_1_phi_fu_236_p4 = p_count_reg_209;
     end else begin
-        ap_phi_mux_p_count_phi_fu_218_p4 = p_count_reg_214;
+        ap_phi_mux_p_count_1_phi_fu_236_p4 = p_count_1_reg_232;
     end
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & ((icmp_ln188_fu_388_p2 == 1'd0) | (icmp_ln188_1_reg_408 == 1'd1)))) begin
+    if (((1'b1 == ap_CS_fsm_state20) & ((tmp_nbreadreq_fu_173_p7 == 1'd0) | (icmp_ln341_reg_437 == 1'd0)))) begin
         ap_ready = 1'b1;
     end else begin
         ap_ready = 1'b0;
@@ -906,11 +935,11 @@ end
 
 always @ (*) begin
     if ((1'b1 == ap_CS_fsm_state8)) begin
-        buf_V_address0 = zext_ln217_fu_299_p1;
+        buf_V_address0 = zext_ln370_fu_312_p1;
     end else if ((1'b1 == ap_CS_fsm_state4)) begin
         buf_V_address0 = 64'd0;
     end else if ((1'b1 == ap_CS_fsm_state12)) begin
-        buf_V_address0 = grp_postage_maxi_Pipeline_burst_fu_227_buf_V_address0;
+        buf_V_address0 = grp_postage_maxi_Pipeline_burst_fu_245_buf_V_address0;
     end else begin
         buf_V_address0 = 'bx;
     end
@@ -920,7 +949,7 @@ always @ (*) begin
     if ((((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state8)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state4)))) begin
         buf_V_ce0 = 1'b1;
     end else if ((1'b1 == ap_CS_fsm_state12)) begin
-        buf_V_ce0 = grp_postage_maxi_Pipeline_burst_fu_227_buf_V_ce0;
+        buf_V_ce0 = grp_postage_maxi_Pipeline_burst_fu_245_buf_V_ce0;
     end else begin
         buf_V_ce0 = 1'b0;
     end
@@ -928,9 +957,9 @@ end
 
 always @ (*) begin
     if ((1'b1 == ap_CS_fsm_state8)) begin
-        buf_V_d0 = p_Result_1_fu_304_p5;
+        buf_V_d0 = p_Result_1_fu_317_p5;
     end else if ((1'b1 == ap_CS_fsm_state4)) begin
-        buf_V_d0 = p_Result_s_fu_282_p5;
+        buf_V_d0 = p_Result_s_fu_295_p5;
     end else begin
         buf_V_d0 = 'bx;
     end
@@ -945,7 +974,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & (icmp_ln188_1_reg_408 == 1'd0))) begin
+    if (((1'b1 == ap_CS_fsm_state20) & (icmp_ln341_reg_437 == 1'd1))) begin
         event_count_ap_vld = 1'b1;
     end else begin
         event_count_ap_vld = 1'b0;
@@ -954,9 +983,9 @@ end
 
 always @ (*) begin
     if (((gmem_AWREADY == 1'b1) & (1'b1 == ap_CS_fsm_state10))) begin
-        gmem_AWADDR = sext_ln242_fu_372_p1;
+        gmem_AWADDR = sext_ln397_fu_406_p1;
     end else if (((1'b1 == ap_CS_fsm_state12) | (1'b1 == ap_CS_fsm_state11))) begin
-        gmem_AWADDR = grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWADDR;
+        gmem_AWADDR = grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWADDR;
     end else begin
         gmem_AWADDR = 'bx;
     end
@@ -966,7 +995,7 @@ always @ (*) begin
     if (((gmem_AWREADY == 1'b1) & (1'b1 == ap_CS_fsm_state10))) begin
         gmem_AWLEN = 32'd32;
     end else if (((1'b1 == ap_CS_fsm_state12) | (1'b1 == ap_CS_fsm_state11))) begin
-        gmem_AWLEN = grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWLEN;
+        gmem_AWLEN = grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWLEN;
     end else begin
         gmem_AWLEN = 'bx;
     end
@@ -976,7 +1005,7 @@ always @ (*) begin
     if (((gmem_AWREADY == 1'b1) & (1'b1 == ap_CS_fsm_state10))) begin
         gmem_AWVALID = 1'b1;
     end else if (((1'b1 == ap_CS_fsm_state12) | (1'b1 == ap_CS_fsm_state11))) begin
-        gmem_AWVALID = grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_AWVALID;
+        gmem_AWVALID = grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_AWVALID;
     end else begin
         gmem_AWVALID = 1'b0;
     end
@@ -986,7 +1015,7 @@ always @ (*) begin
     if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17))) begin
         gmem_BREADY = 1'b1;
     end else if (((1'b1 == ap_CS_fsm_state12) | (1'b1 == ap_CS_fsm_state11))) begin
-        gmem_BREADY = grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_BREADY;
+        gmem_BREADY = grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_BREADY;
     end else begin
         gmem_BREADY = 1'b0;
     end
@@ -994,7 +1023,7 @@ end
 
 always @ (*) begin
     if (((1'b1 == ap_CS_fsm_state12) | (1'b1 == ap_CS_fsm_state11))) begin
-        gmem_WVALID = grp_postage_maxi_Pipeline_burst_fu_227_m_axi_gmem_WVALID;
+        gmem_WVALID = grp_postage_maxi_Pipeline_burst_fu_245_m_axi_gmem_WVALID;
     end else begin
         gmem_WVALID = 1'b0;
     end
@@ -1017,7 +1046,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b1 == ap_CS_fsm_state8) | (1'b1 == ap_CS_fsm_state7) | (1'b1 == ap_CS_fsm_state6) | (1'b1 == ap_CS_fsm_state5) | (1'b1 == ap_CS_fsm_state4) | (1'b1 == ap_CS_fsm_state3) | (1'b1 == ap_CS_fsm_state2))) begin
+    if (((1'b1 == ap_CS_fsm_state9) | (1'b1 == ap_CS_fsm_state8) | (1'b1 == ap_CS_fsm_state7) | (1'b1 == ap_CS_fsm_state6) | (1'b1 == ap_CS_fsm_state5) | (1'b1 == ap_CS_fsm_state4) | (1'b1 == ap_CS_fsm_state3) | ((1'b1 == ap_CS_fsm_state2) & (icmp_ln341_fu_283_p2 == 1'd1)))) begin
         postage_TDATA_blk_n = postage_TVALID_int_regslice;
     end else begin
         postage_TDATA_blk_n = 1'b1;
@@ -1025,10 +1054,10 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state8)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state7)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state6)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state5)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state4)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state3)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state2)))) begin
+    if ((((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state9)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state8)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state7)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state6)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state5)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state4)) | ((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state3)) | (~((postage_TVALID_int_regslice == 1'b0) & (icmp_ln341_fu_283_p2 == 1'd1)) & (1'b1 == ap_CS_fsm_state2) & (icmp_ln341_fu_283_p2 == 1'd1)))) begin
         postage_TREADY_int_regslice = 1'b1;
-    end else if (((ap_predicate_op105_call_state18 == 1'b1) & (1'b1 == ap_CS_fsm_state18))) begin
-        postage_TREADY_int_regslice = grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_postage_TREADY;
+    end else if ((1'b1 == ap_CS_fsm_state19)) begin
+        postage_TREADY_int_regslice = grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_postage_TREADY;
     end else begin
         postage_TREADY_int_regslice = 1'b0;
     end
@@ -1037,16 +1066,16 @@ end
 always @ (*) begin
     case (ap_CS_fsm)
         ap_ST_fsm_state1 : begin
-            if (((ap_start == 1'b1) & (1'b1 == ap_CS_fsm_state1) & (icmp_ln188_1_fu_269_p2 == 1'd0))) begin
+            if (((ap_start == 1'b1) & (1'b1 == ap_CS_fsm_state1))) begin
                 ap_NS_fsm = ap_ST_fsm_state2;
-            end else if (((ap_start == 1'b1) & (1'b1 == ap_CS_fsm_state1) & (icmp_ln188_1_fu_269_p2 == 1'd1))) begin
-                ap_NS_fsm = ap_ST_fsm_state18;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state1;
             end
         end
         ap_ST_fsm_state2 : begin
-            if (((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state2))) begin
+            if ((~((postage_TVALID_int_regslice == 1'b0) & (icmp_ln341_fu_283_p2 == 1'd1)) & (1'b1 == ap_CS_fsm_state2) & (icmp_ln341_fu_283_p2 == 1'd0))) begin
+                ap_NS_fsm = ap_ST_fsm_state20;
+            end else if ((~((postage_TVALID_int_regslice == 1'b0) & (icmp_ln341_fu_283_p2 == 1'd1)) & (1'b1 == ap_CS_fsm_state2) & (icmp_ln341_fu_283_p2 == 1'd1))) begin
                 ap_NS_fsm = ap_ST_fsm_state3;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state2;
@@ -1088,16 +1117,20 @@ always @ (*) begin
             end
         end
         ap_ST_fsm_state8 : begin
-            if (((postage_TVALID_int_regslice == 1'b1) & (icmp_ln217_fu_326_p2 == 1'd0) & (1'b1 == ap_CS_fsm_state8))) begin
+            if (((postage_TVALID_int_regslice == 1'b1) & (icmp_ln370_fu_339_p2 == 1'd0) & (1'b1 == ap_CS_fsm_state8))) begin
                 ap_NS_fsm = ap_ST_fsm_state5;
-            end else if (((postage_TVALID_int_regslice == 1'b1) & (icmp_ln217_fu_326_p2 == 1'd1) & (1'b1 == ap_CS_fsm_state8))) begin
+            end else if (((postage_TVALID_int_regslice == 1'b1) & (icmp_ln370_fu_339_p2 == 1'd1) & (1'b1 == ap_CS_fsm_state8))) begin
                 ap_NS_fsm = ap_ST_fsm_state9;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state8;
             end
         end
         ap_ST_fsm_state9 : begin
-            ap_NS_fsm = ap_ST_fsm_state10;
+            if (((postage_TVALID_int_regslice == 1'b1) & (1'b1 == ap_CS_fsm_state9))) begin
+                ap_NS_fsm = ap_ST_fsm_state10;
+            end else begin
+                ap_NS_fsm = ap_ST_fsm_state9;
+            end
         end
         ap_ST_fsm_state10 : begin
             if (((gmem_AWREADY == 1'b1) & (1'b1 == ap_CS_fsm_state10))) begin
@@ -1110,7 +1143,7 @@ always @ (*) begin
             ap_NS_fsm = ap_ST_fsm_state12;
         end
         ap_ST_fsm_state12 : begin
-            if (((grp_postage_maxi_Pipeline_burst_fu_227_ap_done == 1'b1) & (1'b1 == ap_CS_fsm_state12))) begin
+            if (((grp_postage_maxi_Pipeline_burst_fu_245_ap_done == 1'b1) & (1'b1 == ap_CS_fsm_state12))) begin
                 ap_NS_fsm = ap_ST_fsm_state13;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state12;
@@ -1129,19 +1162,29 @@ always @ (*) begin
             ap_NS_fsm = ap_ST_fsm_state17;
         end
         ap_ST_fsm_state17 : begin
-            if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17))) begin
+            if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17) & (desync_reg_485 == 1'd1))) begin
+                ap_NS_fsm = ap_ST_fsm_state19;
+            end else if (((gmem_BVALID == 1'b1) & (1'b1 == ap_CS_fsm_state17) & (desync_reg_485 == 1'd0))) begin
                 ap_NS_fsm = ap_ST_fsm_state18;
             end else begin
                 ap_NS_fsm = ap_ST_fsm_state17;
             end
         end
         ap_ST_fsm_state18 : begin
-            if (((1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & ((icmp_ln188_fu_388_p2 == 1'd0) | (icmp_ln188_1_reg_408 == 1'd1)))) begin
-                ap_NS_fsm = ap_ST_fsm_state1;
-            end else if (((icmp_ln188_fu_388_p2 == 1'd1) & (1'b0 == ap_block_state18_on_subcall_done) & (1'b1 == ap_CS_fsm_state18) & (icmp_ln188_1_reg_408 == 1'd0))) begin
-                ap_NS_fsm = ap_ST_fsm_state2;
+            ap_NS_fsm = ap_ST_fsm_state20;
+        end
+        ap_ST_fsm_state19 : begin
+            if (((grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_done == 1'b1) & (1'b1 == ap_CS_fsm_state19))) begin
+                ap_NS_fsm = ap_ST_fsm_state20;
             end else begin
-                ap_NS_fsm = ap_ST_fsm_state18;
+                ap_NS_fsm = ap_ST_fsm_state19;
+            end
+        end
+        ap_ST_fsm_state20 : begin
+            if (((1'b1 == ap_CS_fsm_state20) & ((tmp_nbreadreq_fu_173_p7 == 1'd0) | (icmp_ln341_reg_437 == 1'd0)))) begin
+                ap_NS_fsm = ap_ST_fsm_state1;
+            end else begin
+                ap_NS_fsm = ap_ST_fsm_state2;
             end
         end
         default : begin
@@ -1150,7 +1193,7 @@ always @ (*) begin
     endcase
 end
 
-assign add_ln242_fu_348_p2 = (zext_ln242_fu_344_p1 + iq_read_reg_398);
+assign add_ln397_fu_365_p2 = (zext_ln397_fu_361_p1 + iq_read_reg_427);
 
 assign ap_CS_fsm_state1 = ap_CS_fsm[32'd0];
 
@@ -1164,7 +1207,11 @@ assign ap_CS_fsm_state17 = ap_CS_fsm[32'd16];
 
 assign ap_CS_fsm_state18 = ap_CS_fsm[32'd17];
 
+assign ap_CS_fsm_state19 = ap_CS_fsm[32'd18];
+
 assign ap_CS_fsm_state2 = ap_CS_fsm[32'd1];
+
+assign ap_CS_fsm_state20 = ap_CS_fsm[32'd19];
 
 assign ap_CS_fsm_state3 = ap_CS_fsm[32'd2];
 
@@ -1181,58 +1228,58 @@ assign ap_CS_fsm_state8 = ap_CS_fsm[32'd7];
 assign ap_CS_fsm_state9 = ap_CS_fsm[32'd8];
 
 always @ (*) begin
-    ap_block_state18_on_subcall_done = ((ap_predicate_op105_call_state18 == 1'b1) & (grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_done == 1'b0));
-end
-
-always @ (*) begin
-    ap_predicate_op105_call_state18 = ((or_ln231_reg_451 == 1'd1) & (icmp_ln188_1_reg_408 == 1'd0));
+    ap_block_state2 = ((postage_TVALID_int_regslice == 1'b0) & (icmp_ln341_fu_283_p2 == 1'd1));
 end
 
 always @ (*) begin
     ap_rst_n_inv = ~ap_rst_n;
 end
 
-assign empty_fu_265_p1 = max_events[12:0];
+assign desync_fu_400_p2 = (or_ln394_fu_386_p2 | or_ln394_2_fu_395_p2);
 
-assign grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start = grp_postage_maxi_Pipeline_VITIS_LOOP_247_1_fu_235_ap_start_reg;
+assign grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start = grp_postage_maxi_Pipeline_VITIS_LOOP_402_1_fu_253_ap_start_reg;
 
-assign grp_postage_maxi_Pipeline_burst_fu_227_ap_start = grp_postage_maxi_Pipeline_burst_fu_227_ap_start_reg;
+assign grp_postage_maxi_Pipeline_burst_fu_245_ap_start = grp_postage_maxi_Pipeline_burst_fu_245_ap_start_reg;
 
-assign i1_cast_fu_295_p1 = i1_reg_203;
+assign i1_cast_fu_308_p1 = i1_reg_221;
 
-assign i_fu_316_p2 = (i1_cast_fu_295_p1 + 6'd1);
+assign i_fu_329_p2 = (i1_cast_fu_308_p1 + 6'd1);
 
-assign icmp_ln188_1_fu_269_p2 = ((empty_fu_265_p1 == 13'd0) ? 1'b1 : 1'b0);
+assign icmp_ln341_fu_283_p2 = ((p_count_reg_209 < max_events_read_reg_422) ? 1'b1 : 1'b0);
 
-assign icmp_ln188_fu_388_p2 = ((ap_phi_mux_p_count_phi_fu_218_p4 < max_events_read_reg_393) ? 1'b1 : 1'b0);
+assign icmp_ln370_fu_339_p2 = ((i_fu_329_p2 == 6'd32) ? 1'b1 : 1'b0);
 
-assign icmp_ln217_fu_326_p2 = ((i_fu_316_p2 == 6'd32) ? 1'b1 : 1'b0);
+assign or_ln394_1_fu_390_p2 = (xor_ln947_fu_380_p2 | tmp_last_V_2_reg_466);
 
-assign or_ln231_1_fu_363_p2 = (tmp_last_V_2_reg_417 | tmp_last_V_1_reg_432);
+assign or_ln394_2_fu_395_p2 = (tmp_last_V_1_reg_461 | or_ln394_1_fu_390_p2);
 
-assign or_ln231_fu_367_p2 = (tmp_last_V_reg_422 | or_ln231_1_fu_363_p2);
+assign or_ln394_fu_386_p2 = (tmp_last_V_reg_451 | tmp_last_V_4_reg_446);
 
-assign p_Result_1_fu_304_p5 = {{{{postage_TDATA_int_regslice}, {tmp_data_V_5_reg_427}}, {reg_261}}, {reg_257}};
+assign p_Result_1_fu_317_p5 = {{{{postage_TDATA_int_regslice}, {tmp_data_V_5_reg_456}}, {reg_279}}, {reg_275}};
 
-assign p_Result_s_fu_282_p5 = {{{{postage_TDATA_int_regslice}, {reg_261}}, {reg_257}}, {zext_ln388_fu_279_p1}};
+assign p_Result_s_fu_295_p5 = {{{{postage_TDATA_int_regslice}, {reg_279}}, {reg_275}}, {zext_ln388_fu_292_p1}};
 
-assign p_count_1_fu_382_p2 = (p_count6_reg_191 + 16'd1);
+assign p_count_2_fu_416_p2 = (p_count_reg_209 + 16'd1);
 
 assign postage_TREADY = regslice_both_postage_V_data_V_U_ack_in;
 
-assign sext_ln242_fu_372_p1 = $signed(trunc_ln_reg_445);
+assign sext_ln397_fu_406_p1 = $signed(trunc_ln_reg_479);
 
-assign shl_ln_fu_336_p3 = {{trunc_ln242_fu_332_p1}, {9'd0}};
+assign shl_ln_fu_353_p3 = {{trunc_ln397_fu_349_p1}, {9'd0}};
 
-assign trunc_ln219_fu_322_p1 = i_fu_316_p2[4:0];
+assign tmp_nbreadreq_fu_173_p7 = postage_TVALID_int_regslice;
 
-assign trunc_ln242_fu_332_p1 = p_count6_reg_191[12:0];
+assign trunc_ln372_fu_335_p1 = i_fu_329_p2[4:0];
 
-assign zext_ln217_fu_299_p1 = i1_reg_203;
+assign trunc_ln397_fu_349_p1 = p_count_reg_209[12:0];
 
-assign zext_ln242_fu_344_p1 = shl_ln_fu_336_p3;
+assign xor_ln947_fu_380_p2 = (postage_TLAST_int_regslice ^ 1'd1);
 
-assign zext_ln388_fu_279_p1 = tmp_user_V_reg_412;
+assign zext_ln370_fu_312_p1 = i1_reg_221;
+
+assign zext_ln388_fu_292_p1 = tmp_user_V_reg_441;
+
+assign zext_ln397_fu_361_p1 = shl_ln_fu_353_p3;
 
 
 reg find_kernel_block = 0;

@@ -9,7 +9,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_247_1 is
+entity postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 is
 port (
     ap_clk : IN STD_LOGIC;
     ap_rst : IN STD_LOGIC;
@@ -27,7 +27,7 @@ port (
 end;
 
 
-architecture behav of postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_247_1 is 
+architecture behav of postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 is 
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_fsm_state1 : STD_LOGIC_VECTOR (0 downto 0) := "1";
