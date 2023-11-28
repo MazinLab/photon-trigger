@@ -620,6 +620,7 @@ bool drive() {
 	}
 
 	load_postage_testvec(postage_trigger, monitor, postage_gold_flat2, iq_cap_buffer_gold, event_count_gold);
+	cout<<"postage gold length "<<postage_gold_flat2.size()<<endl;
 	postage_maxi(postage_gold_flat2, iq_cap_buffer, event_count, event_count_gold);
 	fail|=verify_postage_maxi(iq_cap_buffer, event_count, iq_cap_buffer_gold, event_count_gold);
 

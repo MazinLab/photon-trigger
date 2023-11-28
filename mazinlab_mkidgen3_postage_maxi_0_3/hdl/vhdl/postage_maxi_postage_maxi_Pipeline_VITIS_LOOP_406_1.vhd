@@ -9,7 +9,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 is
+entity postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_406_1 is
 port (
     ap_clk : IN STD_LOGIC;
     ap_rst : IN STD_LOGIC;
@@ -27,7 +27,7 @@ port (
 end;
 
 
-architecture behav of postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 is 
+architecture behav of postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_406_1 is 
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_fsm_state1 : STD_LOGIC_VECTOR (0 downto 0) := "1";
@@ -42,7 +42,7 @@ attribute shreg_extract : string;
     signal ap_CS_fsm_state1 : STD_LOGIC;
     attribute fsm_encoding of ap_CS_fsm_state1 : signal is "none";
     signal ap_block_state1_pp0_stage0_iter0 : BOOLEAN;
-    signal tmp_last_V_fu_48_p1 : STD_LOGIC_VECTOR (0 downto 0);
+    signal tmp_last_V_fu_50_p1 : STD_LOGIC_VECTOR (0 downto 0);
     signal ap_condition_exit_pp0_iter0_stage0 : STD_LOGIC;
     signal ap_loop_exit_ready : STD_LOGIC;
     signal ap_ready_int : STD_LOGIC;
@@ -149,9 +149,9 @@ begin
     end process;
 
 
-    ap_condition_exit_pp0_iter0_stage0_assign_proc : process(ap_CS_fsm_state1, postage_TVALID, tmp_last_V_fu_48_p1, ap_start_int)
+    ap_condition_exit_pp0_iter0_stage0_assign_proc : process(ap_CS_fsm_state1, postage_TVALID, tmp_last_V_fu_50_p1, ap_start_int)
     begin
-        if ((not(((ap_start_int = ap_const_logic_0) or (postage_TVALID = ap_const_logic_0))) and (tmp_last_V_fu_48_p1 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state1))) then 
+        if ((not(((ap_start_int = ap_const_logic_0) or (postage_TVALID = ap_const_logic_0))) and (tmp_last_V_fu_50_p1 = ap_const_lv1_1) and (ap_const_logic_1 = ap_CS_fsm_state1))) then 
             ap_condition_exit_pp0_iter0_stage0 <= ap_const_logic_1;
         else 
             ap_condition_exit_pp0_iter0_stage0 <= ap_const_logic_0;
@@ -209,5 +209,5 @@ begin
         end if; 
     end process;
 
-    tmp_last_V_fu_48_p1 <= postage_TLAST;
+    tmp_last_V_fu_50_p1 <= postage_TLAST;
 end behav;

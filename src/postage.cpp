@@ -327,7 +327,7 @@ void postage_filter_w_interconn(hls::stream<trigstream_t> &postage_stream,
 void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[POSTAGE_BUFSIZE][N_CAPDATA_MAXI],
 				  uint16_t &event_count, uint16_t max_events){
 #pragma HLS INTERFACE mode=s_axilite port=return
-#pragma HLS INTERFACE mode=axis port=postage register
+#pragma HLS INTERFACE mode=axis port=postage register depth=2048
 #pragma HLS INTERFACE mode=s_axilite port=event_count
 #pragma HLS INTERFACE mode=s_axilite port=max_events
 #pragma HLS INTERFACE mode=m_axi max_widen_bitwidth=128 port=iq offset=slave max_write_burst_length=256
@@ -406,7 +406,7 @@ const int _maxtripcount=POSTAGE_BUFSIZE;
 		else while (!postage.read().last); //resync
 
 		event_count=_count;
-#ifdef __SYNTHESIS__
+#ifndef __SYNTHESIS__
 		if (postage.empty()) break;
 #endif
 	}

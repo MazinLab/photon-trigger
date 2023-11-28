@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-module postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1 (
+module postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_406_1 (
         ap_clk,
         ap_rst,
         ap_start,
@@ -45,7 +45,7 @@ reg postage_TREADY;
 (* fsm_encoding = "none" *) reg   [0:0] ap_CS_fsm;
 wire    ap_CS_fsm_state1;
 reg    ap_block_state1_pp0_stage0_iter0;
-wire   [0:0] tmp_last_V_fu_48_p1;
+wire   [0:0] tmp_last_V_fu_50_p1;
 reg    ap_condition_exit_pp0_iter0_stage0;
 wire    ap_loop_exit_ready;
 reg    ap_ready_int;
@@ -109,7 +109,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((~((ap_start_int == 1'b0) | (postage_TVALID == 1'b0)) & (tmp_last_V_fu_48_p1 == 1'd1) & (1'b1 == ap_CS_fsm_state1))) begin
+    if ((~((ap_start_int == 1'b0) | (postage_TVALID == 1'b0)) & (tmp_last_V_fu_50_p1 == 1'd1) & (1'b1 == ap_CS_fsm_state1))) begin
         ap_condition_exit_pp0_iter0_stage0 = 1'b1;
     end else begin
         ap_condition_exit_pp0_iter0_stage0 = 1'b0;
@@ -175,6 +175,6 @@ end
 
 assign ap_loop_exit_ready = ap_condition_exit_pp0_iter0_stage0;
 
-assign tmp_last_V_fu_48_p1 = postage_TLAST;
+assign tmp_last_V_fu_50_p1 = postage_TLAST;
 
-endmodule //postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_402_1
+endmodule //postage_maxi_postage_maxi_Pipeline_VITIS_LOOP_406_1
