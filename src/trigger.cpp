@@ -205,6 +205,60 @@ void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_p
 
 }
 
+void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photoncount_t max_photons_per_packet_minus2, ap_uint<5> approx_time_per_packet,
+		hls::stream<photonstream_t> &photon_packets) {
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+#pragma HLS PIPELINE II = 1
+#pragma HLS INTERFACE mode=s_axilite port=approx_time_per_packet
+#pragma HLS INTERFACE mode=s_axilite port=max_photons_per_packet_minus2
+#pragma HLS INTERFACE mode=axis port=photon_packets depth=100 register
+#pragma HLS INTERFACE mode=axis port=photon_fifos depth=100 register
+#pragma HLS AGGREGATE compact=auto variable=photon_fifos
+#pragma HLS ARRAY_PARTITION variable = photon_fifos complete
+
+	static ap_uint<N_PHASE_LOG2> readfrom;
+	static photoncount_t count=0;
+	static ap_uint<TIMESTAMP_BITS-9> _last_time_divided;
+	static bool _last_this=false;
+	static bool seen=false;
+
+	bool _last_on_next, read;
+	photon_t photon;
+	photonstream_t beat;
+	ap_uint<TIMESTAMP_BITS-9> time_divided; //in units of at least 512 us
+
+
+	ap_uint<5> shft;
+	shft = approx_time_per_packet;
+	shft = shft < 9 ? ap_uint<5>(9): shft;
+	shft = shft > 20 ? ap_uint<5>(20): shft;
+
+	read=photon_fifos[readfrom++].read_nb(photon); //read round robin
+
+	time_divided=photon.time>>shft;
+
+	beat.data=photon2uint(photon);
+	beat.last=_last_this;
+	beat.dest=0;
+/// 4 phot in a packet, max_photons_per_packet_minus2=2
+//1st _last_this=0, 0->1, 0>=2 no
+//2nd _last_this=0, 1->2, 1>=2 no
+//3rd _last_this=0, 2->3, 2>=2 yes, last on next=1
+//4th _last_this=1, 3->0, 3>=2 yes, last on next=0, packet of 4 photons
+//5th _last_this=0, 0->1, 1>=2 no
+	_last_on_next = (count>=max_photons_per_packet_minus2 || time_divided!=_last_time_divided) &! _last_this;
+
+
+
+	if (read) {
+		photon_packets.write(beat);
+		_last_time_divided=time_divided;
+		if (_last_this) count=0;
+		else count++;
+		_last_this=_last_on_next;
+	}
+
+}
 
 void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE/2],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer,

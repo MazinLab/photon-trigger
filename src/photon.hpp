@@ -35,6 +35,7 @@ using namespace std;
 #define TIMESTAMP_BITS 36
 #define N_PHOTON_BITS 64
 
+typedef ap_uint<20> duration_t;
 
 typedef ap_uint<TIMESTAMP_BITS> timestamp_t;
 typedef ap_uint<8> group256_t;
@@ -132,6 +133,14 @@ inline photon_uint_t photon2uint(photon_t x) {
 }
 
 
+inline photon_t uint2photon(photon_uint_t x) {
+	photon_t r;
+	r.phase=x.range(PHASE_BITS-1,0);
+	r.id=x.range(PHASE_BITS+ID_BITS-1, PHASE_BITS);
+	r.time=x.range(N_PHOTON_BITS-1, PHASE_BITS+ID_BITS);
+	return r;
+}
+
 
 //
 //inline photon_t uint2photon(photon_uint_t r) {
@@ -163,8 +172,7 @@ typedef struct singleiqstreaminternal_t {
 } singleiqstreaminternal_t;
 
 
-void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet,// timestamp_t packet_duration,
-		hls::stream<photonstream_t> &photon_packets, ap_uint<5> time_shift);
+
 
 
 void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq8x_in, threshoffs_t threshoffs[N_PHASEGROUPS],
@@ -190,3 +198,9 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_B
 
 void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons);
 
+
+void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet,// timestamp_t packet_duration,
+		hls::stream<photonstream_t> &photon_packets, ap_uint<5> time_shift);
+
+void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photoncount_t photons_per_packet, ap_uint<5> time_shift,
+		hls::stream<photonstream_t> &photon_packets);

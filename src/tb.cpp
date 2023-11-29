@@ -371,6 +371,128 @@ void load_postage_testvec(hls::stream<trigstream_t> &postage_trigger, reschan_t 
 }
 
 
+void load_photon_fifo_testvec(hls::stream<photon_t> photon_output_fifos[N_PHASE], photoncount_t &n_per_buf, ap_uint<5> &t_per_buf_out,
+		hls::stream<photonstream_t> &photon_packets) {
+
+	n_per_buf=3 -2;//core requires passing 2 less than desired, code below too
+	uint8_t t_per_buf=9;
+	t_per_buf_out=t_per_buf;
+
+	uint32_t last_event_time=0, time_counter, time_tick_group=200, photon_count=0, last_photon_time;
+	time_counter=1000001;
+
+	//id, time (after initial time counter value)
+	//packets (tlast) should occur on the n_per_buf photon (after a tlast, so must factor in time)
+	//packets (tlast) should if the time of one photon is >= 2^t_per_buf us after the previous one
+	//in reality the trigger holdoff means photons on the same id can't occur more frequently than
+	// about 10 us apart 5000cps would be 200 apart
+	const uint32_t N_EVENTS=11;
+	uint32_t photon_events[N_EVENTS][2] = {{   0, 0}, 		 // triggers a packet next photon due to core startup having no previous photon time (t_previous=0)
+									 {4, (1<<t_per_buf)}, //triggers a packet next photon due to time, last
+									 {8, (1<<t_per_buf)}, //last
+									 {12, (1<<t_per_buf)},
+									 {1024, (1<<t_per_buf)}, //triggers a packet next photon with n_per_buf=3
+									 {   0, (1<<t_per_buf)+100},
+									 {   4, (1<<t_per_buf)+101},
+									 { 40, (1<<t_per_buf)+102}, //triggers a packet of 3 with n_per_buf=3
+									 { 80, (1<<t_per_buf)+5103},
+									 { 120, (1<<t_per_buf)+5104},
+									 { 400, (1<<t_per_buf) + 12000} //triggers a packet of 3 with n_per_buf=3
+	};
+	for (int i=0;i<N_EVENTS;i++) photon_events[i][1]+=time_counter;
+
+	last_photon_time=(1<<t_per_buf) + photon_events[N_EVENTS-1][1];//nb last photon assumed to be latest
+
+	bool last_next=false;
+	while (time_counter<last_photon_time+1) {
+		for (int group=0;group<N_PHASEGROUPS;group++) {
+
+			time_counter+=group==time_tick_group; //tick only once every phasegroups but need not be aligned on device
+
+			for (int lane=0;lane<N_PHASE;lane++) {
+				reschan_t id=group*N_PHASE+lane;
+				bool event=false;
+
+				for (int i=0;i<N_EVENTS;i++) event|=photon_events[i][0]==id && photon_events[i][1]==time_counter;
+
+				if (!event) continue;
+
+				photon_t p;
+				photonstream_t beat;
+
+				p.id=id;
+				p.phase=rand();
+				p.time=time_counter;
+
+				beat.data=photon2uint(p);
+				uint32_t tmp=time_counter>>t_per_buf;
+				beat.last=last_next; //this should be on the next photon
+
+
+
+				last_next=(tmp!=last_event_time || photon_count >= n_per_buf)&!last_next;
+
+				cout<<"Photon "<<id<<" @ "<<p.time<<" end of packet="<<beat.last;
+				if (last_next) {
+					cout<<". Next last due to t="<<(tmp!=last_event_time)<<" count="<<(photon_count >= n_per_buf);
+				}
+				cout<<endl;
+
+				photon_output_fifos[lane].write(p);
+				photon_packets.write(beat);
+				if (beat.last) photon_count=0;
+				else photon_count++;
+
+				last_event_time=tmp;
+			}
+
+		}
+	}
+}
+
+
+bool verify_photon_packetizer(hls::stream<photonstream_t> &photon_packets, hls::stream<photonstream_t> &gold) {
+	bool fail=false;
+	photonstream_t expect, got;
+	cout<<"Expecting "<<gold.size()<<" photon packet beats."<<endl;
+	while (!photon_packets.empty() && !gold.empty()) {
+		photon_packets.read(got);
+		gold.read(expect);
+
+		photon_t pgot=uint2photon(got.data);
+		photon_t pexp=uint2photon(expect.data);
+		if (got.last!=expect.last) {
+			cout<<"Last mismatch, got: id="<<pgot.id<<" time="<<pgot.time<<endl;
+			fail=true;
+		}
+		if (got.data!=expect.data) {
+			cout<<"data mismatch, got: id="<<pgot.id<<" time="<<pgot.time<<" expect: id="<<pexp.id<<" time="<<pexp.time<<endl;
+			fail=true;
+		}
+	}
+	if (!photon_packets.empty()) {
+		cout<<"got too many photons"<<endl;
+		while (!photon_packets.empty()) {
+			photon_packets.read(expect);
+			photon_t pgot=uint2photon(expect.data);
+			cout<<" Got extra id="<<pgot.id<<" time="<<pgot.time<<endl;
+		}
+		fail=true;
+	}
+	if (!gold.empty()) {
+		cout<<"got too few photons"<<endl;
+		while (!gold.empty()) {
+			gold.read(expect);
+			photon_t pgot=uint2photon(expect.data);
+			cout<<" Did not get id="<<pgot.id<<" time="<<pgot.time<<endl;
+		}
+		fail=true;
+	}
+	if (!fail) cout<<"PHOTON PACKETIZER PASSED!"<<endl;
+	return fail;
+}
+
+
 bool drive() {
 
 
@@ -599,6 +721,18 @@ bool drive() {
 		while(!iqs.empty()) iqs.read();
 	}
 
+	photoncount_t n_per_buf;
+	ap_uint<5> t_per_buf;
+	hls::stream<photonstream_t> photon_packets("Photon packets"), photon_packets_gold("Photon packets gold");
+	for (int i=0;i<N_PHASE;i++) while(!photon_output_fifos[i].empty()) photon_output_fifos[i].read();
+	load_photon_fifo_testvec(photon_output_fifos, n_per_buf, t_per_buf, photon_packets_gold);
+	bool done=false;
+	while(!done) {
+		photon_fifo_packetizer(photon_output_fifos, n_per_buf, t_per_buf, photon_packets);
+		done=true;
+		for(int i=0;i<N_PHASE;i++) done&=photon_output_fifos[i].empty();
+	}
+	fail|=verify_photon_packetizer(photon_packets, photon_packets_gold);
 
 //	photon_maxi(photons_gold2, photon_buffer_out, n_photons, active_buffer);
 //	fail|=verify_photon_maxi(photon_buffer_out, n_photons, active_buffer, photon_buffer_out_gold_2d, n_photons_gold2d);
