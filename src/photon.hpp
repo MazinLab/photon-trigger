@@ -63,9 +63,6 @@ typedef struct sincegroup_t {
 } sincegroup_t;
 
 
-//typedef ap_uint<7> pgroup256_t;
-
-
 typedef group512_t group_t;
 
 typedef short phase_t;
@@ -98,11 +95,6 @@ typedef struct photon_t {
 } photon_t;
 
 
-//typedef struct smallphoton_t {
-//	timestamp_t time;
-//	phase_t phase;
-//} smallphoton_t;
-//
 typedef struct photon_noid_t {
 	timestamp_t time;
 	phase_t phase;
@@ -142,20 +134,6 @@ inline photon_t uint2photon(photon_uint_t x) {
 }
 
 
-//
-//inline photon_t uint2photon(photon_uint_t r) {
-//	photon_t x;
-//	x.phase=r.range(15,0);
-//	x.id=r.range(31, 16);
-//	x.time=r.range(40+16+16-1, 32);
-//	return x;
-//}
-
-//typedef struct previous_t {
-//	interval_t since;
-//	phase_t phase;
-//} previous_t;
-
 
 typedef ap_axiu<N_PHASE*PHASE_BITS,N_PHASEGROUPS_LOG2,0,0> phasestream_t;
 typedef ap_axiu<N_PHASE*IQ_BITS,0,0,0> iqstreamnarrow_t;
@@ -170,8 +148,6 @@ typedef struct singleiqstreaminternal_t {
 	ap_uint<N_MONITOR_LOG2> user;
 	bool last;
 } singleiqstreaminternal_t;
-
-
 
 
 
@@ -193,14 +169,11 @@ void postage_maxi(hls::stream<singleiqstream_t> &postage, iq_4x_t iq[POSTAGE_BUF
 				  uint16_t &event_count, uint16_t max_events);
 
 
-void photon_maxi(hls::stream<photon_t> &photons, photon_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE],
+void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE/2],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer);
 
-void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons);
-
-
-void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet,// timestamp_t packet_duration,
-		hls::stream<photonstream_t> &photon_packets, ap_uint<5> time_shift);
+void photon_packetizer(hls::stream<photon_t> &photons, photoncount_t max_photons_per_packet_minus2, ap_uint<5> approx_time_per_packet,
+		hls::stream<photonstream_t> &photon_packets);
 
 void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photoncount_t photons_per_packet, ap_uint<5> time_shift,
 		hls::stream<photonstream_t> &photon_packets);

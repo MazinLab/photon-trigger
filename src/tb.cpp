@@ -28,6 +28,19 @@ inline phases_t phaseset2phases(phaseset_t p) {
 }
 
 
+void roundrobin_photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons) {
+	ap_uint<N_PHASE_LOG2> n=0;
+	bool done=false;
+	photon_t photon;
+	bool read;
+	while(!done) {
+		if (photon_fifos[n].read_nb(photon)) photons.write(photon);
+		done=true;
+		for (int i=0;i<N_PHASE;i++) done&=photon_fifos[i].empty();
+	}
+}
+
+
 //photons trigger at 10
 // 3, 5,4,3
 // 3, 10,10,3
@@ -374,6 +387,7 @@ void load_postage_testvec(hls::stream<trigstream_t> &postage_trigger, reschan_t 
 void load_photon_fifo_testvec(hls::stream<photon_t> photon_output_fifos[N_PHASE], photoncount_t &n_per_buf, ap_uint<5> &t_per_buf_out,
 		hls::stream<photonstream_t> &photon_packets) {
 
+	hls::stream<photon_t> _photon_output_fifos[N_PHASE], merged;
 	n_per_buf=3 -2;//core requires passing 2 less than desired, code below too
 	uint8_t t_per_buf=9;
 	t_per_buf_out=t_per_buf;
@@ -381,12 +395,15 @@ void load_photon_fifo_testvec(hls::stream<photon_t> photon_output_fifos[N_PHASE]
 	uint32_t last_event_time=0, time_counter, time_tick_group=200, photon_count=0, last_photon_time;
 	time_counter=1000001;
 
+
+
 	//id, time (after initial time counter value)
 	//packets (tlast) should occur on the n_per_buf photon (after a tlast, so must factor in time)
 	//packets (tlast) should if the time of one photon is >= 2^t_per_buf us after the previous one
 	//in reality the trigger holdoff means photons on the same id can't occur more frequently than
 	// about 10 us apart 5000cps would be 200 apart
 	const uint32_t N_EVENTS=11;
+
 	uint32_t photon_events[N_EVENTS][2] = {{   0, 0}, 		 // triggers a packet next photon due to core startup having no previous photon time (t_previous=0)
 									 {4, (1<<t_per_buf)}, //triggers a packet next photon due to time, last
 									 {8, (1<<t_per_buf)}, //last
@@ -423,32 +440,66 @@ void load_photon_fifo_testvec(hls::stream<photon_t> photon_output_fifos[N_PHASE]
 				p.id=id;
 				p.phase=rand();
 				p.time=time_counter;
-
-				beat.data=photon2uint(p);
-				uint32_t tmp=time_counter>>t_per_buf;
-				beat.last=last_next; //this should be on the next photon
-
-
-
-				last_next=(tmp!=last_event_time || photon_count >= n_per_buf)&!last_next;
-
-				cout<<"Photon "<<id<<" @ "<<p.time<<" end of packet="<<beat.last;
-				if (last_next) {
-					cout<<". Next last due to t="<<(tmp!=last_event_time)<<" count="<<(photon_count >= n_per_buf);
-				}
-				cout<<endl;
-
 				photon_output_fifos[lane].write(p);
-				photon_packets.write(beat);
-				if (beat.last) photon_count=0;
-				else photon_count++;
+				_photon_output_fifos[lane].write(p);
 
-				last_event_time=tmp;
+//				beat.data=photon2uint(p);
+//				uint32_t tmp=time_counter>>t_per_buf;
+//				beat.last=last_next;
+//
+//				last_next=(tmp!=last_event_time || photon_count >= n_per_buf)&!last_next;
+//
+//				cout<<"Photon "<<id<<" @ "<<p.time<<" end of packet="<<beat.last;
+//				if (last_next) {
+//					cout<<". Next last due to t="<<(tmp!=last_event_time)<<" count="<<(photon_count >= n_per_buf);
+//				}
+//				cout<<endl;
+//
+//				photon_packets.write(beat);
+//				if (beat.last) photon_count=0;
+//				else photon_count++;
+//
+//				last_event_time=tmp;
 			}
 
 		}
 	}
+
+
+	roundrobin_photon_fifo_merger(_photon_output_fifos, merged);
+
+	last_next=false;
+	photon_count=0;
+	while (!merged.empty()) {
+
+		photon_t p;
+
+		merged.read(p);
+		photonstream_t beat;
+
+		time_counter=p.time;
+
+		beat.data=photon2uint(p);
+		uint32_t tmp=time_counter>>t_per_buf;
+		beat.last=last_next; //this should be on the next photon
+
+		last_next=(tmp!=last_event_time || photon_count >= n_per_buf)&!last_next;
+
+		cout<<"Photon "<<p.id<<" @ "<<p.time<<" last photon="<<beat.last;
+		if (last_next) {
+			cout<<". Next photon will be last due to t="<<(tmp!=last_event_time)<<" count="<<(photon_count >= n_per_buf);
+		}
+		cout<<endl;
+
+		photon_packets.write(beat);
+		if (beat.last) photon_count=0;
+		else photon_count++;
+
+		last_event_time=tmp;
+	}
+
 }
+
 
 
 bool verify_photon_packetizer(hls::stream<photonstream_t> &photon_packets, hls::stream<photonstream_t> &gold) {
@@ -518,6 +569,8 @@ bool drive() {
 	auto photon_buffer_out_gold = new photon_uint_2x_t [N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE/2];
 
 	photoncount_t n_photons[N_PHOTON_BUFFERS], n_photons_gold[N_PHOTON_BUFFERS];
+	n_photons[0]=-1;
+	n_photons[1]=-1;
 
 	unsigned char active_buffer;
 
@@ -703,12 +756,13 @@ bool drive() {
 
 	//Now test things out
 
+	//Trigger
 	i=0;
 	while(!phases.empty()) {
 		bool desync;
 		desync=false;
 		trigger(phases, iqs, threshoffs,  timestamps, trigger_out, desync, photon_output_fifos);
-		photon_fifo_merger(photon_output_fifos, photons_out);
+		roundrobin_photon_fifo_merger(photon_output_fifos, photons_out);
 		i++;
 		fail|=desync;
 		if (desync) cout<<"Desync at "<<i<<endl;
@@ -720,7 +774,12 @@ bool drive() {
 		cout<<"IQs left: "<<iqs.size()<<endl;
 		while(!iqs.empty()) iqs.read();
 	}
+	if (!photons_out.empty()) {
+		cout<<"Photons left: "<<photons_out.size()<<endl;
+		while(!photons_out.empty()) photons_out.read();
+	}
 
+	// Photons
 	photoncount_t n_per_buf;
 	ap_uint<5> t_per_buf;
 	hls::stream<photonstream_t> photon_packets("Photon packets"), photon_packets_gold("Photon packets gold");
@@ -734,10 +793,15 @@ bool drive() {
 	}
 	fail|=verify_photon_packetizer(photon_packets, photon_packets_gold);
 
-//	photon_maxi(photons_gold2, photon_buffer_out, n_photons, active_buffer);
-//	fail|=verify_photon_maxi(photon_buffer_out, n_photons, active_buffer, photon_buffer_out_gold_2d, n_photons_gold2d);
+
+	load_photon_fifo_testvec(photon_output_fifos, n_per_buf, t_per_buf, photon_packets_gold);
+	roundrobin_photon_fifo_merger(photon_output_fifos, photons_out); //get gold merged
+	photon_maxi(photons_out, photon_buffer_out, n_photons, active_buffer);
+	fail|=verify_photon_maxi(photon_buffer_out, n_photons, active_buffer, photon_buffer_out_gold_2d, n_photons_gold2d);
 
 
+
+	// Postage
 
 	bool overflow;
 
@@ -746,7 +810,6 @@ bool drive() {
 	fail|=verify_postage(postage_out, postage_gold_flat);
 	fail|=overflow;
 	if (overflow) cout<<"Got an overflow from postage"<<endl;
-
 
 	if (!postage_trigger.empty()) {
 		cout<<" Samples left in postage: "<<postage_trigger.size()<<endl;
@@ -757,6 +820,9 @@ bool drive() {
 	cout<<"postage gold length "<<postage_gold_flat2.size()<<endl;
 	postage_maxi(postage_gold_flat2, iq_cap_buffer, event_count, event_count_gold);
 	fail|=verify_postage_maxi(iq_cap_buffer, event_count, iq_cap_buffer_gold, event_count_gold);
+
+
+	//Cleanup
 
 	free(photon_buffer_out_gold);
 	free(photon_buffer_out);

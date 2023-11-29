@@ -160,48 +160,48 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq
 }
 
 
-void photon_packetizer(hls::stream<photon_t> &photons, ap_uint<10> photons_per_packet, ap_uint<5> time_shift,
+void photon_packetizer(hls::stream<photon_t> &photons, photoncount_t max_photons_per_packet_minus2, ap_uint<5> approx_time_per_packet,
 		hls::stream<photonstream_t> &photon_packets) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=s_axilite port=time_shift
+#pragma HLS INTERFACE mode=s_axilite port=approx_time_per_packet
 #pragma HLS PIPELINE II = 1
 #pragma HLS INTERFACE mode=axis port=photons depth=100 register
 #pragma HLS INTERFACE mode=axis port=photon_packets depth=100 register
-#pragma HLS INTERFACE mode=s_axilite port=photons_per_packet
+#pragma HLS INTERFACE mode=s_axilite port=max_photons_per_packet_minus2
 #pragma HLS AGGREGATE compact=auto variable=photons
-//#pragma HLS INTERFACE mode=s_axilite port=packet_duration
 
-	static ap_uint<10> count=0;
-	static timestamp_t _last_time;
-	static bool seen_a_photon=false;
+	static photoncount_t count=0;
+	static ap_uint<TIMESTAMP_BITS-9> _last_time_divided;
+	static bool _last_this=false;
 
+
+	bool _last_on_next, read;
 	photon_t photon;
-	timestamp_t tmp_time;
 	photonstream_t beat;
-	ap_uint<48> packed_photon;
-
+	ap_uint<TIMESTAMP_BITS-9> time_divided; //in units of at least 512 us
 
 	photon = photons.read();
-	packed_photon.range(15,0)=photon.phase;
-	packed_photon.range(16+12,16)=photon.id;
-	packed_photon.range(63,16+12)=photon.time;
 
 	ap_uint<5> shft;
-	shft = time_shift;
+	shft = approx_time_per_packet;
 	shft = shft < 9 ? ap_uint<5>(9): shft;
 	shft = shft > 20 ? ap_uint<5>(20): shft;
-	tmp_time=photon.time>>shft;
+//	assert(shft>=9);
+//	assert(shft<=209);
+	time_divided=photon.time>>shft;
 
-	beat.data=packed_photon;
-	beat.last=(count==photons_per_packet || tmp_time!=_last_time) && seen_a_photon;
+	beat.data=photon2uint(photon);
+	beat.last=_last_this;
 	beat.dest=0;
 
-	_last_time=tmp_time;
+	_last_on_next = (count>=max_photons_per_packet_minus2 || time_divided!=_last_time_divided) &! _last_this;
+
 
 	photon_packets.write(beat);
-	if (beat.last) count=0;
+	_last_time_divided=time_divided;
+	if (_last_this) count=0;
 	else count++;
-	seen_a_photon=true;
+	_last_this=_last_on_next;
 
 }
 
@@ -220,7 +220,6 @@ void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photon
 	static photoncount_t count=0;
 	static ap_uint<TIMESTAMP_BITS-9> _last_time_divided;
 	static bool _last_this=false;
-	static bool seen=false;
 
 	bool _last_on_next, read;
 	photon_t photon;
@@ -260,85 +259,90 @@ void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photon
 
 }
 
+inline photon_uint_2x_t twophot_to_phot2x(photon_t a, photon_t b) {
+	photon_uint_2x_t x;
+	x.range(N_PHOTON_BITS-1,0)=photon2uint(a);
+	x.range(2*N_PHOTON_BITS-1,N_PHOTON_BITS)=photon2uint(b);
+	return x;
+}
+
 void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_PHOTON_BUFFERS][FLAT_PHOTON_BUFSIZE/2],
 				  photoncount_t n_photons[N_PHOTON_BUFFERS], unsigned char &active_buffer,
-				  photoncount_t photons_per_buf, ap_uint<5> time_shift) {
+				  photoncount_t approx_max_photons_per_packet, ap_uint<5> time_shift) {
 #pragma HLS INTERFACE mode=s_axilite port=return
 #pragma HLS INTERFACE mode=axis port=photons depth=64 register
 #pragma HLS INTERFACE mode=m_axi depth=64 max_widen_bitwidth=128 port=photons_out offset=slave max_write_burst_length=256
 #pragma HLS INTERFACE mode=s_axilite port=active_buffer
 #pragma HLS INTERFACE mode=s_axilite port=n_photons
-#pragma HLS INTERFACE mode=s_axilite port=photons_per_buf
+#pragma HLS INTERFACE mode=s_axilite port=approx_max_photons_per_packet
 #pragma HLS INTERFACE mode=s_axilite port=time_shift
-#pragma HLS ARRAY_PARTITION variable=photons_out type=complete
 #pragma HLS DEPENDENCE direction=WAW type=inter variable=photons_out distance=8000 true
 #pragma HLS DEPENDENCE direction=WAR type=inter variable=photons_out false
 #pragma HLS DEPENDENCE direction=RAW type=inter variable=photons_out false
 #pragma HLS AGGREGATE compact=auto variable=photons
 
 	static ap_uint<N_PHOTON_BUFFERS_LOG2> _ab=0;
-	photoncount_t _n_photons;
+	ap_uint<TIMESTAMP_BITS-9> _last_time_divided;
+
+#ifndef __SYNTHESIS__
+while (!photons.empty()) {
+#endif
+
 
 	photon_t burstcache[512];
 #pragma HLS AGGREGATE compact=auto variable=burstcache
 	uint16_t cache_i;
-	timestamp_t _last_time;
 	bool rotate_buffer;
-	photoncount_t _photons_per_buf;
-	static ap_uint<4> seen_holdoff=15;
+	photoncount_t _photons_per_buf, _n_photons;
 
-	_photons_per_buf=photons_per_buf;
+	ap_uint<5> shft;
+	shft = time_shift;
+	shft = shft < 9 ? ap_uint<5>(9): shft;
+	shft = shft > 20 ? ap_uint<5>(20): shft;
+	_photons_per_buf=approx_max_photons_per_packet;
 	rotate_buffer=false;
 	_n_photons=0;
 	cache_i=0;
+
 	buffer: while (!rotate_buffer) {
+	#pragma HLS LOOP_TRIPCOUNT min=1 max=102400+16
 
 		photon_t photon;
-		timestamp_t tmp_time;
-
-		active_buffer=_ab;
+		ap_uint<TIMESTAMP_BITS-9> time_divided;
 
 		photon = photons.read();
 		burstcache[cache_i] = photon;
+		time_divided=photon.time>>shft;
 
 		if (cache_i==511) {
 			burst512: for (int i=0;i<256;i++) {
-				photon_uint_2x_t x;
-				x.range(N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2]);
-				x.range(2*N_PHOTON_BITS-1,N_PHOTON_BITS)=photon2uint(burstcache[i*2+1]);
-				photons_out[_ab][_n_photons/2+i]=x;
+			#pragma HLS PIPELINE II=1
+				photons_out[_ab][_n_photons/2+i] = twophot_to_phot2x(burstcache[i*2], burstcache[i*2+1]);
 			}
 			cache_i=0;
 			_n_photons+=512;
 		} else
 			cache_i++;
 
-		ap_uint<5> shft;
-		shft = time_shift;
-		shft = shft < 9 ? ap_uint<5>(9): shft;
-		shft = shft > 20 ? ap_uint<5>(20): shft;
-		tmp_time=photon.time>>shft;
+		rotate_buffer=_n_photons>=_photons_per_buf || time_divided!=_last_time_divided;
 
+		_last_time_divided=time_divided;
 
-
-		rotate_buffer=(_n_photons>=_photons_per_buf || tmp_time!=_last_time) && seen_holdoff==0;
-
-		_last_time=tmp_time;
-		seen_holdoff = seen_holdoff == 0 ? ap_uint<4>(0): ap_uint<4>(seen_holdoff-1);
-		n_photons[_ab]=_n_photons;
+//		n_photons[_ab]=_n_photons;
 	}
 
 	//cache_i will be at most 511
-	//if cache_i==0 then we will write two old photos to the next buffer location,
+	//if cache_i==0 then we will write two old photons to the next buffer location,
 	// but there is space in the buffer and the user-space count won't change so its not an actual issue
+	//if cache_i==511 then last i=255 and all is fine.
 	burstvar: for (int i=0;i<=cache_i/2;i++) {
-		photon_uint_2x_t x;
-		x.range(N_PHOTON_BITS-1,0)=photon2uint(burstcache[i*2]);
-		x.range(2*N_PHOTON_BITS-1,N_PHOTON_BITS)=photon2uint(burstcache[i*2+1]);
-		photons_out[_ab][_n_photons/2+i]=x;
+#pragma HLS PIPELINE II=1
+#pragma HLS LOOP_TRIPCOUNT min=1 max=256
+		photons_out[_ab][_n_photons/2+i] = twophot_to_phot2x(burstcache[i*2], burstcache[i*2+1]);
 	}
 	_n_photons+=cache_i;
 	n_photons[_ab]=_n_photons;
+	active_buffer=_ab;
 	cache_i=0;
 	_n_photons=0;
 	_ab++;
@@ -346,26 +350,11 @@ void photon_maxi(hls::stream<photon_t> &photons, photon_uint_2x_t photons_out[N_
 
 	#ifndef __SYNTHESIS__
 	cout<<" rotate buffer "<<_n_photons<<endl;
+}
+
 	#endif
 
 }
 
 
-const int _N_PHASE = N_PHASE;
-
-void photon_fifo_merger(hls::stream<photon_t> photon_fifos[N_PHASE], hls::stream<photon_t> &photons) {
-#pragma HLS INTERFACE mode=ap_ctrl_none port=return
-#pragma HLS ARRAY_PARTITION variable = photon_fifos complete
-#pragma HLS PIPELINE II = _N_PHASE
-#pragma HLS INTERFACE mode=axis port=photons depth=_N_PHASE register
-	for (int n=0;n<N_PHASE;n++) {
-#pragma HLS UNROLL
-		photon_t photon;
-		bool read;
-		read=photon_fifos[n].read_nb(photon);
-		if (read) {
-			photons.write(photon);
-		}
-	}
-}
 
