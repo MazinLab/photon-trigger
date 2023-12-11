@@ -160,6 +160,125 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq
 }
 
 
+
+void fake_trigger(hls::stream<iqstream_t> &iq8x_in, bool do_emit, hls::stream<timestamp_t> &timestamp,
+		threshoffs_t threshoffs[N_PHASEGROUPS], hls::stream<photon_t> photons_lane[N_PHASE]) {
+
+	//emit photons on all channels at the holdoff rate
+#pragma HLS INTERFACE mode=ap_ctrl_none port=return
+#pragma HLS INTERFACE mode=axis port=iq8x_in depth=16000 register
+#pragma HLS INTERFACE mode=axis port=timestamp depth=32000 register
+#pragma HLS INTERFACE mode=axis depth=4 port=photons_lane register
+#pragma HLS INTERFACE mode=s_axilite port=do_emit bundle=control
+#pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
+
+	static sincegroup_t since_data[N_PHASEGROUPS], since_cache;
+	static photongroupival_t photon_data[N_PHASEGROUPS], photon_cache;
+#pragma HLS DEPENDENCE variable=since_data intra WAR false
+#pragma HLS DEPENDENCE variable=since_data intra RAW false
+#pragma HLS DEPENDENCE variable=since_data inter RAW distance=512 true
+#pragma HLS AGGREGATE compact=auto variable=since_data
+
+#pragma HLS DEPENDENCE variable=photon_data intra WAR false
+#pragma HLS DEPENDENCE variable=photon_data intra RAW false
+#pragma HLS DEPENDENCE variable=photon_data inter RAW distance=512 true
+#pragma HLS AGGREGATE compact=auto variable=photon_data
+#pragma HLS AGGREGATE compact=auto variable=photons_lane
+
+
+	// assume clocked at 512 every clock is an iq group of 8 or a phase group of 4
+	// photons come out at max
+
+
+
+
+
+#pragma HLS PIPELINE II=1
+
+	sincegroup_t sinces;
+	photongroupival_t photons;
+	timestamp_t time;
+	ap_uint<N_PHASE> trigger;
+	threshold_t threshs[N_PHASE];
+	interval_t hoffs[N_PHASE];
+
+
+	time = timestamp.read();
+
+	static group_t group=0;
+	static uint16_t phase=0;
+	group_t last_group=group_t(group-1);
+
+
+	since_data[last_group]=since_cache;
+	sinces = since_data[group];
+
+	photon_data[last_group]=photon_cache;
+	photons = photon_data[group];
+
+	unpack_thresholds(threshoffs[group], threshs, hoffs);
+
+
+
+	trigger=0;
+	lanes: for (int i=0;i<N_PHASE;i++) {
+		#pragma HLS UNROLL
+		bool trig;
+		photon_noid_interval_t photon;
+		phase_t phase;
+		reschan_t id;
+		bool update_photon;
+		photon_t photon_out;
+		bool emit;
+
+		id = N_PHASE*reschan_t(group.range()) + i;
+
+
+
+		trig=sinces.since[i]==0;
+		trigger[i]=trig;
+
+		photon.phase=phase;
+
+
+		emit=!trig && sinces.since[i]==1 && do_emit;
+
+		if (trig) {
+			sinces.since[i]=hoffs[i];
+			photons.lane[i].phase=photon.phase;
+			photons.lane[i].time=sinces.since[i];
+//			cout<<"Trigger at "<<time<<" Since: "<<(uint16_t)sinces.since[i]<<" Saving: "<<(uint16_t)photons.lane[i].time<<endl;
+		} else {
+			if (sinces.since[i]>0) {
+				interval_t new_since;
+				new_since=sinces.since[i]-1;
+
+				if (sinces.since[i]==1) {
+					photon_out.id=id;
+					photon_out.phase=photons.lane[i].phase;
+					photon_out.time=time-photons.lane[i].time;
+				}
+				sinces.since[i]=new_since;
+			}
+		}
+
+		if (emit) photons_lane[i].write(photon_out);
+	}
+
+	photon_cache=photons;
+	since_cache=sinces;
+
+//}
+
+
+	group++;
+	phase++;
+
+
+
+}
+
+
 void photon_packetizer(hls::stream<photon_t> &photons, photoncount_t max_photons_per_packet_minus2, ap_uint<5> approx_time_per_packet,
 		hls::stream<photonstream_t> &photon_packets) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
