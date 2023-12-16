@@ -161,15 +161,13 @@ void trigger(hls::stream<phasestream_t> &phase4x_in, hls::stream<iqstream_t> &iq
 
 
 
-void fake_trigger(hls::stream<iqstream_t> &iq8x_in, bool do_emit, hls::stream<timestamp_t> &timestamp,
-		threshoffs_t threshoffs[N_PHASEGROUPS], hls::stream<photon_t> photons_lane[N_PHASE]) {
+void fake_trigger(hls::stream<timestamp_t> &timestamp, threshoffs_t threshoffs[N_PHASEGROUPS],
+		hls::stream<photon_t> photons_lane[N_PHASE]) {
 
-	//emit photons on all channels at the holdoff rate
+	//emit photons on all channels at the holdoff rate, set to 0 to stop emission on a channel
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
-#pragma HLS INTERFACE mode=axis port=iq8x_in depth=16000 register
 #pragma HLS INTERFACE mode=axis port=timestamp depth=32000 register
 #pragma HLS INTERFACE mode=axis depth=4 port=photons_lane register
-#pragma HLS INTERFACE mode=s_axilite port=do_emit bundle=control
 #pragma HLS INTERFACE mode=s_axilite port=threshoffs bundle=control
 
 	static sincegroup_t since_data[N_PHASEGROUPS], since_cache;
@@ -184,13 +182,6 @@ void fake_trigger(hls::stream<iqstream_t> &iq8x_in, bool do_emit, hls::stream<ti
 #pragma HLS DEPENDENCE variable=photon_data inter RAW distance=512 true
 #pragma HLS AGGREGATE compact=auto variable=photon_data
 #pragma HLS AGGREGATE compact=auto variable=photons_lane
-
-
-	// assume clocked at 512 every clock is an iq group of 8 or a phase group of 4
-	// photons come out at max
-
-
-
 
 
 #pragma HLS PIPELINE II=1
@@ -234,14 +225,13 @@ void fake_trigger(hls::stream<iqstream_t> &iq8x_in, bool do_emit, hls::stream<ti
 		id = N_PHASE*reschan_t(group.range()) + i;
 
 
-
 		trig=sinces.since[i]==0;
 		trigger[i]=trig;
 
 		photon.phase=phase;
 
 
-		emit=!trig && sinces.since[i]==1 && do_emit;
+		emit=!trig && sinces.since[i]==1;
 
 		if (trig) {
 			sinces.since[i]=hoffs[i];
