@@ -314,12 +314,14 @@ void photon_packetizer(hls::stream<photon_t> &photons, photoncount_t max_photons
 
 }
 
-void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photoncount_t max_photons_per_packet_minus2, ap_uint<5> approx_time_per_packet,
+
+void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photoncount_t max_photons_per_packet_minus1,
+		unsigned int ticks_per_packet_minus1,
 		hls::stream<photonstream_t> &photon_packets) {
 #pragma HLS INTERFACE mode=ap_ctrl_none port=return
 #pragma HLS PIPELINE II = 1
-#pragma HLS INTERFACE mode=s_axilite port=approx_time_per_packet
-#pragma HLS INTERFACE mode=s_axilite port=max_photons_per_packet_minus2
+#pragma HLS INTERFACE mode=s_axilite port=ticks_per_packet_minus1
+#pragma HLS INTERFACE mode=s_axilite port=max_photons_per_packet_minus1
 #pragma HLS INTERFACE mode=axis port=photon_packets depth=100 register
 #pragma HLS INTERFACE mode=axis port=photon_fifos depth=100 register
 #pragma HLS AGGREGATE compact=auto variable=photon_fifos
@@ -327,43 +329,33 @@ void photon_fifo_packetizer(hls::stream<photon_t> photon_fifos[N_PHASE],  photon
 
 	static ap_uint<N_PHASE_LOG2> readfrom;
 	static photoncount_t count=0;
-	static ap_uint<TIMESTAMP_BITS-9> _last_time_divided;
-	static bool _last_this=false;
+	static unsigned int time;
 
 	bool _last_on_next, read;
 	photon_t photon;
 	photonstream_t beat;
-	ap_uint<TIMESTAMP_BITS-9> time_divided; //in units of at least 512 us
-
-
-	ap_uint<5> shft;
-	shft = approx_time_per_packet;
-	shft = shft < 9 ? ap_uint<5>(9): shft;
-	shft = shft > 20 ? ap_uint<5>(20): shft;
-
+	bool _reset_counters, enough_photons, enough_time, _last_this;
+\
 	read=photon_fifos[readfrom++].read_nb(photon); //read round robin
 
-	time_divided=photon.time>>shft;
+	enough_photons = count>=max_photons_per_packet_minus1 && max_photons_per_packet_minus1!=0;
+	enough_time = ticks_per_packet_minus1>=time && ticks_per_packet_minus1!=0;
+
+	_last_this = enough_photons || enough_time ;
+	_reset_counters = (enough_photons || enough_time) && read;
 
 	beat.data=photon2uint(photon);
 	beat.last=_last_this;
-	beat.dest=0;
-/// 4 phot in a packet, max_photons_per_packet_minus2=2
-//1st _last_this=0, 0->1, 0>=2 no
-//2nd _last_this=0, 1->2, 1>=2 no
-//3rd _last_this=0, 2->3, 2>=2 yes, last on next=1
-//4th _last_this=1, 3->0, 3>=2 yes, last on next=0, packet of 4 photons
-//5th _last_this=0, 0->1, 1>=2 no
-	_last_on_next = (count>=max_photons_per_packet_minus2 || time_divided!=_last_time_divided) &! _last_this;
 
-
-
-	if (read) {
+	if (read)
 		photon_packets.write(beat);
-		_last_time_divided=time_divided;
-		if (_last_this) count=0;
-		else count++;
-		_last_this=_last_on_next;
+
+	if (_reset_counters) {
+		count = 0;
+		time = 0;
+	} else {
+		time++;
+		count+=read;
 	}
 
 }
